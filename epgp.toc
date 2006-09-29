@@ -1,0 +1,16 @@
+## Interface: 11200
+## Title: EPGP
+## Notes: Effort Points/Gear Points Loot System
+## Author: Alkis Evlogimenos
+## Version: 0.1
+## OptionalDeps: Ace2
+## SavedVariables: EPGP_DB
+## SavedVariablesPerCharacter: EPGP_DB_PC
+## X-Category: Guild
+
+Libs/AceLibrary/AceLibrary.lua
+Libs/AceDebug-2.0/AceDebug-2.0.lua
+Libs/AceEvent-2.0/AceEvent-2.0.lua
+
+epgp_Core.lua
+epgp_Options.lua
