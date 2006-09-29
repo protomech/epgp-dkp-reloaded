@@ -1,4 +1,4 @@
-﻿EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDebug-2.0", "AceEvent-2.0")
+EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDebug-2.0", "AceEvent-2.0")
 
 function EPGP:OnInitialize()
   self:SetDebugging(true)
