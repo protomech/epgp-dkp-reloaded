@@ -74,16 +74,52 @@ function EPGP:EventLog_Has_END(event_log)
   return last_event[EPGP_EVENTLOG_KEY_TYPE] == EPGP_EVENTLOG_TYPE_END
 end
 
-local function EventToString(event)
-  local str = ""
-  if (type(event) == "table") then
-    for k, v in pairs(event) do
-      str = str .. string.format("%s=%s ", EventToString(k), EventToString(v))
-    end
-  elseif (type(event) == "string") then
-    str = str .. event
-  else
-    str = str .. tostring(event)
+-------------------------------------------------------------------------------
+-- Event log manipulation
+-------------------------------------------------------------------------------
+
+-- Generates a new event_log if the last raid is closed or returns the last one
+-- Returns the new raid_id
+function EPGP:GetLastEventLog()
+  local last_index = self:GetLastRaidId()
+  local last_event_log = self:GetOrCreateEventLog(last_index)
+  if (self:EventLog_Has_END(last_event_log)) then
+    return self:GetOrCreateEventLog(last_index+1)
   end
-  return str
+  return last_event_log
+end
+
+-- Returns the last raid_id
+function EPGP:GetLastRaidId()
+  return math.max(1, table.getn(EPGP.db.profile.event_log))
+end
+
+-- Get the event_log for the specified raid_id
+-- Returns the event_log
+function EPGP:GetOrCreateEventLog(raid_id)
+  local event_log = self.db.profile.event_log[raid_id]
+  if (not event_log) then
+    event_log = { }
+    self.db.profile.event_log[raid_id] = event_log
+  end
+  return event_log
+end
+
+-- Get the names of the people in the party, that are in the same zone as ourselves
+-- Returns a table of the names
+function EPGP:GetCurrentRoster()
+  local roster = { }
+  for i = 1, GetNumRaidMembers() do
+    local name, rank, subgroup, level, class, fileName, zone, online = GetRaidRosterInfo(i)
+    if (zone == CURRENT_ZONE) then
+      table.insert(roster, name)
+    end
+  end
+  
+  self:Debug("roster size: %d", table.getn(roster))
+  if (table.getn(roster) == 0) then
+    local player, _ = UnitName("player")
+    table.insert(roster, player)
+  end
+  return roster
 end

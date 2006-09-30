@@ -3,15 +3,15 @@
 -------------------------------------------------------------------------------
 
 EPGP:RegisterDefaults("profile", {
-  -- The Zones we keep track of in a map for easy lookup
+  -- The Zones we keep track of along with the respective GP multipliers
   zones = {
-    ["Zul'Gurub"]=true,
-    ["Ruins of Ahn'Qiraj"]=true,
-    ["Onyxia's Lair"]=true,
-    ["Molten Core"]=true,
-    ["Blackwing Lair"]=true,
-    ["Temple of Ahn'Qiraj"]=true,
-    ["Naxxramas"]=true
+    ["Zul'Gurub"]=1,
+    ["Ruins of Ahn'Qiraj"]=1,
+    ["Onyxia's Lair"]=1.5,
+    ["Molten Core"]=1,
+    ["Blackwing Lair"]=1.5,
+    ["Temple of Ahn'Qiraj"]=2,
+    ["Naxxramas"]=2
   },
   -- The bossses we keep track of in a map with EP values assigned
   bosses = {
@@ -99,7 +99,7 @@ EPGP:RegisterDefaults("profile", {
 
 function EPGP:GetBossEP(boss)
   local value = self.db.profile.bosses[boss]
-  if (EPGP:IsDebugging() and not value) then
+  if (self:IsDebugging() and not value) then
     return 0
   end
   return value
