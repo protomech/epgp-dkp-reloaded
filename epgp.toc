@@ -9,8 +9,11 @@
 ## X-Category: Guild
 
 Libs/AceLibrary/AceLibrary.lua
+Libs/AceDB-2.0/AceDB-2.0.lua
 Libs/AceDebug-2.0/AceDebug-2.0.lua
 Libs/AceEvent-2.0/AceEvent-2.0.lua
 
 epgp_Core.lua
+
 epgp_Options.lua
+epgp_Util.lua
