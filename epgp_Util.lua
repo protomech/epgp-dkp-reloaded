@@ -9,17 +9,17 @@ local EPGP_LOOT_ITEM_SELF = "^You receive loot: (.+)%.$"
 local EPGP_LOOT_ITEM_SELF_MULTIPLE = "^You receive loot: (.+)x(%d+)%.$"
 function EPGP_ParseLootMsg(msg)
   -- Variable names
-  -- s: start, e: end, r: reciever, i: itemlink, c: count
-  local s, e, r, i = string.find(msg, EPGP_LOOT_ITEM)
+  -- r: reciever, i: itemlink, c: count
+  local _, _, r, i = string.find(msg, EPGP_LOOT_ITEM)
   if (r and i) then return r, 1, i end
 
-  local s, e, r, i, c = string.find(msg, EPGP_LOOT_ITEM_MULTIPLE)
+  local _, _, r, i, c = string.find(msg, EPGP_LOOT_ITEM_MULTIPLE)
   if (r and i and c) then return r, c, i end
 
-  local s, e, i = string.find(msg, EPGP_LOOT_ITEM_SELF)
+  local _, _, i = string.find(msg, EPGP_LOOT_ITEM_SELF)
   if (i) then return UnitName("player"), 1, i end
 
-  local i, c = string.find(msg, EPGP_LOOT_ITEM_SELF_MULTIPLE)
+  local _, _, i, c = string.find(msg, EPGP_LOOT_ITEM_SELF_MULTIPLE)
   if (i and c) then return UnitName("player"), c, i end
   
   assert(false, "Unable to parse CHAT_MSG_LOOT message!")
@@ -32,6 +32,6 @@ end
 -------------------------------------------------------------------------------
 local EPGP_UNIT_DIES_OTHER = "^(.+) dies%.$"
 function EPGP_ParseHostileDeath(msg)
-  local s, e, dead_mob = string.find(msg, EPGP_UNIT_DIES_OTHER)
+  local _, _, dead_mob = string.find(msg, EPGP_UNIT_DIES_OTHER)
   return dead_mob
 end

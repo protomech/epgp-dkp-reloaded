@@ -35,6 +35,16 @@ function EPGP:EventLog_Add_BOSSKILL(event_log, dead_boss, roster)
   })
 end
 
+function EPGP:EventLog_Parse_BOSSKILL(event)
+  if (event[EPGP_EVENTLOG_KEY_TYPE] ~= EPGP_EVENTLOG_TYPE_BOSSKILL) then
+    return nil, nil, nil, nil
+  end
+  return event[EPGP_EVENTLOG_KEY_HOURS],
+         event[EPGP_EVENTLOG_KEY_MINUTES],
+         event[EPGP_EVENTLOG_KEY_BOSS],
+         event[EPGP_EVENTLOG_KEY_ROSTER]
+end
+
 function EPGP:EventLog_Add_LOOT(event_log, receiver, count, itemlink)
   local hours, minutes = GetGameTime()
   table.insert(event_log, {
@@ -76,14 +86,4 @@ local function EventToString(event)
     str = str .. tostring(event)
   end
   return str
-end
-
-function EPGP:EventLog_Debug(event_log)
-  if (not self:IsDebugging()) then return end
-
-  self:Debug("-- Event log begin --")
-  for i, e in pairs(event_log) do
-    self:Debug(string.format("%d:", i) .. EventToString(e))
-  end
-  self:Debug("-- Event log end --")
 end

@@ -3,7 +3,6 @@
 -------------------------------------------------------------------------------
 
 EPGP:RegisterDefaults("profile", {
-  current_zone = nil,
   -- The Zones we keep track of in a map for easy lookup
   zones = {
     ["Zul'Gurub"]=true,
@@ -97,3 +96,66 @@ EPGP:RegisterDefaults("profile", {
   -- The event log, indexed by raid_id
   event_log = { ['*'] = nil }
 })
+
+function EPGP:GetBossEP(boss)
+  local value = self.db.profile.bosses[boss]
+  if (EPGP:IsDebugging() and not value) then
+    return 0
+  end
+  return value
+end
+
+local OptionsUI = AceLibrary("AceAddon-2.0"):new("FuBarPlugin-2.0")
+
+local tablet = AceLibrary("Tablet-2.0")
+function OptionsUI:OnTooltipUpdate()
+    local cat = tablet:AddCategory(
+        'text', "EP Earned",
+        'columns', 5,
+        'child_textR', 1,
+        'child_textG', 1,
+        'child_textB', 0,
+        'child_textR2', 1,
+        'child_textG2', 1,
+        'child_textB2', 1,
+        'child_textR3', 1,
+        'child_textG3', 1,
+        'child_textB3', 1,
+        'child_textR4', 1,
+        'child_textG4', 1,
+        'child_textB4', 1,
+        'child_textR5', 1,
+        'child_textG5', 1,
+        'child_textB5', 1
+    )
+    
+    first_raid_id = 1
+    last_raid_id = EPGP:GetLastRaidId()
+    first_raid_id = math.max(1, last_raid_id - 15)
+    
+    for raid_id = first_raid_id, last_raid_id do
+      for k, v in EPGP:GetOrCreateEventLog(raid_id) do
+        local hours, minutes, boss, roster = EPGP:EventLog_Parse_BOSSKILL(v)
+        if (hours) then
+          local ep = EPGP:GetBossEP(boss)
+          if (not ep) then ep = 0 end
+          table.foreach(roster, function(_, player)
+            cat:AddLine(
+              "text", string.format("%02d:%02d", hours, minutes),
+              "text2", player,
+              "text3", "Zone",
+              "text4", boss,
+              "text5", tostring(ep)
+            )
+            end
+          )
+        end
+      end
+    end
+    tablet:SetHint("Click to do something")
+    -- as a rule, if you have an OnClick or OnDoubleClick or OnMouseUp or OnMouseDown, you should set a hint.
+end
+
+function OptionsUI:OnClick()
+    self:OnDataUpdate()
+end

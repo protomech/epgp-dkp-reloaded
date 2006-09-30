@@ -2,6 +2,8 @@ EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2
 
 EPGP:RegisterDB("EPGP_DB")
 
+CURRENT_ZONE = nil
+
 function EPGP:OnInitialize()
   self:SetDebugging(true)
   local guild_name, guild_rank_name, guild_rank_index = GetGuildInfo("player")
@@ -13,8 +15,6 @@ function EPGP:OnEnable()
   self:Print("EPGP addon is enabled")
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:RegisterEvent("CHAT_MSG_LOOT")
-  self:RegisterEvent("RAID_ROSTER_UPDATE")
-  self:RegisterEvent("PARTY_MEMBERS_CHANGED")
   self:RegisterEvent("CHAT_MSG_COMBAT_HOSTILE_DEATH")
 end
 
@@ -23,38 +23,28 @@ function EPGP:OnDisable()
 end
 
 -------------------------------------------------------------------------------
--- Slash commands
--------------------------------------------------------------------------------
-EPGP:RegisterChatCommand({ "/epgp" }, {
-  type = "group",
-  args = {
-    dbg_el = {
-      name = "dbg_el",
-      type = "execute",
-      desc = "Mark raid start",
-      func = function () EPGP:EventLog_Debug(EPGP:GetOrCreateEventLog()) end
-    }
-  }
-})
-
--------------------------------------------------------------------------------
 -- Event log manipulation
 -------------------------------------------------------------------------------
 
 -- Generates a new event_log if the last raid is closed or returns the last one
 -- Returns the new raid_id
-function EPGP:GetOrCreateEventLog()
-  local last_index = table.getn(self.db.profile.event_log)
-  local last_event_log = self:GetEventLog(last_index)
+function EPGP:GetLastEventLog()
+  local last_index = self:GetLastRaidId()
+  local last_event_log = self:GetOrCreateEventLog(last_index)
   if (EPGP:EventLog_Has_END(last_event_log)) then
-    return self:GetEventLog(last_index+1)
+    return self:GetOrCreateEventLog(last_index+1)
   end
   return last_event_log
 end
 
+-- Returns the last raid_id
+function EPGP:GetLastRaidId()
+  return math.max(1, table.getn(self.db.profile.event_log))
+end
+
 -- Get the event_log for the specified raid_id
 -- Returns the event_log
-function EPGP:GetEventLog(raid_id)
+function EPGP:GetOrCreateEventLog(raid_id)
   local event_log = self.db.profile.event_log[raid_id]
   if (not event_log) then
     event_log = { }
@@ -69,11 +59,16 @@ function EPGP:GetCurrentRoster()
   local roster = { }
   for i = 1, GetNumRaidMembers() do
     local name, rank, subgroup, level, class, fileName, zone, online = GetRaidRosterInfo(i)
-    if (zone == self.db.profile.current_zone) then
+    if (zone == CURRENT_ZONE) then
       table.insert(roster, name)
     end
   end
-  if (table.getn(roster) == 0) then table.insert(UnitName("player")) end
+  
+  EPGP:Debug("roster size: %d", table.getn(roster))
+  if (table.getn(roster) == 0) then
+    local player, _ = UnitName("player")
+    table.insert(roster, player)
+  end
   return roster
 end
 
@@ -81,28 +76,18 @@ end
 -- Event Handlers for tracking interesting events
 -------------------------------------------------------------------------------
 function EPGP:ZONE_CHANGED_NEW_AREA()
-  self.db.profile.current_zone = GetRealZoneText()
-  if (self.db.profile.zones[self.db.profile.current_zone]) then
-    self:Debug(string.format("Tracked zone: [%s]", self.db.profile.current_zone))
+  CURRENT_ZONE = GetRealZoneText()
+  if (self.db.profile.zones[CURRENT_ZONE]) then
+    self:Debug("Tracked zone: [%s]", CURRENT_ZONE)
   else
-    self:Debug(string.format("Not tracked zone: [%s]", self.db.profile.current_zone))
+    self:Debug("Not tracked zone: [%s]", CURRENT_ZONE)
   end
 end
 
 function EPGP:CHAT_MSG_LOOT(msg)
   local receiver, count, itemlink = EPGP_ParseLootMsg(msg)
-  self:Debug(string.format("Player: [%s] Count: [%d] Loot: [%s]",
-             receiver, count, itemlink))
-  self:EventLog_Add_LOOT(self:GetOrCreateEventLog(), receiver, count, itemlink)
-end
-
-function EPGP:RAID_ROSTER_UPDATE()
-  -- Need to figure out who entered/left in order to send event
-  self:Debug("Raid roster changed")
-end
-
-function EPGP:PARTY_MEMBERS_CHANGED()
-  self:Debug("Party members changed")
+  self:Debug("Player: [%s] Count: [%d] Loot: [%s]", receiver, count, itemlink)
+  self:EventLog_Add_LOOT(self:GetOrLastEventLog(), receiver, count, itemlink)
 end
 
 function EPGP:CHAT_MSG_COMBAT_HOSTILE_DEATH(msg)
@@ -115,11 +100,11 @@ function EPGP:CHAT_MSG_COMBAT_HOSTILE_DEATH(msg)
   local dead_mob = EPGP_ParseHostileDeath(msg)
   if (not dead_mob) then return end
   
-  local mob_value = self.db.profile.bosses[dead_mob]
-  if (self:IsDebugging()) then mob_value = 1 end
+  local mob_value = self:GetBossEP(dead_mob)
   if (mob_value) then
-    self:Debug(string.format("Boss kill: %s value: %d", dead_mob, mob_value))
-    self:EventLog_Add_BOSSKILL(self:GetOrCreateEventLog(), dead_mob)
+    self:Debug("Boss kill: %s value: %d", dead_mob, mob_value)
+    self:EventLog_Add_BOSSKILL(
+      self:GetLastEventLog(), dead_mob, self:GetCurrentRoster())
   else
     self:Debug(string.format("Trash kill: %s", dead_mob))
   end
@@ -127,6 +112,6 @@ end
 
 function EPGP:CHAT_MSG_ADDON(prefix, msg, type, sender)
   -- This is where sync should happen
-  self:Debug(string.format("Prefix: [%s] Msg: [%s] Type: [%s] Sender: [%s]",
-                           prefix, msg, type, sender))
+  self:Debug("Prefix: [%s] Msg: [%s] Type: [%s] Sender: [%s]",
+             prefix, msg, type, sender)
 end
