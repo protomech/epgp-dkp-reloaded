@@ -1,16 +1,12 @@
-function EPGP_GenerateRaidID()
-  return 0
-end
-
 -------------------------------------------------------------------------------
 -- CHAT_MSG_LOOT parsing
 --
 -- returns receiver, count, itemlink
 -------------------------------------------------------------------------------
-EPGP_LOOT_ITEM = "^(%S+) receives loot: (.+)%.$"
-EPGP_LOOT_ITEM_MULTIPLE = "^(%S+) receives loot: (.+)x(%d+)%.$"
-EPGP_LOOT_ITEM_SELF = "^You receive loot: (.+)%.$"
-EPGP_LOOT_ITEM_SELF_MULTIPLE = "^You receive loot: (.+)x(%d+)%.$"
+local EPGP_LOOT_ITEM = "^(%S+) receives loot: (.+)%.$"
+local EPGP_LOOT_ITEM_MULTIPLE = "^(%S+) receives loot: (.+)x(%d+)%.$"
+local EPGP_LOOT_ITEM_SELF = "^You receive loot: (.+)%.$"
+local EPGP_LOOT_ITEM_SELF_MULTIPLE = "^You receive loot: (.+)x(%d+)%.$"
 function EPGP_ParseLootMsg(msg)
   -- Variable names
   -- s: start, e: end, r: reciever, i: itemlink, c: count
@@ -34,9 +30,8 @@ end
 --
 -- returns dead_mob
 -------------------------------------------------------------------------------
-EPGP_UNIT_DIES_OTHER = "^(.+) dies%.$"
+local EPGP_UNIT_DIES_OTHER = "^(.+) dies%.$"
 function EPGP_ParseHostileDeath(msg)
   local s, e, dead_mob = string.find(msg, EPGP_UNIT_DIES_OTHER)
-  assert(dead_mob, "Unable to parse CHAT_MSG_COMBAT_HOSTILE_DEATH")
   return dead_mob
 end

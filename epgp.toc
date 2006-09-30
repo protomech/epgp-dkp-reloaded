@@ -15,5 +15,6 @@ Libs/AceEvent-2.0/AceEvent-2.0.lua
 
 epgp_Core.lua
 
+epgp_EventLog.lua
 epgp_Options.lua
 epgp_Util.lua

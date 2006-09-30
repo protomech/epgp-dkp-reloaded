@@ -2,7 +2,8 @@
 -- Constants for EP and GP
 -------------------------------------------------------------------------------
 
-EPGP:RegisterDefaults("char", {
+EPGP:RegisterDefaults("profile", {
+  current_zone = nil,
   -- The Zones we keep track of in a map for easy lookup
   zones = {
     ["Zul'Gurub"]=true,
@@ -94,7 +95,5 @@ EPGP:RegisterDefaults("char", {
   	["Kel'Thuzad"]=10
   },
   -- The event log, indexed by raid_id
-  event_log = { ['*'] = nil },
-  -- The raid info, indexed by raid_id
-  raid_info = { ['*'] = nil }
+  event_log = { ['*'] = nil }
 })
