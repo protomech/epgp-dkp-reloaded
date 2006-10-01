@@ -1,3 +1,7 @@
+-- Shrink events to just attendance, bosskill, loot. Mark start and end events
+-- can be removed. They can be added to the event log as non-indexed key, value
+-- pairs.
+
 local EPGP_EVENTLOG_TYPE_START = "start"
 local EPGP_EVENTLOG_TYPE_ATTENDANCE = "attendance"
 local EPGP_EVENTLOG_TYPE_BOSSKILL = "bosskill"
