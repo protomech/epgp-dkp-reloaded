@@ -113,6 +113,51 @@ function EPGP:GetCurrentRoster()
   return roster
 end
 
+-- Compute a table of the current EPGP standings sorted on priority
+-- The table is a table of tables of the form:
+-- { name, ep_total, gp_total, priority }
+-- The final table is sorted on priority
+function EPGP:ComputeStandings()
+  local standings = { }
+  local name_indices = { }
+  -- Call GuildRoster first to make sure the list is p to date
+  GuildRoster()
+  local num_guild_members = GetNumGuildMembers()
+  for i = 1, num_guild_members do
+    local name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
+    table.insert(standings, { name, 0, 1, nil })
+    name_indices[name] = table.getn(standings)
+  end
+
+  -- Compute EPs and GPs
+  first_raid_id = 1
+  last_raid_id = EPGP:GetLastRaidId()
+  first_raid_id = math.max(1, last_raid_id - self.db.profile.raid_window_size)
+  for i = first_raid_id, last_raid_id do
+    for k, v in EPGP:GetOrCreateEventLog(i) do
+      if (v[EPGP_EVENTLOG_KEY_TYPE] == EPGP_EVENTLOG_TYPE_BOSSKILL) then
+        local hours, minutes, boss, roster = EPGP:EventLogParse_BOSSKILL(v)
+        table.foreach(roster, function(_, name)
+            local name_index = name_indices[name]
+            standings[name_index][2] = standings[name_index][2] + self:GetBossEP(boss)
+          end
+        )
+      end
+    end
+  end
+
+  -- Compute priority
+  table.foreach(standings, function(_, stats)
+      stats[4] = stats[2] / stats[3]
+    end
+  )
+  
+  -- Sort on priority
+  table.sort(standings, function(a, b) return a[4] > b[4] end)
+
+  return standings
+end
+
 -------------------------------------------------------------------------------
 -- Event log manipulation functions
 -------------------------------------------------------------------------------
