@@ -62,6 +62,16 @@ function EPGP:BuildOptions()
     }
   end
   if (self:CanChangeRules()) then
+    options.args["window_size"] = {
+      type = "range",
+      name = "EP/GP Raid Window Size",
+      desc = "The number of raids back to be accounted for EP/GP calculations.",
+      min = 10,
+      max = 100,
+      step = 1,
+      get = function() return self.db.profile.raid_window_size end,
+      set = function(v) self.db.profile.raid_window_size = v end
+    }
   	options.args["bosses"] = {
   	  type = "group",
   	  name = "Bosses",

@@ -92,6 +92,9 @@ EPGP:RegisterDefaults("profile", {
   	["Sapphiron"]=10,
   	["Kel'Thuzad"]=10
   },
+  -- The raid_window size on which we count EPs and GPs.
+  -- Anything out of the window will not be taken into account.
+  raid_window_size = 10,
   -- The event log, indexed by raid_id
   event_log = { ['*'] = nil }
 })
@@ -135,7 +138,7 @@ function EPGP:OnTooltipUpdate()
   
   first_raid_id = 1
   last_raid_id = EPGP:GetLastRaidId()
-  first_raid_id = math.max(1, last_raid_id - 15)
+  first_raid_id = math.max(1, last_raid_id - self.db.profile.raid_window_size)
   
   for raid_id = first_raid_id, last_raid_id do
     for k, v in EPGP:GetOrCreateEventLog(raid_id) do
@@ -156,7 +159,6 @@ function EPGP:OnTooltipUpdate()
       end
     end
   end
-  tablet:SetHint("Click to do something")
   -- as a rule, if you have an OnClick or OnDoubleClick or OnMouseUp or OnMouseDown, you should set a hint.
 end
 
