@@ -1,7 +1,6 @@
 -------------------------------------------------------------------------------
 -- Constants for EP and GP
 -------------------------------------------------------------------------------
-
 EPGP:RegisterDefaults("profile", {
   -- The Zones we keep track of along with the respective GP multipliers
   zones = {
@@ -16,19 +15,19 @@ EPGP:RegisterDefaults("profile", {
   -- The bossses we keep track of in a map with EP values assigned
   bosses = {
   	-- ZG:
-  	["High Priestess Jeklik"]=2,
-  	["High Priest Venoxis"]=2,
-  	["High Priestess Mar'li"]=2,
-  	["High Priest Thekal"]=2,
-  	["High Priestess Arlokk"]=2,
-  	["Hakkar the Soulflayer"]=2,
-  	["Bloodlord Mandokir"]=2,
-  	["Jin'do the Hexxer"]=2,
-  	["Gahz'ranka"]=2,
-  	["Gri'lek"]=2,
-  	["Renataki"]=2,
-  	["Hazza'rah"]=2,
-  	["Wushoolay"]=2,
+  	["High Priestess Jeklik"]=20,
+  	["High Priest Venoxis"]=20,
+  	["High Priestess Mar'li"]=20,
+  	["High Priest Thekal"]=50,
+  	["High Priestess Arlokk"]=50,
+  	["Hakkar the Soulflayer"]=100,
+  	["Bloodlord Mandokir"]=50,
+  	["Jin'do the Hexxer"]=80,
+  	["Gahz'ranka"]=50,
+  	["Gri'lek"]=30,
+  	["Renataki"]=30,
+  	["Hazza'rah"]=30,
+  	["Wushoolay"]=30,
   	-- Onyxia:
   	["Onyxia"]=10,
   	-- AQ 20:
