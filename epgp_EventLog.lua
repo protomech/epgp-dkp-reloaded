@@ -1,4 +1,5 @@
 local EPGP_EVENTLOG_TYPE_START = "start"
+local EPGP_EVENTLOG_TYPE_ATTENDANCE = "attendance"
 local EPGP_EVENTLOG_TYPE_BOSSKILL = "bosskill"
 local EPGP_EVENTLOG_TYPE_LOOT = "loot"
 local EPGP_EVENTLOG_TYPE_END = "end"
@@ -13,29 +14,80 @@ local EPGP_EVENTLOG_KEY_ITEM = "item"
 local EPGP_EVENTLOG_KEY_ZONE = "zone"
 local EPGP_EVENTLOG_KEY_BOSS = "boss"
 
-function EPGP:EventLog_Add_START(event_log, zone, roster)
+-- Returns the last raid_id
+function EPGP:GetLastRaidId()
+  return math.max(1, table.getn(EPGP.db.profile.event_log))
+end
+
+-- Get the event_log for the specified raid_id or create a new one
+-- if it doesn't exist
+-- Returns the event_log
+function EPGP:GetOrCreateEventLog(raid_id)
+  local event_log = self.db.profile.event_log[raid_id]
+  if (not event_log) then
+    event_log = { }
+    self.db.profile.event_log[raid_id] = event_log
+  end
+  return event_log
+end
+
+-- Marks the start of a new raid and starts the attendance event
+-- Only Raid Leaders can access this function
+function EPGP:StartNewRaid()
+  if (not IsRaidLeader()) then
+    self:Print("You must be a raid leader in order mark the start of a raid.")
+  else
+    local event_log = self:GetOrCreateEventLog(self:GetLastRaidId())
+    if (self:EventLogHas_START(event_log)) then
+      self:Print("You cannot start a new raid while being in a raid already.")
+    else
+      self:EventLogAdd_START(event_log)
+    end
+  end
+end
+
+function EPGP:EndRaid()
+  if (not IsRaidLeader()) then
+    self:Print("You must be a raid leader in order mark the start of a raid.")
+  else
+    local event_log = self:GetOrCreateEventLog(self:GetLastRaidId())
+    if (self:EventLogHas_END(event_log)) then
+      self:Pring("You cannot end an already finsihed raid.")
+    else
+      self:EventLogAdd_END(event_log)
+    end
+  end
+end
+
+function EPGP:EventLogAdd_START(event_log)
   local hours, minutes = GetGameTime()
   table.insert(event_log, {
     [EPGP_EVENTLOG_KEY_TYPE] = EPGP_EVENTLOG_TYPE_START,
     [EPGP_EVENTLOG_KEY_HOURS] = hours,
     [EPGP_EVENTLOG_KEY_MINUTES] = minutes,
-    [EPGP_EVENTLOG_KEY_ZONE] = zone,
-    [EPGP_EVENTLOG_KEY_ROSTER] = roster
+    [EPGP_EVENTLOG_KEY_ZONE] = self.current_zone,
+    [EPGP_EVENTLOG_KEY_ROSTER] = self:GetCurrentRoster()
   })
 end
 
-function EPGP:EventLog_Add_BOSSKILL(event_log, dead_boss, roster)
+function EPGP:EventLogHas_START(event_log)
+  local first_event = event_log[1]
+  if (not first_event) then return false end
+  return first_event[EPGP_EVENTLOG_KEY_TYPE] == EPGP_EVENTLOG_TYPE_START
+end
+
+function EPGP:EventLogAdd_BOSSKILL(event_log, dead_boss)
   local hours, minutes = GetGameTime()
   table.insert(event_log, {
     [EPGP_EVENTLOG_KEY_TYPE] = EPGP_EVENTLOG_TYPE_BOSSKILL,
     [EPGP_EVENTLOG_KEY_HOURS] = hours,
     [EPGP_EVENTLOG_KEY_MINUTES] = minutes,
     [EPGP_EVENTLOG_KEY_BOSS] = dead_boss,
-    [EPGP_EVENTLOG_KEY_ROSTER] = roster
+    [EPGP_EVENTLOG_KEY_ROSTER] = self:GetCurrentRoster()
   })
 end
 
-function EPGP:EventLog_Parse_BOSSKILL(event)
+function EPGP:EventLogParse_BOSSKILL(event)
   if (event[EPGP_EVENTLOG_KEY_TYPE] ~= EPGP_EVENTLOG_TYPE_BOSSKILL) then
     return nil, nil, nil, nil
   end
@@ -45,7 +97,7 @@ function EPGP:EventLog_Parse_BOSSKILL(event)
          event[EPGP_EVENTLOG_KEY_ROSTER]
 end
 
-function EPGP:EventLog_Add_LOOT(event_log, receiver, count, itemlink)
+function EPGP:EventLogAdd_LOOT(event_log, receiver, count, itemlink)
   local hours, minutes = GetGameTime()
   table.insert(event_log, {
     [EPGP_EVENTLOG_KEY_TYPE] = EPGP_EVENTLOG_TYPE_LOOT,
@@ -57,18 +109,18 @@ function EPGP:EventLog_Add_LOOT(event_log, receiver, count, itemlink)
   })
 end
 
-function EPGP:EventLog_Add_END(event_log, roster)
+function EPGP:EventLogAdd_END(event_log)
   local hours, minutes = GetGameTime()
   table.insert(event_log, {
     [EPGP_EVENTLOG_KEY_TYPE] = EPGP_EVENTLOG_TYPE_END,
     [EPGP_EVENTLOG_KEY_HOURS] = hours,
     [EPGP_EVENTLOG_KEY_MINUTES] = minutes,
     [EPGP_EVENTLOG_KEY_ZONE] = zone,
-    [EPGP_EVENTLOG_KEY_ROSTER] = roster
+    [EPGP_EVENTLOG_KEY_ROSTER] = self:GetCurrentRoster()
   })
 end
 
-function EPGP:EventLog_Has_END(event_log)
+function EPGP:EventLogHas_END(event_log)
   local last_event = event_log[table.getn(event_log)]
   if (not last_event) then return false end
   return last_event[EPGP_EVENTLOG_KEY_TYPE] == EPGP_EVENTLOG_TYPE_END
@@ -83,26 +135,10 @@ end
 function EPGP:GetLastEventLog()
   local last_index = self:GetLastRaidId()
   local last_event_log = self:GetOrCreateEventLog(last_index)
-  if (self:EventLog_Has_END(last_event_log)) then
+  if (self:EventLogHas_END(last_event_log)) then
     return self:GetOrCreateEventLog(last_index+1)
   end
   return last_event_log
-end
-
--- Returns the last raid_id
-function EPGP:GetLastRaidId()
-  return math.max(1, table.getn(EPGP.db.profile.event_log))
-end
-
--- Get the event_log for the specified raid_id
--- Returns the event_log
-function EPGP:GetOrCreateEventLog(raid_id)
-  local event_log = self.db.profile.event_log[raid_id]
-  if (not event_log) then
-    event_log = { }
-    self.db.profile.event_log[raid_id] = event_log
-  end
-  return event_log
 end
 
 -- Get the names of the people in the party, that are in the same zone as ourselves
@@ -111,7 +147,7 @@ function EPGP:GetCurrentRoster()
   local roster = { }
   for i = 1, GetNumRaidMembers() do
     local name, rank, subgroup, level, class, fileName, zone, online = GetRaidRosterInfo(i)
-    if (zone == CURRENT_ZONE) then
+    if (zone == current_zone) then
       table.insert(roster, name)
     end
   end

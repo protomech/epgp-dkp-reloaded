@@ -2,8 +2,6 @@ EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2
 
 EPGP:RegisterDB("EPGP_DB")
 
-CURRENT_ZONE = nil
-
 function EPGP:OnInitialize()
   self:SetDebugging(true)
   local guild_name, guild_rank_name, guild_rank_index = GetGuildInfo("player")
@@ -12,6 +10,7 @@ function EPGP:OnInitialize()
   self:RegisterChatCommand({ "/epgp" },
     EPGP:BuildOptions()
   )
+  self.current_zone = nil
 end
 
 function EPGP:OnEnable()
@@ -32,6 +31,20 @@ function EPGP:BuildOptions()
     type = "group",
     desc = "EPGP Options",
     args = {
+      ["startraid"] = {
+        type = "execute",
+        name = "Start New Raid",
+        desc = "Marks the start of this raid in the current zone.",
+        order = 1,
+        func =  function() EPGP:StartNewRaid() end 
+      },
+      ["endraid"] = {
+        type = "execute",
+        name = "End Raid",
+        desc = "Marks the end of the current raid.",
+        order = 1,
+        func =  function() EPGP:EndRaid() end 
+      },
     	["bosses"] = {
     	  type = "group",
     	  name = "Bosses",
@@ -84,11 +97,11 @@ end
 -- Event Handlers for tracking interesting events
 -------------------------------------------------------------------------------
 function EPGP:ZONE_CHANGED_NEW_AREA()
-  CURRENT_ZONE = GetRealZoneText()
-  if (self.db.profile.zones[CURRENT_ZONE]) then
-    self:Debug("Tracked zone: [%s]", CURRENT_ZONE)
+  self.current_zone = GetRealZoneText()
+  if (self.db.profile.zones[self.current_zone]) then
+    self:Debug("Tracked zone: [%s]", self.current_zone)
   else
-    self:Debug("Not tracked zone: [%s]", CURRENT_ZONE)
+    self:Debug("Not tracked zone: [%s]", self.current_zone)
   end
 end
 
