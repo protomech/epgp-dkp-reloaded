@@ -23,5 +23,5 @@ Libs/Tablet-2.0/Tablet-2.0.lua
 epgp_Core.lua
 
 epgp_EventLog.lua
+epgp_Events.lua
 epgp_Options.lua
-epgp_Util.lua
