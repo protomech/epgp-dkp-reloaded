@@ -8,7 +8,10 @@ function EPGP:OnInitialize()
   self:SetDebugging(true)
   local guild_name, guild_rank_name, guild_rank_index = GetGuildInfo("player")
   if (not guild_name) then guild_name = "EPGP_testing_guild" end
-  self:SetProfile(guild_name)
+  self:SetProfile(guild_name)  
+  self:RegisterChatCommand({ "/epgp" },
+    EPGP:BuildOptions()
+  )
 end
 
 function EPGP:OnEnable()
@@ -20,6 +23,69 @@ end
 
 function EPGP:OnDisable()
 
+end
+
+-- Builds an AceOptions table for the options
+-- Passing true generates options suitable for a command line
+function EPGP:BuildOptions()
+  options = {
+    type = "group",
+    desc = "EPGP Options",
+    args = {
+      ["debugging"] = {
+    		type = "toggle",
+    		name = "Debugging",
+    		desc = "Show debug messages.",
+    		get = function() return self:IsDebugging() end,
+    		set = function(v) self:SetDebugging(v) end,
+    		hidden = function() return not self:IsDebugging() and not self:IsDebugging() end,
+      },
+    	["bosses"] = {
+    	  type = "group",
+    	  name = "Bosses",
+    	  desc = "Effort points given for succesful boss kills.",
+    	  args = { }
+    	},
+    	["zones"] = {
+    	  type = "group",
+    	  name = "Zones",
+    	  desc = "Gear Point multipliers for the drops of each zone.",
+    	  args = { }
+    	}
+  	}
+  }
+  -- Setup bosses options
+  for k, v in pairs(self.db.profile.bosses) do
+    local cmd = string.gsub(k, "%s", "_")
+    local key = k
+    options.args["bosses"].args[cmd] = {
+      type = "range",
+      name = key,
+      desc = "Effort points given for succesful kill.",
+      min = 0,
+      max = 100,
+      step = 1,
+      get = function() return self:GetBossEP(key) end,
+      set = function(v) self:SetBossEP(key, v) end
+    }
+  end
+  -- Setup zones options
+  for k, v in pairs(self.db.profile.zones) do
+    local cmd = string.gsub(k, "%s", "_")
+    local key = k
+    options.args["zones"].args[cmd] = {
+      type = "range",
+      name = key,
+      desc = "Gear Point multiplier for drops in this zone.",
+      min = 0,
+      max = 10,
+      step = 0.1,
+      get = function() return self.db.profile.zones[key] end,
+      set = function(v) self.db.profile.zones[key] = v end
+    }
+  end
+  
+	return options
 end
 
 -------------------------------------------------------------------------------

@@ -105,6 +105,13 @@ function EPGP:GetBossEP(boss)
   return value
 end
 
+function EPGP:SetBossEP(boss, ep)
+  local value = self.db.profile.bosses[boss]
+  if (value) then
+    self.db.profile.bosses[boss] = ep
+  end
+end
+
 local OptionsUI = AceLibrary("AceAddon-2.0"):new("FuBarPlugin-2.0")
 
 local tablet = AceLibrary("Tablet-2.0")
@@ -156,6 +163,6 @@ function OptionsUI:OnTooltipUpdate()
     -- as a rule, if you have an OnClick or OnDoubleClick or OnMouseUp or OnMouseDown, you should set a hint.
 end
 
-function OptionsUI:OnClick()
-    self:OnDataUpdate()
+function OptionsUI:OnDataUpdate()
+  self.OnMenuRequest = EPGP:BuildOptions()
 end
