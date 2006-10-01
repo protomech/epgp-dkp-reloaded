@@ -29,8 +29,9 @@ function EPGP:Reconfigure()
     -- Check attendance every 5 minutes
     self:ScheduleRepeatingEvent(EPGP_EVENTLOG_TYPE_ATTENDANCE,
                                 self.EventLogAdd_ATTENDANCE,
-                                300,
-                                self)
+                                5*60,
+                                self,
+                                self:GetOrCreateEventLog(self:GetLastRaidId()))
   else
     self:UnregisterEvent("CHAT_MSG_LOOT")
     self:UnegisterEvent("CHAT_MSG_COMBAT_HOSTILE_DEATH")
@@ -132,7 +133,7 @@ end
 function EPGP:EventLogAdd_ATTENDANCE(event_log)
   local hours, minutes = GetGameTime()
   table.insert(event_log, {
-    [EPGP_EVENTLOG_KEY_TYPE] = EPGP_EVENTLOG_TYPE_START,
+    [EPGP_EVENTLOG_KEY_TYPE] = EPGP_EVENTLOG_TYPE_ATTENDANCE,
     [EPGP_EVENTLOG_KEY_HOURS] = hours,
     [EPGP_EVENTLOG_KEY_MINUTES] = minutes,
     [EPGP_EVENTLOG_KEY_ROSTER] = self:GetCurrentRoster()
