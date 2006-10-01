@@ -112,10 +112,8 @@ function EPGP:SetBossEP(boss, ep)
   end
 end
 
-local OptionsUI = AceLibrary("AceAddon-2.0"):new("FuBarPlugin-2.0")
-
 local tablet = AceLibrary("Tablet-2.0")
-function OptionsUI:OnTooltipUpdate()
+function EPGP:OnTooltipUpdate()
     local cat = tablet:AddCategory(
         'text', "EP Earned",
         'columns', 5,
@@ -163,6 +161,6 @@ function OptionsUI:OnTooltipUpdate()
     -- as a rule, if you have an OnClick or OnDoubleClick or OnMouseUp or OnMouseDown, you should set a hint.
 end
 
-function OptionsUI:OnDataUpdate()
+function EPGP:OnDataUpdate()
   self.OnMenuRequest = EPGP:BuildOptions()
 end

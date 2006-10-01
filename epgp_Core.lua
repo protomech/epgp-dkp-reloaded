@@ -1,4 +1,4 @@
-EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0")
+EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "FuBarPlugin-2.0")
 
 EPGP:RegisterDB("EPGP_DB")
 
@@ -32,14 +32,6 @@ function EPGP:BuildOptions()
     type = "group",
     desc = "EPGP Options",
     args = {
-      ["debugging"] = {
-    		type = "toggle",
-    		name = "Debugging",
-    		desc = "Show debug messages.",
-    		get = function() return self:IsDebugging() end,
-    		set = function(v) self:SetDebugging(v) end,
-    		hidden = function() return not self:IsDebugging() and not self:IsDebugging() end,
-      },
     	["bosses"] = {
     	  type = "group",
     	  name = "Bosses",
