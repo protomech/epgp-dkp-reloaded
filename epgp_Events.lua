@@ -72,13 +72,3 @@ function EPGP:ZONE_CHANGED_NEW_AREA()
     self:Debug("Not tracked zone: [%s]", self.current_zone)
   end
 end
-
-function EPGP:RAID_ROSTER_UPDATE()
-  self.raid_leader = IsReadLeader()
-  self:Reconfigure()
-end
-
-function EPGP:PARTY_MEMBERS_CHANGED()
-  self.raid_leader = IsRaidLeader()
-  self:Reconfigure()
-end

@@ -20,6 +20,20 @@ local EPGP_EVENTLOG_KEY_BOSS = "boss"
 
 -- Reconfigures the addon depending on what mode it needs to run on
 function EPGP:Reconfigure()
+  local raid_L_or_A = false
+  for i = 1, GetNumRaidMembers() do
+    local name, rank, subgroup, level, class, fileName, zone, online = GetRaidRosterInfo(i)
+    if (name == UnitName("player") and rank > 0) then
+      raid_L_or_A = true
+    end
+  end
+  
+  if (self.raid_leader_or_officer == raid_L_or_A) then
+    return
+  else
+    self.raid_leader_or_officer = raid_L_or_A
+  end
+
   -- Update commandline options
   self:RegisterChatCommand({ "/epgp" },
     EPGP:BuildOptions()

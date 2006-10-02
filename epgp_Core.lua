@@ -17,9 +17,8 @@ function EPGP:OnEnable()
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
   -- Keep track of us being raid leader or not
-  self.raid_leader = IsRaidLeader()
-  self:RegisterEvent("RAID_ROSTER_UPDATE")
-  self:RegisterEvent("PARTY_MEMBERS_CHANGED")
+  self:RegisterEvent("RAID_ROSTER_UPDATE", "Reconfigure")
+  self:RegisterEvent("PARTY_MEMBERS_CHANGED", "Reconfigure")
 
   self:Print("EPGP addon is enabled")
   self:Reconfigure()
@@ -30,7 +29,7 @@ function EPGP:OnDisable()
 end
 
 function EPGP:CanTrackRaid()
-  return self.raid_leader or self:IsDebugging()
+  return self.raid_leader_or_officer or self:IsDebugging()
 end
 
 function EPGP:CanChangeRules()
