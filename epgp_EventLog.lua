@@ -124,9 +124,11 @@ function EPGP:ComputeStandings()
   GuildRoster()
   local num_guild_members = GetNumGuildMembers()
   for i = 1, num_guild_members do
-    local name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
-    table.insert(standings, { name, 0, 1, nil })
-    name_indices[name] = table.getn(standings)
+    local name, _, _, _, _, _, _, _, online, _ = GetGuildRosterInfo(i)
+    if (online) then
+      table.insert(standings, { name, 0, 1, nil })
+      name_indices[name] = table.getn(standings)
+    end
   end
 
   -- Compute EPs and GPs
@@ -139,7 +141,9 @@ function EPGP:ComputeStandings()
         local hours, minutes, boss, roster = EPGP:EventLogParse_BOSSKILL(v)
         table.foreach(roster, function(_, name)
             local name_index = name_indices[name]
-            standings[name_index][2] = standings[name_index][2] + self:GetBossEP(boss)
+            if (name_index) then
+              standings[name_index][2] = standings[name_index][2] + self:GetBossEP(boss)
+            end
           end
         )
       end
