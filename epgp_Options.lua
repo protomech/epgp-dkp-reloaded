@@ -99,6 +99,9 @@ EPGP:RegisterDefaults("profile", {
   event_log = { ['*'] = nil }
 })
 
+local Tablet = AceLibrary("Tablet-2.0")
+local Dewdrop = AceLibrary("Dewdrop-2.0")
+
 function EPGP:GetBossEP(boss)
   local value = self.db.profile.bosses[boss]
   if (self:IsDebugging() and not value) then
@@ -115,8 +118,13 @@ function EPGP:SetBossEP(boss, ep)
 end
 
 function EPGP:OnTooltipUpdate()
-  local tablet = AceLibrary("Tablet-2.0")
-  local cat = tablet:AddCategory(
+  -- A refresh button
+  Tablet:AddCategory():AddLine(
+    "text", "Refresh",
+    "func", function() EPGP:UpdateTooltip() end
+  )
+  -- The standings
+  local cat = Tablet:AddCategory(
       'text', "Standings",
       'columns', 4,
       'child_textR' , 1, 'child_textG' , 1, 'child_textB' , 0,
