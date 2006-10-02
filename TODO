@@ -4,3 +4,5 @@
 - raid logs
 - sync between guild members
 - add custom bonus
+
+- make the option into a tablet and instantiate that instead of using a fubar plugin. that will remove the minimap icon. also provide an option /epgp show that will show the tablet
