@@ -135,7 +135,8 @@ function EPGP:ComputeStandings()
   first_raid_id = math.max(1, last_raid_id - self.db.profile.raid_window_size)
   for i = first_raid_id, last_raid_id do
     for k, v in EPGP:GetOrCreateEventLog(i) do
-      if (v[EPGP_EVENTLOG_KEY_TYPE] == EPGP_EVENTLOG_TYPE_BOSSKILL) then
+      local event_type = v[EPGP_EVENTLOG_KEY_TYPE]
+      if (event_type == EPGP_EVENTLOG_TYPE_BOSSKILL) then
         local hours, minutes, boss, roster = EPGP:EventLogParse_BOSSKILL(v)
         table.foreach(roster, function(_, name)
             local name_index = name_indices[name]
@@ -144,6 +145,12 @@ function EPGP:ComputeStandings()
             end
           end
         )
+      elseif (event_type == EPGP_EVENTLOG_TYPE_LOOT) then
+        local hours, minutes, receiver, count, item = EPGP:EventLogParse_LOOT(v)
+        local name_index = name_indices[receiver]
+        if (name_index) then
+          standings[name_index][3] = standings[name_index][3] + 1
+        end
       end
     end
   end
@@ -222,6 +229,18 @@ function EPGP:EventLogAdd_LOOT(event_log, receiver, count, itemlink)
     [EPGP_EVENTLOG_KEY_COUNT] = count,
     [EPGP_EVENTLOG_KEY_ITEM] = itemlink
   })
+end
+
+function EPGP:EventLogParse_LOOT(event)
+  if (event[EPGP_EVENTLOG_KEY_TYPE] ~= EPGP_EVENTLOG_TYPE_LOOT) then
+    return nil, nil, nil, nil, nil
+  end
+
+  return event[EPGP_EVENTLOG_KEY_HOURS],
+         event[EPGP_EVENTLOG_KEY_MINUTES],
+         event[EPGP_EVENTLOG_KEY_RECEIVER],
+         event[EPGP_EVENTLOG_KEY_COUNT],
+         event[EPGP_EVENTLOG_KEY_ITEM]
 end
 
 function EPGP:EventLogAdd_END(event_log)
