@@ -23,13 +23,16 @@ function EPGP:ParseLootMsg(msg)
   local _, _, i, c = string.find(msg, EPGP_LOOT_ITEM_SELF_MULTIPLE)
   if (i and c) then return UnitName("player"), c, i end
   
-  assert(false, "Unable to parse CHAT_MSG_LOOT message!")
+  self:DEBUG("Ignored CHAT_MSG_LOOT message: %s", msg)
+  return nil, nil, nil
 end
 
 function EPGP:CHAT_MSG_LOOT(msg)
   local receiver, count, itemlink = self:ParseLootMsg(msg)
-  self:Debug("Player: [%s] Count: [%d] Loot: [%s]", receiver, count, itemlink)
-  self:EventLogAdd_LOOT(self:GetOrLastEventLog(), receiver, count, itemlink)
+  if (receiver and count and itemlink) then
+    self:Debug("Player: [%s] Count: [%d] Loot: [%s]", receiver, count, itemlink)
+    self:EventLogAdd_LOOT(self:GetLastEventLog(), receiver, count, itemlink)
+  end
 end
 
 -- CHAT_MSG_COMBAT_HOSTILE_DEATH parsing
