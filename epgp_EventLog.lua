@@ -122,13 +122,11 @@ function EPGP:ComputeStandings()
   local name_indices = { }
   -- Call GuildRoster first to make sure the list is p to date
   GuildRoster()
-  local num_guild_members = GetNumGuildMembers()
+  local num_guild_members = GetNumGuildMembers(true)
   for i = 1, num_guild_members do
-    local name, _, _, _, _, _, _, _, online, _ = GetGuildRosterInfo(i)
-    if (online) then
-      table.insert(standings, { name, 0, 1, nil })
-      name_indices[name] = table.getn(standings)
-    end
+    local name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
+    table.insert(standings, { name, 0, 1, nil })
+    name_indices[name] = table.getn(standings)
   end
 
   -- Compute EPs and GPs
