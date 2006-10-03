@@ -132,6 +132,16 @@ EPGP:RegisterDefaults("profile", {
   event_log = { ['*'] = nil }
 })
 
+EPGP_quality_names = {
+  [0] = "Poor",
+  [1] = "Common",
+  [2] = "Uncommon",
+  [3] = "Rare",
+  [4] = "Epic",
+  [5] = "Legendary",
+  [6] = "Artifact"
+}
+
 local Tablet = AceLibrary("Tablet-2.0")
 local Dewdrop = AceLibrary("Dewdrop-2.0")
 

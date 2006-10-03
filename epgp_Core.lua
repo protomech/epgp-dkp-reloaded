@@ -61,6 +61,7 @@ function EPGP:BuildOptions()
     }
   end
   if (self:CanChangeRules()) then
+    -- Setup window size
     options.args["window_size"] = {
       type = "range",
       name = "EP/GP Raid Window Size",
@@ -71,23 +72,16 @@ function EPGP:BuildOptions()
       get = function() return self.db.profile.raid_window_size end,
       set = function(v) self.db.profile.raid_window_size = v end
     }
+    -- Setup bosses options
   	options.args["bosses"] = {
   	  type = "group",
   	  name = "Bosses",
   	  desc = "Effort points given for succesful boss kills.",
   	  args = { }
   	}
-  	options.args["zones"] = {
-  	  type = "group",
-  	  name = "Zones",
-  	  desc = "Gear Point multipliers for the drops of each zone.",
-  	  args = { }
-  	}
-
-    -- Setup bosses options
     for k, v in pairs(self.db.profile.bosses) do
-      local cmd = string.gsub(k, "%s", "_")
       local key = k
+      local cmd = string.gsub(k, "%s", "_")
       options.args["bosses"].args[cmd] = {
         type = "range",
         name = key,
@@ -100,9 +94,15 @@ function EPGP:BuildOptions()
       }
     end
     -- Setup zones options
+  	options.args["zones"] = {
+  	  type = "group",
+  	  name = "Zones",
+  	  desc = "Gear Point multipliers for the drops of each zone.",
+  	  args = { }
+  	}
     for k, v in pairs(self.db.profile.zones) do
-      local cmd = string.gsub(k, "%s", "_")
       local key = k
+      local cmd = string.gsub(k, "%s", "_")
       options.args["zones"].args[cmd] = {
         type = "range",
         name = key,
@@ -114,6 +114,60 @@ function EPGP:BuildOptions()
         set = function(v) self.db.profile.zones[key] = v end
       }
     end
+    -- Setup item slot options
+  	options.args["equip_slots"] = {
+  	  type = "group",
+  	  name = "Equipment Slots",
+  	  desc = "Gear Point multipliers for each equipment slot.",
+  	  args = { }
+  	}
+    for k, v in pairs(self.db.profile.equip_slot) do
+      local key = k
+      local cmd = string.gsub(key, "%s", "_")
+      options.args["equip_slots"].args[cmd] = {
+        type = "range",
+        name = string.gsub(key, ".*_(.*)", "%1"),
+        desc = "Gear Point multiplier for items that are equipemed in this slot.",
+        min = 0,
+        max = 1,
+        step = 0.05,
+        get = function() return self.db.profile.equip_slot[key] end,
+        set = function(v) self.db.profile.equip_slot[key] = v end
+      }
+    end
+    -- Setup quality options
+  	options.args["quality"] = {
+  	  type = "group",
+  	  name = "Quality",
+  	  desc = "Gear Point multipliers for item quality.",
+  	  args = { }
+  	}
+    for k, v in pairs(self.db.profile.quality) do
+      local key = k
+      local cmd = string.gsub(key, "%s", "_")
+      options.args["quality"].args[cmd] = {
+        type = "range",
+        name = EPGP_quality_names[k],
+        desc = "Gear Point multiplier for drops of this quality.",
+        order = k + 1,
+        min = 0,
+        max = 10,
+        step = 0.25,
+        get = function() return self.db.profile.quality[key] end,
+        set = function(v) self.db.profile.quality[key] = v end
+      }
+    end
+    -- Setup base item value
+    options.args["base_item_value"] = {
+      type = "range",
+      name = "Base item GP value",
+      desc = "The base GP value of a item. The effective value is base_item_value*zone*quality*item_slot.",
+      min = 10,
+      max = 500,
+      step = 10,
+      get = function() return self.db.profile.base_item_value end,
+      set = function(v) self.db.profile.base_item_value = v end
+    }
   end
   
 	return options
