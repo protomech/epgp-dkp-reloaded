@@ -23,7 +23,7 @@ function EPGP:ParseLootMsg(msg)
   local _, _, i, c = string.find(msg, EPGP_LOOT_ITEM_SELF_MULTIPLE)
   if (i and c) then return UnitName("player"), c, i end
   
-  self:DEBUG("Ignored CHAT_MSG_LOOT message: %s", msg)
+  self:Debug("Ignored CHAT_MSG_LOOT message: %s", msg)
   return nil, nil, nil
 end
 
