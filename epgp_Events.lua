@@ -27,10 +27,16 @@ function EPGP:ParseLootMsg(msg)
   return nil, nil, nil
 end
 
-local EPGP_ITEM_LINK = "Hitem:(%d+):"
+local EPGP_ITEM_LINK_2_ID = "Hitem:(%d+):"
 function EPGP:ParseItemId(itemlink)
-  local _, _, item_id = string.find(itemlink, EPGP_ITEM_LINK)
+  local _, _, item_id = string.find(itemlink, EPGP_ITEM_LINK_2_ID)
   return item_id
+end
+
+local EPGP_ITEM_LINK_2_LINK = "(item:%d+:%d+:%d+:%d+)"
+function EPGP:ParseItemLink(itemlink)
+  local _, _, item_link = string.find(itemlink, EPGP_ITEM_LINK_2_LINK)
+  return item_link
 end
 
 function EPGP:CHAT_MSG_LOOT(msg)
@@ -40,6 +46,9 @@ function EPGP:CHAT_MSG_LOOT(msg)
     self:Debug("Player: [%s] Count: [%d] Loot: [%s]", receiver, count, itemlink)
     -- Gross hack. Better schedule an event for this to be filled it. Or have the
     -- looter send us the ItemInfo since that is for sure in the local cache.
+    GameTooltip_SetDefaultAnchor(GameTooltip, UIParent);
+    GameTooltip:SetHyperlink(self:ParseItemLink(itemlink));
+    GameTooltip:Hide();
     local item_info
     while (not item_info or not item_info[1]) do
       item_info = { GetItemInfo(item_id) }
