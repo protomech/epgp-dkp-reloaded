@@ -29,6 +29,7 @@ function EPGP:Reconfigure()
     end
   end
   
+  -- Avoid reconfiguration if our status didn't change
   if (self.raid_leader_or_officer == raid_L_or_A) then
     return
   else
