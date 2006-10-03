@@ -15,6 +15,7 @@ local EPGP_EVENTLOG_KEY_ROSTER = "roster"
 local EPGP_EVENTLOG_KEY_RECEIVER = "receiver"
 local EPGP_EVENTLOG_KEY_COUNT = "count"
 local EPGP_EVENTLOG_KEY_ITEM = "item"
+local EPGP_EVENTLOG_KEY_ITEM_INFO = "item_info"
 local EPGP_EVENTLOG_KEY_ZONE = "zone"
 local EPGP_EVENTLOG_KEY_BOSS = "boss"
 
@@ -160,10 +161,11 @@ function EPGP:ComputeStandings()
           end
         )
       elseif (event_type == EPGP_EVENTLOG_TYPE_LOOT) then
-        local hours, minutes, receiver, count, item = EPGP:EventLogParse_LOOT(v)
+        local hours, minutes, receiver, count, item, item_info = EPGP:EventLogParse_LOOT(v)
+        self:Debug("%d:%d %s %dx%s", hours, minutes, receiver, count, item)
         local name_index = name_indices[receiver]
         if (name_index) then
-          standings[name_index][3] = standings[name_index][3] + 1
+          standings[name_index][3] = standings[name_index][3] + self:GetItemGP(item_info)
         end
       end
     end
@@ -233,7 +235,7 @@ function EPGP:EventLogParse_BOSSKILL(event)
          event[EPGP_EVENTLOG_KEY_ROSTER]
 end
 
-function EPGP:EventLogAdd_LOOT(event_log, receiver, count, itemlink)
+function EPGP:EventLogAdd_LOOT(event_log, receiver, count, itemlink, item_info)
   local hours, minutes = GetGameTime()
   table.insert(event_log, {
     [EPGP_EVENTLOG_KEY_TYPE] = EPGP_EVENTLOG_TYPE_LOOT,
@@ -241,7 +243,8 @@ function EPGP:EventLogAdd_LOOT(event_log, receiver, count, itemlink)
     [EPGP_EVENTLOG_KEY_MINUTES] = minutes,
     [EPGP_EVENTLOG_KEY_RECEIVER] = receiver,
     [EPGP_EVENTLOG_KEY_COUNT] = count,
-    [EPGP_EVENTLOG_KEY_ITEM] = itemlink
+    [EPGP_EVENTLOG_KEY_ITEM] = itemlink,
+    [EPGP_EVENTLOG_KEY_ITEM_INFO] = item_info
   })
 end
 
@@ -254,7 +257,8 @@ function EPGP:EventLogParse_LOOT(event)
          event[EPGP_EVENTLOG_KEY_MINUTES],
          event[EPGP_EVENTLOG_KEY_RECEIVER],
          event[EPGP_EVENTLOG_KEY_COUNT],
-         event[EPGP_EVENTLOG_KEY_ITEM]
+         event[EPGP_EVENTLOG_KEY_ITEM],
+         event[EPGP_EVENTLOG_KEY_ITEM_INFO]
 end
 
 function EPGP:EventLogAdd_END(event_log)

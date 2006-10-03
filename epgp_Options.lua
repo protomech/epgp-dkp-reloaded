@@ -92,6 +92,39 @@ EPGP:RegisterDefaults("profile", {
   	["Sapphiron"]=10,
   	["Kel'Thuzad"]=10
   },
+  -- The table of equip slots with the GP multiplier
+  equip_slot = {
+    ["INVTYPE_HEAD"] = 1.0,
+    ["INVTYPE_CHEST"] = 1.0,
+    ["INVTYPE_ROBE"] = 1.0,
+    ["INVTYPE_LEGS"] = 1.0,
+    ["INVTYPE_2HWEAPON"] = 1.0,
+    ["INVTYPE_SHOULDER"] = 0.8,
+    ["INVTYPE_HANDS"] = 0.8,
+    ["INVTYPE_FEET"] = 0.8,
+    ["INVTYPE_FINGER"] = 0.6,
+    ["INVTYPE_TRINKET"] = 0.6,
+    ["INVTYPE_CLOAK"] = 0.6,
+    ["INVTYPE_WEAPON"] = 0.6,
+    ["INVTYPE_SHIELD"] = 0.6,
+    ["INVTYPE_WEAPONMAINHAND"] = 0.6,
+    ["INVTYPE_WEAPONOFFHAND"] = 0.6,
+    ["INVTYPE_HOLDABLE"] = 0.6,
+    ["INVTYPE_RANGED"] = 0.6,
+    ["INVTYPE_RANGEDRIGHT"] = 0.6
+  },
+  base_item_value = 100,
+  -- The table of item qualities along with the GP multipliers
+  -- Poor, Common, Uncommon, Rare, Epic, Legendary, Artifact
+  quality = {
+    [0] = 0.0,
+    [1] = 0.0,
+    [2] = 0.25,
+    [3] = 0.5,
+    [4] = 1.0,
+    [5] = 2.0,
+    [6] = 3.0
+  },
   -- The raid_window size on which we count EPs and GPs.
   -- Anything out of the window will not be taken into account.
   raid_window_size = 10,
@@ -102,11 +135,21 @@ EPGP:RegisterDefaults("profile", {
 local Tablet = AceLibrary("Tablet-2.0")
 local Dewdrop = AceLibrary("Dewdrop-2.0")
 
+function EPGP:GetItemGP(item_info, zone)
+  local name, _, quality, _, _, _, _, equip_slot = unpack(item_info)
+  local quality_mult = self.db.profile.quality[quality]
+  local equip_slot_mult = self.db.profile.equip_slot[equip_slot] or 0.0
+  local value = self.db.profile.base_item_value * quality_mult * equip_slot_mult
+  self:Debug("%s accounted for %d GP", name, value)
+  return value
+end
+
 function EPGP:GetBossEP(boss)
   local value = self.db.profile.bosses[boss]
   if (self:IsDebugging() and not value) then
-    return 1
+    value = 1
   end
+  self:Debug("%s accounted for %d EP", boss, value)
   return value
 end
 

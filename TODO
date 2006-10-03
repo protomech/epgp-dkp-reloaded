@@ -1,8 +1,5 @@
-- loot tables for each item slot
-- loot filter on quality
 - bonus for on time and on end (end marker should be X hours after raid start)
-- raid logs
 - sync between guild members
 - add custom bonus
 
-- make the option into a tablet and instantiate that instead of using a fubar plugin. that will remove the minimap icon. also provide an option /epgp show that will show the tablet
+- raid logs - actually make them per person, it should work relatively well i guess.

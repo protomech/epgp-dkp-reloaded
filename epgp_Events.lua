@@ -27,11 +27,27 @@ function EPGP:ParseLootMsg(msg)
   return nil, nil, nil
 end
 
+local EPGP_ITEM_LINK = "Hitem:(%d+):"
+function EPGP:ParseItemId(itemlink)
+  local _, _, item_id = string.find(itemlink, EPGP_ITEM_LINK)
+  return item_id
+end
+
 function EPGP:CHAT_MSG_LOOT(msg)
   local receiver, count, itemlink = self:ParseLootMsg(msg)
   if (receiver and count and itemlink) then
+    local item_id = self:ParseItemId(itemlink)
     self:Debug("Player: [%s] Count: [%d] Loot: [%s]", receiver, count, itemlink)
-    self:EventLogAdd_LOOT(self:GetLastEventLog(), receiver, count, itemlink)
+    -- Gross hack. Better schedule an event for this to be filled it. Or have the
+    -- looter send us the ItemInfo since that is for sure in the local cache.
+    local item_info
+    while (not item_info or not item_info[1]) do
+      item_info = { GetItemInfo(item_id) }
+    end
+    -- Only log items of quality uncommon or better
+    if (item_info[3] >= 2 or self:IsDebugging()) then
+      self:EventLogAdd_LOOT(self:GetLastEventLog(), receiver, count, itemlink, item_info)
+    end
   end
 end
 
