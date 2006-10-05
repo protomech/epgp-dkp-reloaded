@@ -17,8 +17,8 @@ function EPGP:OnEnable()
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
   -- Keep track of us being raid leader or not
-  self:RegisterEvent("RAID_ROSTER_UPDATE", "Reconfigure")
-  self:RegisterEvent("PARTY_MEMBERS_CHANGED", "Reconfigure")
+  self:RegisterEvent("RAID_ROSTER_UPDATE", "Reconfigure", 1)
+  self:RegisterEvent("PARTY_MEMBERS_CHANGED", "Reconfigure", 1)
 
   self:Print("EPGP addon is enabled")
   self:Reconfigure()
