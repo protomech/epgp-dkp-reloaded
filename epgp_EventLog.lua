@@ -116,9 +116,10 @@ end
 function EPGP:GetCurrentRoster()
   local roster = { }
   for i = 1, GetNumRaidMembers() do
-    local name, rank, subgroup, level, class, fileName, zone, online = GetRaidRosterInfo(i)
-    if (zone == current_zone) then
+    local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
+    if (zone == self.current_zone) then
       table.insert(roster, name)
+      self:Debug("%s is in %s", name, zone)
     end
   end
   
