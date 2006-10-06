@@ -57,6 +57,11 @@ function EPGP:StopTracking()
   self:Print("Stopped tracking raid in %s", self:GetRaidZone(self:GetOrCreateEventLog(self:GetLastRaidId())))
 end
 
+function EPGP:IsTracking()
+  return self:IsEventRegistered("CHAT_MSG_LOOT") or
+         self:IsEventRegistered("CHAT_MSG_COMBAT_HOSTILE_DEATH")
+end
+
 function EPGP:NewRaid()
   assert(self:CanTrackRaid())
   local raid_id = self:GetLastRaidId()

@@ -170,7 +170,19 @@ function EPGP:SetBossEP(boss, ep)
   end
 end
 
+function EPGP:GetStatusString()
+  if (self:IsTracking()) then
+    return string.format("Tracking - %s", self:GetRaidZone(self:GetOrCreateEventLog(self:GetLastRaidId())))
+  else
+    return "Idle"
+  end
+end
+
 function EPGP:OnTooltipUpdate()
+  -- Current status
+  local status = Tablet:AddCategory()
+  status:AddLine("text", "Status")
+  status:AddLine("text", self:GetStatusString())
   -- A refresh button
   Tablet:AddCategory():AddLine(
     "text", "Refresh",
