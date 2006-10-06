@@ -156,7 +156,7 @@ end
 
 function EPGP:GetBossEP(boss)
   local value = self.db.profile.bosses[boss]
-  if (self:IsDebugging() and not value) then
+  if (not value and self:IsDebugging()) then
     value = 1
   end
   self:Debug("%s accounted for %d EP", boss, value)
@@ -174,7 +174,7 @@ function EPGP:OnTooltipUpdate()
   -- A refresh button
   Tablet:AddCategory():AddLine(
     "text", "Refresh",
-    "func", function() EPGP:UpdateTooltip() end
+    "func", function() EPGP:UpdateData() end
   )
   -- The standings
   local cat = Tablet:AddCategory(
@@ -192,18 +192,17 @@ function EPGP:OnTooltipUpdate()
     "text4", "PR"
   )
   
-  local standings = self:ComputeStandings()
-  table.foreach(standings, function(_, stats)
+  table.foreach(self.standings, function(_, stats)
       cat:AddLine(
         "text", stats[1],
-        "text2", stats[2],
-        "text3", stats[3],
-        "text4", stats[4]     
+        "text2", string.format("%.1f", stats[2]),
+        "text3", string.format("%.1f", stats[3]),
+        "text4", string.format("%.1f", stats[4])    
       )
     end
   )
 end
 
 function EPGP:OnDataUpdate()
-  self.OnMenuRequest = EPGP:BuildOptions()
+  self.standings = self:ComputeStandings()
 end
