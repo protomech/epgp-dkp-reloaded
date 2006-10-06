@@ -1,6 +1,6 @@
 --[[
 Name: AceModuleCore-2.0
-Revision: $Rev: 11577 $
+Revision: $Rev: 12441 $
 Developed by: The Ace Development Team (http://www.wowace.com/index.php/The_Ace_Development_Team)
 Inspired By: Ace 1.x by Turan (turan@gryphon.com)
 Website: http://www.wowace.com/
@@ -12,7 +12,7 @@ Dependencies: AceLibrary, AceOO-2.0, AceAddon-2.0, Compost-2.0 (optional)
 ]]
 
 local MAJOR_VERSION = "AceModuleCore-2.0"
-local MINOR_VERSION = "$Revision: 11577 $"
+local MINOR_VERSION = "$Revision: 12441 $"
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary") end
 if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then return end
@@ -27,6 +27,28 @@ do
 		table_setn = function() end
 	else
 		table_setn = table.setn
+	end
+end
+
+local new, del
+do
+	local list = setmetatable({}, {__mode = 'k'})
+	function new()
+		local t = next(list)
+		if t then
+			list[t] = nil
+			return t
+		else
+			return {}
+		end
+	end
+	function del(t)
+		for k in pairs(t) do
+			t[k] = nil
+		end
+		table_setn(t, 0)
+		list[t] = true
+		return nil
 	end
 end
 
@@ -173,7 +195,22 @@ function AceModuleCore:IsModule(module)
 end
 
 function AceModuleCore:IterateModules()
-	return pairs(self.modules)
+	local t = new()
+	for k in pairs(self.modules) do
+		table.insert(t, k)
+	end
+	table.sort(t)
+	local i = 0
+	return function()
+		i = i + 1
+		local x = t[i]
+		if x then
+			return x, self.modules[x]
+		else
+			t = del(t)
+			return nil
+		end
+	end, nil, nil
 end
 
 function AceModuleCore:SetModuleMixins(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20)

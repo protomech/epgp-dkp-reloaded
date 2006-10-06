@@ -1,6 +1,6 @@
 --[[
 Name: Tablet-2.0
-Revision: $Rev: 11582 $
+Revision: $Rev: 12655 $
 Author(s): ckknight (ckknight@gmail.com)
 Website: http://ckknight.wowinterface.com/
 Documentation: http://wiki.wowace.com/index.php/Tablet-2.0
@@ -10,7 +10,7 @@ Dependencies: AceLibrary, (optional) Dewdrop-2.0
 ]]
 
 local MAJOR_VERSION = "Tablet-2.0"
-local MINOR_VERSION = "$Revision: 11582 $"
+local MINOR_VERSION = "$Revision: 12655 $"
 
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary") end
 if not AceLibrary:IsNewVersion(MAJOR_VERSION, MINOR_VERSION) then return end

@@ -1,6 +1,6 @@
 --[[
 Name: FuBarPlugin-2.0
-Revision: $Rev: 9856 $
+Revision: $Rev: 12439 $
 Author: Cameron Kenneth Knight (ckknight@gmail.com)
 Website: http://wiki.wowace.com/index.php/FuBarPlugin-2.0
 Documentation: http://wiki.wowace.com/index.php/FuBarPlugin-2.0
@@ -11,7 +11,7 @@ Dependencies: AceLibrary, AceOO-2.0, AceEvent-2.0, Tablet-2.0, Dewdrop-2.0
 
 local MAJOR_VERSION = "FuBarPlugin-2.0"
 local MINIMAPCONTAINER_MAJOR_VERSION = "FuBarPlugin-MinimapContainer-2.0"
-local MINOR_VERSION = "$Revision: 9856 $"
+local MINOR_VERSION = "$Revision: 12439 $"
 
 -- This ensures the code is only executed if the libary doesn't already exist, or is a newer version
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary.") end
@@ -231,7 +231,7 @@ end
 
 function FuBarPlugin:UpdateTooltip()
 	FuBarPlugin.RegisterTablet(self)
-	if self:IsMinimapAttached() and not self:IsTooltipDetached() then
+	if self:IsMinimapAttached() and not self:IsTooltipDetached() and self.minimapFrame then
 		Tablet:Refresh(self.minimapFrame)
 	else
 		Tablet:Refresh(self.frame)

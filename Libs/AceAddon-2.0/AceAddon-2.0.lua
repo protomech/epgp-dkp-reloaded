@@ -1,6 +1,6 @@
 --[[
 Name: AceAddon-2.0
-Revision: $Rev: 10447 $
+Revision: $Rev: 12469 $
 Developed by: The Ace Development Team (http://www.wowace.com/index.php/The_Ace_Development_Team)
 Inspired By: Ace 1.x by Turan (turan@gryphon.com)
 Website: http://www.wowace.com/
@@ -11,7 +11,7 @@ Dependencies: AceLibrary, AceOO-2.0, AceEvent-2.0, (optional) AceConsole-2.0
 ]]
 
 local MAJOR_VERSION = "AceAddon-2.0"
-local MINOR_VERSION = "$Revision: 10447 $"
+local MINOR_VERSION = "$Revision: 12469 $"
 
 -- This ensures the code is only executed if the libary doesn't already exist, or is a newer version
 if not AceLibrary then error(MAJOR_VERSION .. " requires AceLibrary.") end
@@ -379,14 +379,14 @@ local function external(self, major, instance)
 			end
 			
 			local s = string.rep("  ", depth) .. " - " .. tostring(addon)
-			if addon.version then
+			if rawget(addon, 'version') then
 				s = s .. " - |cffffff7f" .. tostring(addon.version) .. "|r"
 			end
-			if addon.slashCommand then
+			if rawget(addon, 'slashCommand') then
 				s = s .. " |cffffff7f(" .. tostring(addon.slashCommand) .. ")|r"
 			end
 			print(s)
-			if type(addon.modules) == "table" then
+			if type(rawget(addon, 'modules')) == "table" then
 				local i = 0
 				for k,v in pairs(addon.modules) do
 					i = i + 1
