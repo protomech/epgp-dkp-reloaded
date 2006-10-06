@@ -20,8 +20,8 @@ Libs/Dewdrop-2.0/Dewdrop-2.0.lua
 Libs/FuBarPlugin-2.0/FuBarPlugin-2.0.lua
 Libs/Tablet-2.0/Tablet-2.0.lua
 
-epgp_Core.lua
+Core.lua
 
-epgp_EventLog.lua
-epgp_Events.lua
-epgp_Options.lua
+EventLog.lua
+Events.lua
+Options.lua
