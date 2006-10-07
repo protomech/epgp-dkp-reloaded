@@ -73,7 +73,7 @@ end
 
 -- Returns the last raid_id
 function EPGP:GetLastRaidId()
-  return math.max(1, table.getn(EPGP.db.profile.event_log))
+  return math.max(1, table.getn(self.db.profile.event_log))
 end
 
 -- Get the event_log for the specified raid_id or create a new one
@@ -88,15 +88,12 @@ function EPGP:GetOrCreateEventLog(raid_id)
   return event_log
 end
 
--- Generates a new event_log if the last raid is closed or returns the last one
--- Returns the new raid_id
 function EPGP:GetLastEventLog()
-  local last_index = self:GetLastRaidId()
-  local last_event_log = self:GetOrCreateEventLog(last_index)
-  if (not self:GetRaidZone(last_event_log)) then
-    return self:GetOrCreateEventLog(last_index+1)
-  end
-  return last_event_log
+  return self:GetOrCreateEventLog(self:GetLastRaidId())
+end
+
+function EPGP:SetEventLog(raidid, event_log)
+  self.db.profile.event_log[raidid] = event_log
 end
 
 -- Get the names of the people in the party, that are in the same zone as ourselves

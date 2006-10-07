@@ -1,27 +1,24 @@
-EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "FuBarPlugin-2.0")
-
+EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceComm-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "FuBarPlugin-2.0")
 EPGP:RegisterDB("EPGP_DB")
 
 function EPGP:OnInitialize()
   self:SetDebugging(true)
   self.defaultMinimapPosition = 250
-  self.clickableTooltyp = true
+  self.clickableTooltip = true
   local guild_name, guild_rank_name, guild_rank_index = GetGuildInfo("player")
   if (not guild_name or self:IsDebugging()) then
     guild_name = "EPGP_testing_guild"
   end
   self:SetProfile(guild_name)
-  self.defaultMinimapPosition = 250
-  self.clickableTooltip = true
   self.OnMenuRequest = self:BuildOptions()
   self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest)
+  self:RegisterComms()
 end
 
 function EPGP:OnEnable()
   -- Keep track of current zone
   self.current_zone = GetRealZoneText()
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-
   -- Keep track of raid ranks
   self:RegisterEvent("RAID_ROSTER_UPDATE", "Reconfigure", 1)
   self:RegisterEvent("PARTY_MEMBERS_CHANGED", "Reconfigure", 1)
