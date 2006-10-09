@@ -1,6 +1,4 @@
-- bonus for on time and on end (end marker should be X hours after raid start)
-- sync between guild members
-- add custom bonus
-
-- raid logs - actually make them per person, it should work relatively well i guess.
-- add alt handling
+- add alts handling
+- add gui
+- add setting points to guild master for corrections
+- sync raidwindow and alts

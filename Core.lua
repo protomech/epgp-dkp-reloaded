@@ -1,46 +1,57 @@
-EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceComm-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "FuBarPlugin-2.0")
-EPGP:RegisterDB("EPGP_DB")
+EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "FuBarPlugin-2.0")
 
+-------------------------------------------------------------------------------
+-- DB defaults
+-------------------------------------------------------------------------------
+EPGP:RegisterDB("EPGP_DB")
+EPGP:RegisterDefaults("profile", {
+  -- The raid_window size on which we count EPs and GPs.
+  -- Anything out of the window will not be taken into account.
+  raid_window_size = 10
+})
+
+-------------------------------------------------------------------------------
+-- Init code
+-------------------------------------------------------------------------------
 function EPGP:OnInitialize()
   self:SetDebugging(true)
-  self.defaultMinimapPosition = 250
-  self.clickableTooltip = true
-  local guild_name, guild_rank_name, guild_rank_index = GetGuildInfo("player")
-  if (not guild_name or self:IsDebugging()) then
-    guild_name = "EPGP_testing_guild"
-  end
-  self:SetProfile(guild_name)
+  self.defaultMinimapPosition = 180
   self.OnMenuRequest = self:BuildOptions()
   self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest)
-  self:RegisterComms()
 end
 
 function EPGP:OnEnable()
-  -- Keep track of current zone
+  self:Print("EPGP addon is enabled")
+  GuildRoster() -- Fetch the most up to date Guild Roster
+  self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self.current_zone = GetRealZoneText()
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-  -- Keep track of raid ranks
-  self:RegisterEvent("RAID_ROSTER_UPDATE", "Reconfigure", 1)
-  self:RegisterEvent("PARTY_MEMBERS_CHANGED", "Reconfigure", 1)
+end
 
-  self:Print("EPGP addon is enabled")
-  self:Reconfigure()
+function EPGP:GUILD_ROSTER_UPDATE()
+  -- Fetch the most up to date Guild Roster
+  GuildRoster() 
+  -- Rebuild options
+  self.OnMenuRequest = self:BuildOptions()
+end
+
+function EPGP:ZONE_CHANGED_NEW_AREA()
+  self.current_zone = GetRealZoneText()
 end
 
 function EPGP:OnDisable()
 
 end
 
-function EPGP:CanTrackRaid()
-  return self.track_raid
+function EPGP:CanLogRaids()
+  return CanEditOfficerNote() and CanEditPublicNote()
 end
 
 function EPGP:CanChangeRules()
-  return IsGuildLeader() or self:IsDebugging()
+  return IsGuildLeader()
 end
 
 -- Builds an AceOptions table for the options
--- Passing true generates options suitable for a command line
 function EPGP:BuildOptions()
   -- Set up raid tracking options
   local options = {
@@ -48,142 +59,288 @@ function EPGP:BuildOptions()
     desc = "EPGP Options",
     args = { }
   }
-  options.args["startraid"] = {
+  options.args["standings"] = {
     type = "execute",
-    name = "Start Tracking Raid",
-    desc = "Starts tracking this raid and marks the current zone.",
+    name = "Report standings",
+    desc = "Report standings in guild chat channel.",
     order = 1,
-    disabled = function() return not self:CanTrackRaid() end,
-    func =  function() EPGP:StartTracking() end 
+    func = function() self:ReportStandings() end
   }
-  options.args["endraid"] = {
+  options.args["history"] = {
     type = "execute",
-    name = "Stop Traking Raid",
-    desc = "Stops tracking this raid.",
-    order = 2,
-    disabled = function() return not self:CanTrackRaid() end,
-    func =  function() EPGP:StopTracking() end 
+    name = "Report raid history",
+    desc = "Report raid history in guild chat channel.",
+    order = 1,
+    func = function() self:ReportHistory() end
   }
+  options.args["ep_raid"] = {
+    type = "text",
+    name = "+EPs to Raid",
+    desc = "Award EPs to raid members that are zoned.",
+    get = false,
+    set = function(v) self:AddEP2Raid(tonumber(v)) end,
+    usage = "<EP>",
+    order = 2,
+    disabled = function() return not self:CanLogRaids() end,
+    validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end
+  }
+  options.args["ep"] = {
+    type = "group",
+    name = "+EPs to Member",
+    desc = "Award EPs to member.",
+    order = 1,
+    disabled = function() return not self:CanChangeRules() end,
+    args = { }
+  }
+  for i = 1, GetNumGuildMembers() do
+    local member_name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
+    options.args["ep"].args[member_name] = {
+      type = "text",
+      name = member_name,
+      desc = "Award EPs to " .. member_name .. ".",
+      usage = "<EP>",
+      get = false,
+      set = function(v) self:AddEP2Member(member_name, tonumber(v)) end,
+      validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end
+    }
+  end
+  options.args["gp"] = {
+    type = "group",
+    name = "+GPs to Member",
+    desc = "Account GPs for member.",
+    order = 3,
+    disabled = function() return not self:CanLogRaids() end,
+    args = { }
+  }
+  for i = 1, GetNumGuildMembers() do
+    local member_name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
+    options.args["gp"].args[member_name] = {
+      type = "text",
+      name = member_name,
+      desc = "Account GPs to " .. member_name .. ".",
+      usage = "<GP>",
+      get = false,
+      set = function(v) self:AddGP2Member(member_name, tonumber(v)) end,
+      validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end
+    }
+  end
+
+  -----------------------------------------------------------------------------
+  -- Administrative options
   options.args["newraid"] = {
     type = "execute",
     name = "Create New Raid",
-    desc = "Create a new raid and start tracking it.",
-    order = 3,
-    disabled = function() return not self:CanTrackRaid() end,
-    func =  function() EPGP:NewRaid() end 
+    desc = "Create a new raid slot.",
+    order = 1001,
+    disabled = function() return not self:CanLogRaids() end,
+    func =  function() self:NewRaid() end 
   }
-  -- Setup window size
   options.args["window_size"] = {
     type = "range",
     name = "EP/GP Raid Window Size",
     desc = "The number of raids back to be accounted for EP/GP calculations.",
-    min = 10,
-    max = 100,
+    min = 5,
+    max = 15,
     step = 1,
+    order = 1002,
     disabled = function() return not self:CanChangeRules() end,
     get = function() return self.db.profile.raid_window_size end,
     set = function(v) self.db.profile.raid_window_size = v end
   }
-  -- Setup bosses options
-	options.args["bosses"] = {
-	  type = "group",
-	  name = "Bosses",
-	  desc = "Effort points given for succesful boss kills.",
-	  args = { }
-	}
-  for k, v in pairs(self.db.profile.bosses) do
-    local key = k
-    local cmd = string.gsub(k, "%s", "_")
-    options.args["bosses"].args[cmd] = {
-      type = "range",
-      name = key,
-      desc = "Effort points given for succesful kill.",
-      min = 0,
-      max = 100,
-      step = 1,
-      disabled = function() return not self:CanChangeRules() end,
-      get = function() return self:GetBossEP(key) end,
-      set = function(v) self:SetBossEP(key, v) end
-    }
-  end
-  -- Setup zones options
-	options.args["zones"] = {
-	  type = "group",
-	  name = "Zones",
-	  desc = "Gear Point multipliers for the drops of each zone.",
-	  args = { }
-	}
-  for k, v in pairs(self.db.profile.zones) do
-    local key = k
-    local cmd = string.gsub(k, "%s", "_")
-    options.args["zones"].args[cmd] = {
-      type = "range",
-      name = key,
-      desc = "Gear Point multiplier for drops in this zone.",
-      min = 0,
-      max = 10,
-      step = 0.1,
-      disabled = function() return not self:CanChangeRules() end,
-      get = function() return self.db.profile.zones[key] end,
-      set = function(v) self.db.profile.zones[key] = v end
-    }
-  end
-  -- Setup item slot options
-	options.args["equip_slots"] = {
-	  type = "group",
-	  name = "Equipment Slots",
-	  desc = "Gear Point multipliers for each equipment slot.",
-	  args = { }
-	}
-  for k, v in pairs(self.db.profile.equip_slot) do
-    local key = k
-    local cmd = string.gsub(key, "%s", "_")
-    options.args["equip_slots"].args[cmd] = {
-      type = "range",
-      name = string.gsub(key, ".*_(.*)", "%1"),
-      desc = "Gear Point multiplier for items that are equipemed in this slot.",
-      min = 0,
-      max = 1,
-      step = 0.05,
-      disabled = function() return not self:CanChangeRules() end,
-      get = function() return self.db.profile.equip_slot[key] end,
-      set = function(v) self.db.profile.equip_slot[key] = v end
-    }
-  end
-  -- Setup quality options
-	options.args["quality"] = {
-	  type = "group",
-	  name = "Quality",
-	  desc = "Gear Point multipliers for item quality.",
-	  args = { }
-	}
-  for k, v in pairs(self.db.profile.quality) do
-    local key = k
-    local cmd = string.gsub(key, "%s", "_")
-    options.args["quality"].args[cmd] = {
-      type = "range",
-      name = EPGP_quality_names[k],
-      desc = "Gear Point multiplier for drops of this quality.",
-      order = k + 1,
-      min = 0,
-      max = 10,
-      step = 0.25,
-      disabled = function() return not self:CanChangeRules() end,
-      get = function() return self.db.profile.quality[key] end,
-      set = function(v) self.db.profile.quality[key] = v end
-    }
-  end
-  -- Setup base item value
-  options.args["base_item_value"] = {
-    type = "range",
-    name = "Base item GP value",
-    desc = "The base GP value of a item. The effective value is base_item_value*zone*quality*item_slot.",
-    min = 10,
-    max = 500,
-    step = 10,
+  options.args["reset"] = {
+    type = "execute",
+    name = "Reset EPGP",
+    desc = "Resets all EPGP data.",
+    order = 9999,
+    guiHidden = true,
     disabled = function() return not self:CanChangeRules() end,
-    get = function() return self.db.profile.base_item_value end,
-    set = function(v) self.db.profile.base_item_value = v end
+    func = function() EPGP:ResetEPGP() end
   }
   return options
+end
+
+
+-------------------------------------------------------------------------------
+-- EP/GP manipulation
+--
+-- We use public/officers notes to keep track of EP/GP. Each note has storage
+-- for a string of max length of 31. So with two bytes for each score, we can
+-- have up to 15 numbers in it, which gives a max raid window of 15.
+--
+-- NOTE: Each number is in hex which means that we can have max 256 GP/EP for
+-- each raid. This needs to be improved to raise the limit.
+--
+-- EPs are stored in the public note. The first byte is the EPs gathered for
+-- the current raid. The second is the EPs gathered in the previous raid (of
+-- the guild not the membeer). Ditto for the rest.
+--
+-- GPs are stored in the officers note, in a similar manner as the EPs.
+--
+-- Bonus EPs are added to the last/current raid.
+
+function EPGP:PointString2Table(s)
+  local t = { }
+  for i = 1, string.len(s), 2 do
+    local val = self:Decode(string.sub(s, i, i+1))
+    table.insert(t, val)
+  end
+  return t
+end
+
+function EPGP:PointTable2String(t)
+  local s = ""
+  for k, v in pairs(t) do
+  self:Print(v)
+    local ss = string.format("%02s", self:Encode(v))
+    assert(string.len(ss) == 2)
+    s = s .. ss
+  end
+  return s
+end
+
+function EPGP:SumPoints(t)
+  local sum = 0
+  table.foreach(t, function(k,v) sum = sum + v end)
+  return sum
+end
+
+function EPGP:GetEPGP(i)
+  local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+  return name, self:PointString2Table(note), self:PointString2Table(officernote)
+end
+
+function EPGP:SetEPGP(i, ep, gp)
+  GuildRosterSetPublicNote(i, self:PointTable2String(ep))
+  GuildRosterSetOfficerNote(i, self:PointTable2String(gp))
+end
+
+-- Sets all EP/GP to 0
+function EPGP:ResetEPGP()
+  local points = { }
+  for i = 1, self.db.profile.raid_window_size do
+    table.insert(points, 0)
+  end
+  
+  for i = 1, GetNumGuildMembers(true) do
+    self:SetEPGP(i, points, points)
+  end
+  self:Report("All EP/GP are reset.")
+end
+
+function EPGP:AddEP2Member(member, points)
+  self:Print("+EP: " .. tostring(points))
+  for i = 1, GetNumGuildMembers(true) do
+    local name, ep, gp = self:GetEPGP(i)
+    self:Print(ep[1])
+    if (name == member) then
+      ep[1] = ep[1] + tonumber(points)
+      self:SetEPGP(i, ep, gp)
+      self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
+    end
+  end
+end
+
+function EPGP:AddEP2Raid(points)
+  self:Print("+EP: " .. tostring(points))
+  local raid = { }
+  for i = 1, GetNumRaidMembers() do
+    local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
+    if (zone == self.current_zone) then
+      raid[name] = true
+    end
+  end
+  
+  for i = 1, GetNumGuildMembers(true) do
+    local name, ep, gp = self:GetEPGP(i)
+    if (raid[name]) then
+        ep[1] = ep[1] + tonumber(points)
+        self:SetEPGP(i, ep, gp)
+        self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
+    end
+  end
+end
+
+function EPGP:AddGP2Member(member, points)
+  self:Print("+GP: " .. tostring(points))
+  for i = 1, GetNumGuildMembers(true) do
+    local name, ep, gp = self:GetEPGP(i)
+    if (name == member) then
+      gp[1] = gp[1] + tonumber(points)
+      self:SetEPGP(i, ep, gp)
+      self:Report("Added " .. tostring(points) .. " GPs to " .. member .. ".")
+    end
+  end
+end
+
+function EPGP:Report(msg)
+  SendChatMessage("EPGP: " .. msg, "GUILD")
+end
+
+function EPGP:NewRaid()
+  for i = 1, GetNumGuildMembers(true) do
+    local _, ep, gp = self:GetEPGP(i)
+    table.remove(ep)
+    table.insert(ep, 1, 0)
+    table.remove(gp)
+    table.insert(gp, 1, 0)
+    self:SetEPGP(i, ep, gp)
+  end
+  self:Report("Created new raid.")
+end
+
+-- Builds a standings table with record:
+-- name, EP, GP, PR
+-- and sorted by PR
+function EPGP:BuildStandingsTable()
+  local t = { }
+  for i = 1, GetNumGuildMembers(true) do
+    local name, ep, gp = self:GetEPGP(i)
+    local total_ep = self:SumPoints(ep)
+    local total_gp = self:SumPoints(gp)
+    if (total_gp == 0) then total_gp = 1 end
+    table.insert(t, { name, total_ep, total_gp, total_ep/total_gp })
+  end
+  table.sort(t, function(a, b) return a[4] > b[4] end)
+  return t
+end
+
+-- Builds a history table with record:
+-- name, { ep1, ... }, { gp1, ... }
+function EPGP:BuildHistoryTable()
+  local t = { }
+  for i = 1, GetNumGuildMembers(true) do
+    table.insert(t, { self:GetEPGP(i) })
+  end
+  table.sort(t, function(a, b) return a[1] < b[1] end)
+  return t
+end
+
+function EPGP:ReportStandings()
+  local t = self:BuildStandingsTable()
+  self:Report("Standings (Name: EP/GP=PR)")
+  for i = 1, table.getn(t) do
+    self:Report(string.format("%s: %d/%d=%.4g", unpack(t[i])))
+  end
+end
+
+function EPGP:ReportHistory()
+  local t = self:BuildHistoryTable()
+  self:Report("History (Name: EP/GP ...)")
+  for i = 1, table.getn(t) do
+    local record = t[i]
+    local history = record[1] .. ": "
+    for j = 1, table.getn(record[2]) do
+      history = history .. record[2][j] .. "/" .. record[3][j] .. " "
+    end
+    self:Report(history)
+  end
+end
+
+-------------------------------------------------------------------------------
+-- UI code
+-------------------------------------------------------------------------------
+local Tablet = AceLibrary("Tablet-2.0")
+local Dewdrop = AceLibrary("Dewdrop-2.0")
+
+function EPGP:OnTooltipUpdate()
 end

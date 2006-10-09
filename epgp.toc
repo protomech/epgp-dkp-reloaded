@@ -5,7 +5,6 @@
 ## Version: 0.1
 ## OptionalDeps: Ace2
 ## SavedVariables: EPGP_DB
-## SavedVariablesPerCharacter: EPGP_DB_PC
 ## X-Category: Guild
 
 
@@ -13,11 +12,9 @@ Libs\AceLibrary\AceLibrary.lua
 Libs\AceOO-2.0\AceOO-2.0.lua
 Libs\AceEvent-2.0\AceEvent-2.0.lua
 Libs\AceAddon-2.0\AceAddon-2.0.lua
-Libs\AceHook-2.0\AceHook-2.0.lua
 Libs\AceConsole-2.0\AceConsole-2.0.lua
 Libs\AceDB-2.0\AceDB-2.0.lua
 Libs\AceDebug-2.0\AceDebug-2.0.lua
-Libs\AceComm-2.0\AceComm-2.0.lua 
 
 Libs\Compost-2.0\Compost-2.0.lua
 Libs\Dewdrop-2.0\Dewdrop-2.0.lua
@@ -25,8 +22,4 @@ Libs\FuBarPlugin-2.0\FuBarPlugin-2.0.lua
 Libs\Tablet-2.0\Tablet-2.0.lua
 
 Core.lua
-
-EventLog.lua
-Events.lua
-Options.lua
-Sync.lua
+Encoding.lua
