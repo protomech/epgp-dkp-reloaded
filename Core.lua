@@ -26,7 +26,7 @@ end
 
 function EPGP:OnEnable()
   self:Print("EPGP addon is enabled")
-  GuildRoster() -- Fetch the most up to date Guild Roster
+  self:GUILD_ROSTER_UPDATE()
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self.current_zone = GetRealZoneText()
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
@@ -38,6 +38,13 @@ function EPGP:GUILD_ROSTER_UPDATE()
   GuildRoster() 
   -- Rebuild options
   self.OnMenuRequest = self:BuildOptions()
+  -- Figure out alts
+  local alts = GetGuildInfoText()
+  self.alts = { }
+  for from, to in string.gfind(alts, "(%a+):(%a+)\n") do
+    self:Debug("Adding %s as an alt for %s", to, from)
+    self.alts[to] = from
+  end
 end
 
 function EPGP:ZONE_CHANGED_NEW_AREA()
@@ -256,7 +263,15 @@ function EPGP:ResetEPGP()
   self:Report("All EP/GP are reset.")
 end
 
+function EPGP:ResolveMember(member)
+  while (self.alts[member]) do
+    member = self.alts[member]
+  end
+  return member
+end
+
 function EPGP:AddEP2Member(member, points)
+  member = self:ResolveMember(member)
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
     if (name == member) then
@@ -272,7 +287,7 @@ function EPGP:AddEP2Raid(points)
   for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if (zone == self.current_zone) then
-      raid[name] = true
+      raid[self:ResolveMember(name)] = true
     end
   end
   
@@ -287,6 +302,7 @@ function EPGP:AddEP2Raid(points)
 end
 
 function EPGP:AddGP2Member(member, points)
+  member = self:ResolveMember(member)
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
     if (name == member) then
@@ -320,10 +336,12 @@ function EPGP:BuildStandingsTable()
   local t = { }
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
-    local total_ep = self:SumPoints(ep, self.db.profile.raid_window_size)
-    local total_gp = self:SumPoints(gp, self.db.profile.raid_window_size)
-    if (total_gp == 0) then total_gp = 1 end
-    table.insert(t, { name, total_ep, total_gp, total_ep/total_gp })
+    if (not self.alts[name]) then
+      local total_ep = self:SumPoints(ep, self.db.profile.raid_window_size)
+      local total_gp = self:SumPoints(gp, self.db.profile.raid_window_size)
+      if (total_gp == 0) then total_gp = 1 end
+      table.insert(t, { name, total_ep, total_gp, total_ep/total_gp })
+    end
   end
   table.sort(t, function(a, b) return a[4] > b[4] end)
   return t
@@ -334,7 +352,10 @@ end
 function EPGP:BuildHistoryTable()
   local t = { }
   for i = 1, GetNumGuildMembers(true) do
-    table.insert(t, { self:GetEPGP(i) })
+    local name, ep, gp = self:GetEPGP(i)
+    if (not self.alts[name]) then
+      table.insert(t, { name, ep, gp })
+    end
   end
   table.sort(t, function(a, b) return a[1] < b[1] end)
   return t
