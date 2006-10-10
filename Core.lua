@@ -178,6 +178,8 @@ end
 --
 -- Bonus EPs are added to the last/current raid.
 
+local EMPTY_POINTS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+
 function EPGP:PointString2Table(s)
   local t = { }
   for i = 1, string.len(s), 2 do
@@ -198,14 +200,22 @@ function EPGP:PointTable2String(t)
   return s
 end
 
-function EPGP:SumPoints(t)
+function EPGP:SumPoints(t, n)
   local sum = 0
-  table.foreach(t, function(k,v) sum = sum + v end)
+  for k,v in pairs(t) do
+    if (k <= n) then
+      sum = sum + v
+    end
+  end
   return sum
 end
 
 function EPGP:GetEPGP(i)
   local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+  if (string.len(note) == 0 and string.len(officernote) == 0) then
+    self:SetEPGP(i, EMPTY_POINTS, EMPTY_POINTS)
+    name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+  end
   return name, self:PointString2Table(note), self:PointString2Table(officernote)
 end
 
@@ -216,22 +226,15 @@ end
 
 -- Sets all EP/GP to 0
 function EPGP:ResetEPGP()
-  local points = { }
-  for i = 1, self.db.profile.raid_window_size do
-    table.insert(points, 0)
-  end
-  
   for i = 1, GetNumGuildMembers(true) do
-    self:SetEPGP(i, points, points)
+    self:SetEPGP(i, EMPTY_POINTS, EMPTY_POINTS)
   end
   self:Report("All EP/GP are reset.")
 end
 
 function EPGP:AddEP2Member(member, points)
-  self:Print("+EP: " .. tostring(points))
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
-    self:Print(ep[1])
     if (name == member) then
       ep[1] = ep[1] + tonumber(points)
       self:SetEPGP(i, ep, gp)
@@ -241,7 +244,6 @@ function EPGP:AddEP2Member(member, points)
 end
 
 function EPGP:AddEP2Raid(points)
-  self:Print("+EP: " .. tostring(points))
   local raid = { }
   for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
@@ -261,7 +263,6 @@ function EPGP:AddEP2Raid(points)
 end
 
 function EPGP:AddGP2Member(member, points)
-  self:Print("+GP: " .. tostring(points))
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
     if (name == member) then
@@ -295,8 +296,8 @@ function EPGP:BuildStandingsTable()
   local t = { }
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
-    local total_ep = self:SumPoints(ep)
-    local total_gp = self:SumPoints(gp)
+    local total_ep = self:SumPoints(ep, self.db.profile.raid_window_size)
+    local total_gp = self:SumPoints(gp, self.db.profile.raid_window_size)
     if (total_gp == 0) then total_gp = 1 end
     table.insert(t, { name, total_ep, total_gp, total_ep/total_gp })
   end
