@@ -1,12 +1,16 @@
 local T = AceLibrary("Tablet-2.0")
 local D = AceLibrary("Dewdrop-2.0")
 
-EPGP_Standings = EPGP:NewModule("EPGP_Standings", "AceDB-2.0")
+EPGP_Standings = EPGP:NewModule("EPGP_Standings")
 
 function EPGP_Standings:ShowStandings()
   if not T:IsRegistered("EPGP_Standings") then
     T:Register("EPGP_Standings",
-      "children", function() T:SetTitle("EPGP Standings"); self:OnTooltipUpdate() end,
+      "children", function()
+        T:SetTitle("EPGP Standings")
+        T:SetHint("EP: Effort Points, GP: Gear Points, PR: Priority")
+        self:OnTooltipUpdate()
+      end,
 			"showTitleWhenDetached", true,
 			"showHintWhenDetached", true,
 			"cantAttach", true,
@@ -15,7 +19,7 @@ function EPGP_Standings:ShowStandings()
 			    "text", "Close window",
 			    "tooltipTitle", "Close window",
 			    "tooltipText", "Closes the standings window.",
-			    "func", function() T:Attach("EPGP_Standings") end)
+			    "func", function() T:Attach("EPGP_Standings"); D:Close() end)
 			end
     )
   end
