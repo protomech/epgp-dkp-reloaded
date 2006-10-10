@@ -7,7 +7,8 @@ EPGP:RegisterDB("EPGP_DB")
 EPGP:RegisterDefaults("profile", {
   -- The raid_window size on which we count EPs and GPs.
   -- Anything out of the window will not be taken into account.
-  raid_window_size = 10
+  raid_window_size = 10,
+  report_channel = "GUILD"
 })
 
 -------------------------------------------------------------------------------
@@ -29,6 +30,7 @@ function EPGP:OnEnable()
 end
 
 function EPGP:GUILD_ROSTER_UPDATE()
+  self:Debug("Processed GUILD_ROSTER_UPDATE")
   -- Fetch the most up to date Guild Roster
   GuildRoster() 
   -- Rebuild options
@@ -59,20 +61,7 @@ function EPGP:BuildOptions()
     desc = "EPGP Options",
     args = { }
   }
-  options.args["standings"] = {
-    type = "execute",
-    name = "Report standings",
-    desc = "Report standings in guild chat channel.",
-    order = 1,
-    func = function() self:ReportStandings() end
-  }
-  options.args["history"] = {
-    type = "execute",
-    name = "Report raid history",
-    desc = "Report raid history in guild chat channel.",
-    order = 1,
-    func = function() self:ReportHistory() end
-  }
+  -- EPs to raid
   options.args["ep_raid"] = {
     type = "text",
     name = "+EPs to Raid",
@@ -80,17 +69,18 @@ function EPGP:BuildOptions()
     get = false,
     set = function(v) self:AddEP2Raid(tonumber(v)) end,
     usage = "<EP>",
-    order = 2,
     disabled = function() return not self:CanLogRaids() end,
-    validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end
+    validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end,
+    order = 1
   }
+  -- EPs to member
   options.args["ep"] = {
     type = "group",
     name = "+EPs to Member",
     desc = "Award EPs to member.",
-    order = 1,
     disabled = function() return not self:CanChangeRules() end,
-    args = { }
+    args = { },
+    order = 2,
   }
   for i = 1, GetNumGuildMembers() do
     local member_name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
@@ -101,16 +91,18 @@ function EPGP:BuildOptions()
       usage = "<EP>",
       get = false,
       set = function(v) self:AddEP2Member(member_name, tonumber(v)) end,
-      validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end
+      validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end,
+      order = 3
     }
   end
+  -- GPs to member
   options.args["gp"] = {
     type = "group",
     name = "+GPs to Member",
     desc = "Account GPs for member.",
-    order = 3,
     disabled = function() return not self:CanLogRaids() end,
-    args = { }
+    args = { },
+    order = 4
   }
   for i = 1, GetNumGuildMembers() do
     local member_name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
@@ -127,6 +119,8 @@ function EPGP:BuildOptions()
 
   -----------------------------------------------------------------------------
   -- Administrative options
+
+  -- Start new raid
   options.args["newraid"] = {
     type = "execute",
     name = "Create New Raid",
@@ -135,6 +129,33 @@ function EPGP:BuildOptions()
     disabled = function() return not self:CanLogRaids() end,
     func =  function() self:NewRaid() end 
   }
+  -- Reporting channel
+  options.args["report_channel"] = {
+    type = "text",
+    name = "Reporting channel",
+    desc = "Channel used by reporting functions.",
+    get = function() return self.db.profile.report_channel end,
+    set = function(v) self.db.profile.report_channel = v end,
+    validate = { "PARTY", "RAID", "GUILD", "OFFICER" },
+    order = 1002
+  }
+  -- Report standings
+  options.args["standings"] = {
+    type = "execute",
+    name = "Report standings",
+    desc = "Report standings in reporting channel.",
+    func = function() self:ReportStandings(self.db.profile.report_channel) end,
+    order = 1003,
+  }
+  -- Report history
+  options.args["history"] = {
+    type = "execute",
+    name = "Report raid history",
+    desc = "Report raid history in reporting channel.",
+    order = 1004,
+    func = function() self:ReportHistory(self.db.profile.report_channel) end
+  }
+  -- Window size
   options.args["window_size"] = {
     type = "range",
     name = "EP/GP Raid Window Size",
@@ -142,16 +163,16 @@ function EPGP:BuildOptions()
     min = 5,
     max = 15,
     step = 1,
-    order = 1002,
+    order = 1005,
     disabled = function() return not self:CanChangeRules() end,
     get = function() return self.db.profile.raid_window_size end,
     set = function(v) self.db.profile.raid_window_size = v end
   }
+  -- Reset EPGP data
   options.args["reset"] = {
     type = "execute",
     name = "Reset EPGP",
     desc = "Resets all EPGP data.",
-    order = 9999,
     guiHidden = true,
     disabled = function() return not self:CanChangeRules() end,
     func = function() EPGP:ResetEPGP() end
@@ -274,7 +295,7 @@ function EPGP:AddGP2Member(member, points)
 end
 
 function EPGP:Report(msg)
-  SendChatMessage("EPGP: " .. msg, "GUILD")
+  SendChatMessage("EPGP: " .. msg, self.db.profile.report_channel)
 end
 
 function EPGP:NewRaid()
@@ -340,8 +361,20 @@ end
 -------------------------------------------------------------------------------
 -- UI code
 -------------------------------------------------------------------------------
-local Tablet = AceLibrary("Tablet-2.0")
-local Dewdrop = AceLibrary("Dewdrop-2.0")
+local T = AceLibrary("Tablet-2.0")
+local D = AceLibrary("Dewdrop-2.0")
 
 function EPGP:OnTooltipUpdate()
+  local standings_cat = T:AddCategory(
+      "columns", 4,
+      "text", "Name", "textR", 1, "textG", 1, "textB", 1, "justify", "LEFT",
+      "text2", "EP", "textR", 1, "textG", 1, "textB", 1, "justify2", "RIGHT",
+      "text3", "GP", "textR", 1, "textG", 1, "textB", 1, "justify3", "RIGHT",
+      "text4", "PR", "textR", 1, "textG", 1, "textB", 1, "justify4", "RIGHT"      
+    )
+  local t = self:BuildStandingsTable()
+  for i = 1, table.getn(t) do
+    standings_cat:AddLine(
+      "text", t[i][1], "text2", t[i][2], "text3", t[i][3], "text4", t[i][4])
+  end
 end
