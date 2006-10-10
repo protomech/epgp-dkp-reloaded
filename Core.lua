@@ -16,7 +16,8 @@ EPGP:RegisterDefaults("profile", {
 -- Init code
 -------------------------------------------------------------------------------
 function EPGP:OnInitialize()
-  self:SetDebugging(true)
+  local guild_name, _, _ = GetGuildInfo("player")
+  self:SetProfile(guild_name)
   self.defaultMinimapPosition = 180
   self.cannotDetachTooltip = true
   self.tooltipHidderWhenEmpty = false
