@@ -33,7 +33,7 @@ function EPGP:OnEnable()
 end
 
 function EPGP:GUILD_ROSTER_UPDATE()
-  self:Debug("Processed GUILD_ROSTER_UPDATE")
+  self:Debug("Processing GUILD_ROSTER_UPDATE")
   -- Fetch the most up to date Guild Roster
   GuildRoster() 
   -- Rebuild options
@@ -223,7 +223,6 @@ end
 function EPGP:PointTable2String(t)
   local s = ""
   for k, v in pairs(t) do
-  self:Print(v)
     local ss = string.format("%02s", self:Encode(v))
     assert(string.len(ss) == 2)
     s = s .. ss
