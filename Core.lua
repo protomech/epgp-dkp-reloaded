@@ -1,4 +1,5 @@
-EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "FuBarPlugin-2.0")
+EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "AceModuleCore-2.0", "FuBarPlugin-2.0")
+EPGP:SetModuleMixins("AceDebug-2.0")
 
 -------------------------------------------------------------------------------
 -- DB defaults
@@ -17,6 +18,8 @@ EPGP:RegisterDefaults("profile", {
 function EPGP:OnInitialize()
   self:SetDebugging(true)
   self.defaultMinimapPosition = 180
+  self.cannotDetachTooltip = true
+  self.tooltipHidderWhenEmpty = false
   self.OnMenuRequest = self:BuildOptions()
   self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest)
 end
@@ -362,19 +365,11 @@ end
 -- UI code
 -------------------------------------------------------------------------------
 local T = AceLibrary("Tablet-2.0")
-local D = AceLibrary("Dewdrop-2.0")
 
 function EPGP:OnTooltipUpdate()
-  local standings_cat = T:AddCategory(
-      "columns", 4,
-      "text", "Name", "textR", 1, "textG", 1, "textB", 1, "justify", "LEFT",
-      "text2", "EP", "textR", 1, "textG", 1, "textB", 1, "justify2", "RIGHT",
-      "text3", "GP", "textR", 1, "textG", 1, "textB", 1, "justify3", "RIGHT",
-      "text4", "PR", "textR", 1, "textG", 1, "textB", 1, "justify4", "RIGHT"      
-    )
-  local t = self:BuildStandingsTable()
-  for i = 1, table.getn(t) do
-    standings_cat:AddLine(
-      "text", t[i][1], "text2", t[i][2], "text3", t[i][3], "text4", t[i][4])
-  end
+  T:SetHint("Click to see/refresh EPGP standings.")
+end
+
+function EPGP:OnClick()
+  EPGP_Standings:ShowStandings()
 end
