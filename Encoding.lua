@@ -71,13 +71,12 @@ for k, v in pairs(NUM2STRING) do
 end
 
 function EPGP:Encode(num)
-  assert (num < 4096)
   local s = ""
-  while (num > 0) do
+  repeat
     local r = mod(num, 64)
     num = math.floor(num / 64)
     s = NUM2STRING[r] .. s
-  end
+  until (num == 0)
   return s
 end
 
