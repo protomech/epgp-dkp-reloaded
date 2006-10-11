@@ -27,10 +27,10 @@ end
 
 function EPGP:OnEnable()
   self:Print("EPGP addon is enabled")
+  self:RegisterEvent("GUILD_ROSTER_UPDATE", 1) -- Get updates at most at 1/sec
   self:GUILD_ROSTER_UPDATE()
-  self:RegisterEvent("GUILD_ROSTER_UPDATE")
-  self.current_zone = GetRealZoneText()
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+  self:ZONE_CHANGED_NEW_AREA()
 end
 
 function EPGP:GUILD_ROSTER_UPDATE()
