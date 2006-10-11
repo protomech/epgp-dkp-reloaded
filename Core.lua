@@ -31,6 +31,11 @@ function EPGP:OnEnable()
   self:GUILD_ROSTER_UPDATE()
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:ZONE_CHANGED_NEW_AREA()
+  if (self:CanChangeRules()) then
+    self:ScheduleRepeatingEvent(self.SyncRules, 60, self)
+  else
+    self:RegisterEvent("CHAT_MSG_ADDON")
+  end
 end
 
 function EPGP:GUILD_ROSTER_UPDATE()
@@ -54,6 +59,22 @@ end
 
 function EPGP:OnDisable()
 
+end
+
+function EPGP:SyncRules()
+  local s = string.format("RW:%d", self.db.profile.raid_window_size)
+  SendAddonMessage("EPGP", s, "GUILD")
+  self:Debug("Syncing rules.")
+end
+
+function EPGP:CHAT_MSG_ADDON(prefix, msg, distr, sender)
+  if (prefix ~= "EPGP" or distr ~= "GUILD") then
+    return
+  end
+  local _, _, new_raid_window_size = string.find(msg, "RW:(%d+)")
+  self:Debug("Synced raid window size from %d to %d",
+             self.db.profile.raid_window_size, new_raid_window_size)
+  self.db.profile.raid_window_size = new_raid_window_size
 end
 
 function EPGP:CanLogRaids()
@@ -93,7 +114,7 @@ function EPGP:BuildOptions()
     args = { },
     order = 2,
   }
-  for i = 1, GetNumGuildMembers() do
+  for i = 1, GetNumGuildMembers(true) do
     local member_name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
     options.args["ep"].args[member_name] = {
       type = "text",
@@ -115,7 +136,7 @@ function EPGP:BuildOptions()
     args = { },
     order = 4
   }
-  for i = 1, GetNumGuildMembers() do
+  for i = 1, GetNumGuildMembers(true) do
     local member_name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
     options.args["gp"].args[member_name] = {
       type = "text",

@@ -1,3 +1,4 @@
 - add setting points ability to guild master for making corrections
-- sync raidwindow
 - figure out a way to save new tablets position
+- fix bug: AceDB complains on first run (with empty DB) for #2 arg of SetProfile
+- fix bug: ui sometimes doesn't load. it looks like the roster is not read by some clients
