@@ -1,6 +1,7 @@
 EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "AceModuleCore-2.0", "FuBarPlugin-2.0")
 EPGP:SetModuleMixins("AceDebug-2.0")
 
+EPGP.revision = tonumber(string.sub("$Rev$", 7, -3))
 -------------------------------------------------------------------------------
 -- DB defaults
 -------------------------------------------------------------------------------
@@ -61,7 +62,8 @@ function EPGP:OnDisable()
 end
 
 function EPGP:SyncRules()
-  local s = string.format("RW:%d MR:%d",
+  local s = string.format("V:%d RW:%d MR:%d",
+                          self.revision,
                           self.db.profile.raid_window_size,
                           self.db.profile.min_raids)
   SendAddonMessage("EPGP", s, "GUILD")
@@ -72,8 +74,12 @@ function EPGP:CHAT_MSG_ADDON(prefix, msg, distr, sender)
   if (prefix ~= "EPGP" or distr ~= "GUILD") then
     return
   end
-  local _, _, new_raid_window_size, new_min_raids =
-    string.find(msg, "RW:(%d+) MR:(%d+)")
+  local _, _, remote_rev, new_raid_window_size, new_min_raids =
+    string.find(msg, "V:(%d+) RW:(%d+) MR:(%d+)")
+  if (not tonumber(remote_rev) or tonumber(remote_rev) ~= self.revision) then
+    self:Print("Version mismatch. Please use the same clients across the guild!")
+    return
+  end
   self:Debug("Synced raid window size from %d to %d",
              self.db.profile.raid_window_size, new_raid_window_size)
   self:Debug("Synced min raids from %d to %d",
