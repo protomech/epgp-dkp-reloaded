@@ -4,7 +4,8 @@
 ## Author: Alkis Evlogimenos
 ## Version: $Rev$
 ## OptionalDeps: Ace2
-## SavedVariables: EPGP_DB
+## SavedVariables: EPGP_DB, EPGP_Standings_DB
+## SavedVariablesPerCharacter: EPGP_Standings_DB_CHAR
 ## X-Category: Guild
 ## X-Website: http://code.google.com/p/epgp
 

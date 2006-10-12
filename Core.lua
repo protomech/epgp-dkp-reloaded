@@ -27,8 +27,9 @@ end
 
 function EPGP:OnEnable()
   self:Print("EPGP addon is enabled")
-  self:RegisterEvent("GUILD_ROSTER_UPDATE", 1) -- Get updates at most at 1/sec
-  self:GUILD_ROSTER_UPDATE()
+  -- Keep Guild Roster up to date by calling GuildRoster() every 15 secs
+  self:ScheduleRepeatingEvent(GuildRoster, 15); GuildRoster()
+  self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:ZONE_CHANGED_NEW_AREA()
   if (self:CanChangeRules()) then
@@ -40,12 +41,10 @@ end
 
 function EPGP:GUILD_ROSTER_UPDATE()
   self:Debug("Processing GUILD_ROSTER_UPDATE")
-  -- Fetch the most up to date Guild Roster
-  GuildRoster() 
   -- Rebuild options
   self.OnMenuRequest = self:BuildOptions()
   -- Figure out alts
-  local alts = GetGuildInfoText()
+  local alts = GetGuildInfoText() or ""
   self.alts = { }
   for from, to in string.gfind(alts, "(%a+):(%a+)\n") do
     self:Debug("Adding %s as an alt for %s", to, from)
@@ -357,7 +356,7 @@ function EPGP:BuildStandingsTable()
   local t = { }
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
-    if (not self.alts[name]) then
+    if (not self.alts or not self.alts[name]) then
       local total_ep = self:SumPoints(ep, self.db.profile.raid_window_size)
       local total_gp = self:SumPoints(gp, self.db.profile.raid_window_size)
       if (total_gp == 0) then total_gp = 1 end
@@ -374,7 +373,7 @@ function EPGP:BuildHistoryTable()
   local t = { }
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
-    if (not self.alts[name]) then
+    if (not self.alts or not self.alts[name]) then
       table.insert(t, { name, ep, gp })
     end
   end
