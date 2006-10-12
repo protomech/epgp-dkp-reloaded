@@ -16,9 +16,6 @@ EPGP:RegisterDefaults("profile", {
 -- Init code
 -------------------------------------------------------------------------------
 function EPGP:OnInitialize()
-  self.defaultMinimapPosition = 180
-  self.cannotDetachTooltip = true
-  self.tooltipHidderWhenEmpty = false
   self.OnMenuRequest = self:BuildOptions()
   self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest)
 end
@@ -408,6 +405,11 @@ end
 -- UI code
 -------------------------------------------------------------------------------
 local T = AceLibrary("Tablet-2.0")
+
+EPGP.defaultMinimapPosition = 180
+EPGP.cannotDetachTooltip = true
+EPGP.tooltipHidderWhenEmpty = false
+EPGP.hasIcon = "Interface\\Icons\\INV_Misc_Orb_04"
 
 function EPGP:OnTooltipUpdate()
   T:SetHint("Click to show/hide EPGP standings.")
