@@ -20,14 +20,7 @@ function EPGP_Standings:OnEnable()
       "detachedData", self.db.char.detached_data,
   		"showTitleWhenDetached", true,
   		"showHintWhenDetached", true,
-  		"cantAttach", true,
-  		"menu", function()
-  		  D:AddLine(
-  		    "text", "Close window",
-  		    "tooltipTitle", "Close window",
-  		    "tooltipText", "Closes the standings window.",
-  		    "func", function() T:Attach("EPGP_Standings"); D:Close() end)
-  		end
+  		"cantAttach", true
     )
   end
   if not T:IsAttached("EPGP_Standings") then
@@ -39,11 +32,15 @@ function EPGP_Standings:OnDisable()
   T:Close("EPGP_Standings")
 end
 
-function EPGP_Standings:ShowStandings()
+function EPGP_Standings:Refresh()
+  T:Refresh("EPGP_Standings")
+end
+
+function EPGP_Standings:Toggle()
   if T:IsAttached("EPGP_Standings") then
     T:Detach("EPGP_Standings")
   else
-    T:Refresh("EPGP_Standings")
+    T:Attach("EPGP_Standings")
   end
 end
 

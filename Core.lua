@@ -50,6 +50,7 @@ function EPGP:GUILD_ROSTER_UPDATE()
     self:Debug("Adding %s as an alt for %s", to, from)
     self.alts[to] = from
   end
+  EPGP_Standings:Refresh()
 end
 
 function EPGP:ZONE_CHANGED_NEW_AREA()
@@ -408,9 +409,9 @@ end
 local T = AceLibrary("Tablet-2.0")
 
 function EPGP:OnTooltipUpdate()
-  T:SetHint("Click to see/refresh EPGP standings.")
+  T:SetHint("Click to show/hide EPGP standings.")
 end
 
 function EPGP:OnClick()
-  EPGP_Standings:ShowStandings()
+  EPGP_Standings:Toggle()
 end
