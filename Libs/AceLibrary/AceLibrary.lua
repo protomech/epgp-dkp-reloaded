@@ -1,10 +1,10 @@
 --[[
 Name: AceLibrary
-Revision: $Rev: 11612 $
+Revision: $Rev: 13374 $
 Developed by: The Ace Development Team (http://www.wowace.com/index.php/The_Ace_Development_Team)
 Inspired By: Iriel (iriel@vigilance-committee.org)
              Tekkub (tekkub@gmail.com)
-             Revision: $Rev: 11612 $
+             Revision: $Rev: 13374 $
 Website: http://www.wowace.com/
 Documentation: http://www.wowace.com/index.php/AceLibrary
 SVN: http://svn.wowace.com/root/trunk/Ace2/AceLibrary
@@ -17,11 +17,7 @@ Dependencies: None
 ]]
 
 local ACELIBRARY_MAJOR = "AceLibrary"
-local ACELIBRARY_MINOR = "$Revision: 11612 $"
-
--- CHANGE DEBUG TO ``false`` ON RELEASE -------------------
-local DEBUG = true
--- CHANGE DEBUG TO ``false`` ON RELEASE -------------------
+local ACELIBRARY_MINOR = "$Revision: 13374 $"
 
 local table_setn
 do
@@ -577,12 +573,9 @@ function AceLibrary:Register(newInstance, major, minor, activateFunc, deactivate
 	end
 	local instance = data.instance
 	if minor <= data.minor then
-		if DEBUG then
-			-- This one is already obsolete, raise an error.
-			error(string.format("Obsolete library registered. %s is already registered at version %d. You are trying to register version %d. Hint: if not AceLibrary:IsNewVersion(%q, %d) then return end", major, data.minor, minor, major, minor), 2)
-			return
-		end
-		return instance
+		-- This one is already obsolete, raise an error.
+		_G.error(string.format("Obsolete library registered. %s is already registered at version %d. You are trying to register version %d. Hint: if not AceLibrary:IsNewVersion(%q, %d) then return end", major, data.minor, minor, major, minor), 2)
+		return
 	end
 	-- This is an update
 	local oldInstance = new()

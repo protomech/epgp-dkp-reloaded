@@ -1,9 +1,12 @@
 ## Interface: 11200
-## Author: Ace Development Team
-## Url: http://www.wowace.com
+## LoadOnDemand: 1
+
 ## Title: Ace |cffff00002|r
 ## Notes: AddOn development framework
+## Author: Ace Development Team
+## X-Website: http://www.wowace.com
 ## X-Category: Library
+
 AceLibrary\AceLibrary.lua
 AceOO-2.0\AceOO-2.0.lua
 
