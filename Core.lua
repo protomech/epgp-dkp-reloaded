@@ -9,6 +9,7 @@ EPGP:RegisterDefaults("profile", {
   -- The raid_window size on which we count EPs and GPs.
   -- Anything out of the window will not be taken into account.
   raid_window_size = 10,
+  min_raids = 2,
   report_channel = "GUILD"
 })
 
@@ -60,7 +61,9 @@ function EPGP:OnDisable()
 end
 
 function EPGP:SyncRules()
-  local s = string.format("RW:%d", self.db.profile.raid_window_size)
+  local s = string.format("RW:%d MR:%d",
+                          self.db.profile.raid_window_size,
+                          self.db.profile.min_raids)
   SendAddonMessage("EPGP", s, "GUILD")
   self:Debug("Syncing rules.")
 end
@@ -69,10 +72,14 @@ function EPGP:CHAT_MSG_ADDON(prefix, msg, distr, sender)
   if (prefix ~= "EPGP" or distr ~= "GUILD") then
     return
   end
-  local _, _, new_raid_window_size = string.find(msg, "RW:(%d+)")
+  local _, _, new_raid_window_size, new_min_raids =
+    string.find(msg, "RW:(%d+) MR:(%d+)")
   self:Debug("Synced raid window size from %d to %d",
              self.db.profile.raid_window_size, new_raid_window_size)
+  self:Debug("Synced min raids from %d to %d",
+             self.db.profile.min_raids, new_min_raids)
   self.db.profile.raid_window_size = new_raid_window_size
+  self.db.profile.min_raids = new_min_raids
 end
 
 function EPGP:CanLogRaids()
@@ -198,6 +205,19 @@ function EPGP:BuildOptions()
     get = function() return self.db.profile.raid_window_size end,
     set = function(v) self.db.profile.raid_window_size = v end
   }
+  -- Min raids
+  options.args["min_raids"] = {
+    type = "range",
+    name = "EP/GP Min Raids",
+    desc = "The minimum number of raids in the window, for EPs to be accounted.",
+    min = 0,
+    max = 7,
+    step = 1,
+    order = 1006,
+    disabled = function() return not self:CanChangeRules() end,
+    get = function() return self.db.profile.min_raids end,
+    set = function(v) self.db.profile.min_raids = v end
+  }
   -- Reset EPGP data
   options.args["reset"] = {
     type = "execute",
@@ -250,14 +270,17 @@ function EPGP:PointTable2String(t)
   return s
 end
 
-function EPGP:SumPoints(t, n)
+function EPGP:SumPoints(t, n, m)
   local sum = 0
+  local num_raids = 0
   for k,v in pairs(t) do
-    if (k <= n) then
-      sum = sum + v
-    end
+    if (k > n) then break end
+    sum = sum + v
+    if (v > 0) then num_raids = num_raids + 1 end
   end
-  return sum
+  if (not m) then return sum
+  elseif (num_raids >= m) then return sum
+  else return 0 end
 end
 
 function EPGP:GetEPGP(i)
@@ -356,7 +379,7 @@ function EPGP:BuildStandingsTable()
   for i = 1, GetNumGuildMembers(true) do
     local name, ep, gp = self:GetEPGP(i)
     if (not self.alts or not self.alts[name]) then
-      local total_ep = self:SumPoints(ep, self.db.profile.raid_window_size)
+      local total_ep = self:SumPoints(ep, self.db.profile.raid_window_size, self.db.profile.min_raids)
       local total_gp = self:SumPoints(gp, self.db.profile.raid_window_size)
       if (total_gp == 0) then total_gp = 1 end
       table.insert(t, { name, total_ep, total_gp, total_ep/total_gp })

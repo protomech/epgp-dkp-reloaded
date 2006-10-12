@@ -21,12 +21,21 @@ item drops, the member with the highest priority can choose to receive
 it or pass it down. Then the next member has the choice and so forth
 until the item is given to a member or disenchanted.
 
-Another interesting part of this system is that it only considers
-effort and gear in a predefined window in the past and not over all
-your time in the guild. This is setup by setting the Raid Window
-Size. This represents the number of raids back for which EP/GP are
-going to be summed over. This rule is meant to completely disable EP
-farming.
+There are two more quantities used in the system:
+
+ * Raid window
+ * Min raids
+
+The raid window is the number of raids back we are accounting EPs and
+GPs for. The system does not account for all EPs and GPs for the time
+each member was in the guild. This is done so that EP farming is
+virtually non existant.
+
+The min raids is the min number of raids in the raid window, a member
+must attend before her EP can be of any value. In other words, it
+defines the minimum attendance of each member for the duration of the
+raid window. For example a member that was awarded 20 EPs but only
+been to one raid, will show as having 0 EPs if min raids is set to 2.
 
 The addon and guild credentials
 -------------------------------
@@ -70,6 +79,7 @@ hierarchy can.
   - Reset EP/GP
   - Award EPs to individual member
   - Change the raid window
+  - Change the min raids
 
  * Officers:
   - Award EPs to raid (only awards EPs to those in the same zone as the
