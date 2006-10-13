@@ -143,8 +143,8 @@ The raid ends and the Raid Leader awards some bonus points to those
 still in the Raid for staying until the end. The raid is disbanded and
 no further action is necessary.
 
-Discussion
-----------
+Comparison to other solutions
+-----------------------------
 
 The choice to keep EP/GP data in game might not be the best for
 everyone. Here is a list of advantages/disadvantages of it.
@@ -165,47 +165,3 @@ Disadvantages:
 
  * There must be some sort of setup in what access you want to give to
    each rank for this to work.
-
-
-
-  In game
-setup -------------
-
-The addon assumes that:
-
-* Only the Guild Master can change the Raid Window and award
-individual bonus EPs.
-
-* Only ranks that can edit both public and officer's notes can award
-EPs to raid and credit GPs to individuals. The same group can also
-start a new raid, which effectively mean to start adding GPs/EPs to a
-new column.
-
-* The rest must have read access to both public and officer's notes in
-order to see their effective PR.
-
-In most guild setups, all members should have read access to both
-public and officer notes, and raid leaders should be able to edit
-both.
-
-The addon also assumes that the guild information text contains info
-about the alts so that it can share the EPs/GPs between them. This can
-be added manually by someone who can edit that field (it is
-recommended that only the guild master can do that. The format is one
-assignement per line:
-
-Main:Alt
-
-Which is interpreted as sharing all the EPs/GPs for both Main and Alt
-and count it all as Main.
-
-Adding more assignments should work fine, but editing existing ones
-will most likely require an epgp reset.
-
-The guild master also has the ability to reset all EP/GP data using
-the following slash command:
-
-/epgp reset
-
-This is recommended to be once the EP/GP is in place (on inception of
-the guild) to clear all public/officers notes.
