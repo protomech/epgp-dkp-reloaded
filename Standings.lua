@@ -55,6 +55,9 @@ function EPGP_Standings:OnTooltipUpdate()
   local t = EPGP:BuildStandingsTable()
   for i = 1, table.getn(t) do
     cat:AddLine(
-      "text", t[i][1], "text2", t[i][2], "text3", t[i][3], "text4", t[i][4])
+      "text", t[i][1],
+      "text2", string.format("%.4g", t[i][2]),
+      "text3", string.format("%.4g", t[i][3]),
+      "text4", string.format("%.4g", t[i][4]))
   end
 end

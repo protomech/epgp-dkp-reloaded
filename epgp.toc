@@ -25,3 +25,4 @@ Libs\Tablet-2.0\Tablet-2.0.lua
 Core.lua
 Encoding.lua
 Standings.lua
+Roster.lua

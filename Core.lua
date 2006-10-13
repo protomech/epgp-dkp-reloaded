@@ -10,8 +10,15 @@ EPGP:RegisterDefaults("profile", {
   -- The raid_window size on which we count EPs and GPs.
   -- Anything out of the window will not be taken into account.
   raid_window_size = 10,
+  -- The min number of raids to attend in the window in order to get
+  -- EPs counted
   min_raids = 2,
-  report_channel = "GUILD"
+  -- Default report channel
+  report_channel = "GUILD",
+  -- Guild Roster cache
+  roster = { },
+  -- Alts table
+  alts = { }
 })
 
 -------------------------------------------------------------------------------
@@ -41,24 +48,15 @@ function EPGP:GUILD_ROSTER_UPDATE()
   -- Change profile
   local guild_name, _, _ = GetGuildInfo("player")
   self:SetProfile(guild_name)
+  -- Cache roster
+  self:PullRoster()
   -- Rebuild options
   self.OnMenuRequest = self:BuildOptions()
-  -- Figure out alts
-  local alts = GetGuildInfoText() or ""
-  self.alts = { }
-  for from, to in string.gfind(alts, "(%a+):(%a+)\n") do
-    self:Debug("Adding %s as an alt for %s", to, from)
-    self.alts[to] = from
-  end
   EPGP_Standings:Refresh()
 end
 
 function EPGP:ZONE_CHANGED_NEW_AREA()
   self.current_zone = GetRealZoneText()
-end
-
-function EPGP:OnDisable()
-
 end
 
 function EPGP:SyncRules()
@@ -80,12 +78,16 @@ function EPGP:CHAT_MSG_ADDON(prefix, msg, distr, sender)
     self:Print("Version mismatch. Please use the same clients across the guild!")
     return
   end
-  self:Debug("Synced raid window size from %d to %d",
-             self.db.profile.raid_window_size, new_raid_window_size)
-  self:Debug("Synced min raids from %d to %d",
-             self.db.profile.min_raids, new_min_raids)
-  self.db.profile.raid_window_size = new_raid_window_size
-  self.db.profile.min_raids = new_min_raids
+  assert(tonumber(new_raid_window_size), "Raid window size should be a number!")
+  assert(tonumber(new_min_raids), "Min raids should be a number!")
+  self.db.profile.raid_window_size = tonumber(new_raid_window_size)
+  self.db.profile.min_raids = tonumber(new_min_raids)
+  self:Debug("Synced raid window size to %d", self.db.profile.raid_window_size)
+  self:Debug("Synced min raids to %d", self.db.profile.min_raids)
+end
+
+function EPGP:OnDisable()
+
 end
 
 function EPGP:CanLogRaids()
@@ -125,8 +127,8 @@ function EPGP:BuildOptions()
     args = { },
     order = 2,
   }
-  for i = 1, GetNumGuildMembers(true) do
-    local member_name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
+  for n, t in pairs(self.db.profile.roster) do
+    local member_name = n
     options.args["ep"].args[member_name] = {
       type = "text",
       name = member_name,
@@ -147,8 +149,8 @@ function EPGP:BuildOptions()
     args = { },
     order = 4
   }
-  for i = 1, GetNumGuildMembers(true) do
-    local member_name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
+  for n, t in pairs(self.db.profile.roster) do
+    local member_name = n
     options.args["gp"].args[member_name] = {
       type = "text",
       name = member_name,
@@ -237,176 +239,8 @@ function EPGP:BuildOptions()
 end
 
 
--------------------------------------------------------------------------------
--- EP/GP manipulation
---
--- We use public/officers notes to keep track of EP/GP. Each note has storage
--- for a string of max length of 31. So with two bytes for each score, we can
--- have up to 15 numbers in it, which gives a max raid window of 15.
---
--- NOTE: Each number is in hex which means that we can have max 256 GP/EP for
--- each raid. This needs to be improved to raise the limit.
---
--- EPs are stored in the public note. The first byte is the EPs gathered for
--- the current raid. The second is the EPs gathered in the previous raid (of
--- the guild not the membeer). Ditto for the rest.
---
--- GPs are stored in the officers note, in a similar manner as the EPs.
---
--- Bonus EPs are added to the last/current raid.
-
-local EMPTY_POINTS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-
-function EPGP:PointString2Table(s)
-  local t = { }
-  for i = 1, string.len(s), 2 do
-    local val = self:Decode(string.sub(s, i, i+1))
-    table.insert(t, val)
-  end
-  return t
-end
-
-function EPGP:PointTable2String(t)
-  local s = ""
-  for k, v in pairs(t) do
-    local ss = string.format("%02s", self:Encode(v))
-    assert(string.len(ss) == 2)
-    s = s .. ss
-  end
-  return s
-end
-
-function EPGP:SumPoints(t, n, m)
-  local sum = 0
-  local num_raids = 0
-  for k,v in pairs(t) do
-    if (k > n) then break end
-    sum = sum + v
-    if (v > 0) then num_raids = num_raids + 1 end
-  end
-  if (not m) then return sum
-  elseif (num_raids >= m) then return sum
-  else return 0 end
-end
-
-function EPGP:GetEPGP(i)
-  local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-  if (string.len(note) == 0 and string.len(officernote) == 0) then
-    self:SetEPGP(i, EMPTY_POINTS, EMPTY_POINTS)
-    name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-  end
-  return name, self:PointString2Table(note), self:PointString2Table(officernote)
-end
-
-function EPGP:SetEPGP(i, ep, gp)
-  GuildRosterSetPublicNote(i, self:PointTable2String(ep))
-  GuildRosterSetOfficerNote(i, self:PointTable2String(gp))
-end
-
--- Sets all EP/GP to 0
-function EPGP:ResetEPGP()
-  for i = 1, GetNumGuildMembers(true) do
-    self:SetEPGP(i, EMPTY_POINTS, EMPTY_POINTS)
-  end
-  self:Report("All EP/GP are reset.")
-end
-
-function EPGP:ResolveMember(member)
-  while (self.alts[member]) do
-    member = self.alts[member]
-  end
-  return member
-end
-
-function EPGP:AddEP2Member(member, points)
-  member = self:ResolveMember(member)
-  for i = 1, GetNumGuildMembers(true) do
-    local name, ep, gp = self:GetEPGP(i)
-    if (name == member) then
-      ep[1] = ep[1] + tonumber(points)
-      self:SetEPGP(i, ep, gp)
-      self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
-    end
-  end
-end
-
-function EPGP:AddEP2Raid(points)
-  local raid = { }
-  for i = 1, GetNumRaidMembers() do
-    local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
-    if (zone == self.current_zone) then
-      raid[self:ResolveMember(name)] = true
-    end
-  end
-  
-  for i = 1, GetNumGuildMembers(true) do
-    local name, ep, gp = self:GetEPGP(i)
-    if (raid[name]) then
-        ep[1] = ep[1] + tonumber(points)
-        self:SetEPGP(i, ep, gp)
-        self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
-    end
-  end
-end
-
-function EPGP:AddGP2Member(member, points)
-  member = self:ResolveMember(member)
-  for i = 1, GetNumGuildMembers(true) do
-    local name, ep, gp = self:GetEPGP(i)
-    if (name == member) then
-      gp[1] = gp[1] + tonumber(points)
-      self:SetEPGP(i, ep, gp)
-      self:Report("Added " .. tostring(points) .. " GPs to " .. member .. ".")
-    end
-  end
-end
-
 function EPGP:Report(msg)
   SendChatMessage("EPGP: " .. msg, self.db.profile.report_channel)
-end
-
-function EPGP:NewRaid()
-  for i = 1, GetNumGuildMembers(true) do
-    local _, ep, gp = self:GetEPGP(i)
-    table.remove(ep)
-    table.insert(ep, 1, 0)
-    table.remove(gp)
-    table.insert(gp, 1, 0)
-    self:SetEPGP(i, ep, gp)
-  end
-  self:Report("Created new raid.")
-end
-
--- Builds a standings table with record:
--- name, EP, GP, PR
--- and sorted by PR
-function EPGP:BuildStandingsTable()
-  local t = { }
-  for i = 1, GetNumGuildMembers(true) do
-    local name, ep, gp = self:GetEPGP(i)
-    if (not self.alts or not self.alts[name]) then
-      local total_ep = self:SumPoints(ep, self.db.profile.raid_window_size, self.db.profile.min_raids)
-      local total_gp = self:SumPoints(gp, self.db.profile.raid_window_size)
-      if (total_gp == 0) then total_gp = 1 end
-      table.insert(t, { name, total_ep, total_gp, total_ep/total_gp })
-    end
-  end
-  table.sort(t, function(a, b) return a[4] > b[4] end)
-  return t
-end
-
--- Builds a history table with record:
--- name, { ep1, ... }, { gp1, ... }
-function EPGP:BuildHistoryTable()
-  local t = { }
-  for i = 1, GetNumGuildMembers(true) do
-    local name, ep, gp = self:GetEPGP(i)
-    if (not self.alts or not self.alts[name]) then
-      table.insert(t, { name, ep, gp })
-    end
-  end
-  table.sort(t, function(a, b) return a[1] < b[1] end)
-  return t
 end
 
 function EPGP:ReportStandings()
