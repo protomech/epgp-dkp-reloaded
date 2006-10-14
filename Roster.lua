@@ -129,6 +129,7 @@ function EPGP:NewRaid()
     self:SetEPGP(member_name, ep, gp)
   end
   self:Report("Created new raid.")
+  self:PushRoster()
 end
 
 function EPGP:ResolveMember(member)
