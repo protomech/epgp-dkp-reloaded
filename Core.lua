@@ -184,14 +184,6 @@ function EPGP:BuildOptions()
     validate = { "PARTY", "RAID", "GUILD", "OFFICER" },
     order = 1002
   }
-  -- Report standings
-  options.args["standings"] = {
-    type = "execute",
-    name = "Report standings",
-    desc = "Report standings in reporting channel.",
-    func = function() self:ReportStandings(self.db.profile.report_channel) end,
-    order = 1003,
-  }
   -- Report history
   options.args["history"] = {
     type = "execute",
@@ -241,14 +233,6 @@ end
 
 function EPGP:Report(msg)
   SendChatMessage("EPGP: " .. msg, self.db.profile.report_channel)
-end
-
-function EPGP:ReportStandings()
-  local t = self:BuildStandingsTable()
-  self:Report("Standings (Name: EP/GP=PR)")
-  for i = 1, table.getn(t) do
-    self:Report(string.format("%s: %d/%d=%.4g", unpack(t[i])))
-  end
 end
 
 function EPGP:ReportHistory()
