@@ -4,8 +4,8 @@
 ## Author: Alkis Evlogimenos
 ## Version: $Rev$
 ## OptionalDeps: Ace2
-## SavedVariables: EPGP_DB, EPGP_Standings_DB
-## SavedVariablesPerCharacter: EPGP_Standings_DB_CHAR
+## SavedVariables: EPGP_DB, EPGP_Standings_DB, EPGP_History_DB
+## SavedVariablesPerCharacter: EPGP_Standings_DB_CHAR, EPGP_History_DB_CHAR
 ## X-Category: Guild
 ## X-Website: http://code.google.com/p/epgp
 
@@ -14,6 +14,7 @@ Libs\AceOO-2.0\AceOO-2.0.lua
 Libs\AceEvent-2.0\AceEvent-2.0.lua
 Libs\AceAddon-2.0\AceAddon-2.0.lua
 Libs\AceConsole-2.0\AceConsole-2.0.lua
+Libs\AceModuleCore-2.0\AceModuleCore-2.0.lua
 Libs\AceDB-2.0\AceDB-2.0.lua
 Libs\AceDebug-2.0\AceDebug-2.0.lua
 
@@ -24,5 +25,6 @@ Libs\Tablet-2.0\Tablet-2.0.lua
 
 Core.lua
 Encoding.lua
+History.lua
 Standings.lua
 Roster.lua

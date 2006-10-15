@@ -53,6 +53,7 @@ function EPGP:GUILD_ROSTER_UPDATE()
   -- Rebuild options
   self.OnMenuRequest = self:BuildOptions()
   EPGP_Standings:Refresh()
+  EPGP_History:Refresh()
 end
 
 function EPGP:ZONE_CHANGED_NEW_AREA()
@@ -187,10 +188,10 @@ function EPGP:BuildOptions()
   -- Report history
   options.args["history"] = {
     type = "execute",
-    name = "Report raid history",
-    desc = "Report raid history in reporting channel.",
+    name = "History browser",
+    desc = "Toggle the history browser.",
     order = 1004,
-    func = function() self:ReportHistory(self.db.profile.report_channel) end
+    func = function() EPGP_History:Toggle() end
   }
   -- Window size
   options.args["window_size"] = {
