@@ -60,4 +60,8 @@ function EPGP_Standings:OnTooltipUpdate()
       "text3", string.format("%.4g", t[i][3]),
       "text4", string.format("%.4g", t[i][4]))
   end
+
+  local info = T:AddCategory("columns", 2)
+  info:AddLine("text", "Raid Window", "text2", EPGP.db.profile.raid_window_size)
+  info:AddLine("text", "Min Raids", "text2", EPGP.db.profile.min_raids)
 end
