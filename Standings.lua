@@ -48,9 +48,9 @@ function EPGP_Standings:OnTooltipUpdate()
   local cat = T:AddCategory(
       "columns", 4,
       "text", "Name", "textR", 1, "textG", 1, "textB", 1, "justify", "LEFT",
-      "text2", "EP", "textR", 1, "textG", 1, "textB", 1, "justify2", "RIGHT",
-      "text3", "GP", "textR", 1, "textG", 1, "textB", 1, "justify3", "RIGHT",
-      "text4", "PR", "textR", 1, "textG", 1, "textB", 1, "justify4", "RIGHT"      
+      "text2", "EP", "text2R", 1, "text2G", 1, "text2B", 1, "justify2", "RIGHT",
+      "text3", "GP", "text3R", 1, "text3G", 1, "text3B", 1, "justify3", "RIGHT",
+      "text4", "PR", "text4R", 1, "text4G", 1, "text4B", 1, "justify4", "RIGHT"      
     )
   local t = EPGP:BuildStandingsTable()
   for i = 1, table.getn(t) do
