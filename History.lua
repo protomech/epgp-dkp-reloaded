@@ -76,14 +76,15 @@ function EPGP_History:OnTooltipUpdate()
     )
   local t = EPGP:BuildHistoryTable()
   for i = 1, table.getn(t) do
-    assert(table.getn(t[i][2]) == table.getn(t[i][3]), "EP and GP tables are not equal!")
+    local name, ept, gpt = unpack(t[i])
+    assert(table.getn(ept) == table.getn(gpt), "EP and GP tables are not of equal length!")
     cat:AddLine(
-      "text",  t[i][1],
-      "text2", string.format("%d/%d", t[i][2][self.index_start],   t[i][3][self.index_start]),
-      "text3", string.format("%d/%d", t[i][2][self.index_start+1], t[i][3][self.index_start+1]),
-      "text4", string.format("%d/%d", t[i][2][self.index_start+2], t[i][3][self.index_start+2]),
-      "text5", string.format("%d/%d", t[i][2][self.index_start+3], t[i][3][self.index_start+3]),
-      "text6", string.format("%d/%d", t[i][2][self.index_start+4], t[i][3][self.index_start+4])
+      "text",  name,
+      "text2", string.format("%d/%d", ept[self.index_start],   gpt[self.index_start]),
+      "text3", string.format("%d/%d", ept[self.index_start+1], gpt[self.index_start+1]),
+      "text4", string.format("%d/%d", ept[self.index_start+2], gpt[self.index_start+2]),
+      "text5", string.format("%d/%d", ept[self.index_start+3], gpt[self.index_start+3]),
+      "text6", string.format("%d/%d", ept[self.index_start+4], gpt[self.index_start+4])
     )
   end
   local prev = T:AddCategory(
