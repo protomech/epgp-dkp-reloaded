@@ -15,7 +15,7 @@ function EPGP_History:OnEnable()
     T:Register("EPGP_History",
       "children", function()
         T:SetTitle("EPGP History")
-        T:SetHint("EP: Effort Points, GP: Gear Points, PR: Priority")
+        T:SetHint("Raid<N>: The EP/GP awarded/credited in the Nth raid back in time")
         self:OnTooltipUpdate()
       end,
       "data", self.db.char.data,
@@ -68,11 +68,11 @@ function EPGP_History:OnTooltipUpdate()
   local cat = T:AddCategory(
       "columns", 6,
       "text",  C:Orange("Name"),                        "child_textR",  1, "child_textG",  1, "child_textB",  1, "child_justify",  "LEFT",
-      "text2", C:Orange("Raid " .. self.index_start),   "child_text2R", 1, "child_text2G", 1, "child_text2B", 1, "child_justify2", "RIGHT",
-      "text3", C:Orange("Raid " .. self.index_start+1), "child_text3R", 1, "child_text3G", 1, "child_text3B", 1, "child_justify3", "RIGHT",
-      "text4", C:Orange("Raid " .. self.index_start+2), "child_text4R", 1, "child_text4G", 1, "child_text4B", 1, "child_justify4", "RIGHT",
-      "text5", C:Orange("Raid " .. self.index_start+3), "child_text5R", 1, "child_text5G", 1, "child_text5B", 1, "child_justify5", "RIGHT",
-      "text6", C:Orange("Raid " .. self.index_start+4), "child_text6R", 1, "child_text6G", 1, "child_text6B", 1, "child_justify6", "RIGHT"
+      "text2", C:Orange("Raid" .. self.index_start),   "child_text2R", 1, "child_text2G", 1, "child_text2B", 1, "child_justify2", "RIGHT",
+      "text3", C:Orange("Raid" .. self.index_start+1), "child_text3R", 1, "child_text3G", 1, "child_text3B", 1, "child_justify3", "RIGHT",
+      "text4", C:Orange("Raid" .. self.index_start+2), "child_text4R", 1, "child_text4G", 1, "child_text4B", 1, "child_justify4", "RIGHT",
+      "text5", C:Orange("Raid" .. self.index_start+3), "child_text5R", 1, "child_text5G", 1, "child_text5B", 1, "child_justify5", "RIGHT",
+      "text6", C:Orange("Raid" .. self.index_start+4), "child_text6R", 1, "child_text6G", 1, "child_text6B", 1, "child_justify6", "RIGHT"
     )
   local t = EPGP:BuildHistoryTable()
   for i = 1, table.getn(t) do
