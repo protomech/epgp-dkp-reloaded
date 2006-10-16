@@ -1,5 +1,6 @@
 local T = AceLibrary("Tablet-2.0")
 local D = AceLibrary("Dewdrop-2.0")
+local C = AceLibrary("Crayon-2.0")
 
 EPGP_History = EPGP:NewModule("EPGP_History", "AceDB-2.0")
 EPGP_History:RegisterDB("EPGP_History_DB", "EPGP_History_DB_CHAR")
@@ -60,18 +61,18 @@ function EPGP_History:OnTooltipUpdate()
       "columns", 1
     )
   prev:AddLine(
-    "text", "Previous",
+    "text", C:Colorize("00ffff", "Previous"),
     "func", "NavigatePrevious",
     "arg1", self
     )
   local cat = T:AddCategory(
       "columns", 6,
-      "text",  "Name",                        "textR",  1, "textG",  1, "textB",  1, "justify",  "LEFT",
-      "text2", "Raid " .. self.index_start,   "text2R", 1, "text2G", 1, "text2B", 1, "justify2", "RIGHT",
-      "text3", "Raid " .. self.index_start+1, "text3R", 1, "text3G", 1, "text3B", 1, "justify3", "RIGHT",
-      "text4", "Raid " .. self.index_start+2, "text4R", 1, "text4G", 1, "text4B", 1, "justify4", "RIGHT",
-      "text5", "Raid " .. self.index_start+3, "text5R", 1, "text5G", 1, "text5B", 1, "justify5", "RIGHT",
-      "text6", "Raid " .. self.index_start+4, "text6R", 1, "text6G", 1, "text6B", 1, "justify6", "RIGHT"
+      "text",  C:Orange("Name"),                        "child_textR",  1, "child_textG",  1, "child_textB",  1, "child_justify",  "LEFT",
+      "text2", C:Orange("Raid " .. self.index_start),   "child_text2R", 1, "child_text2G", 1, "child_text2B", 1, "child_justify2", "RIGHT",
+      "text3", C:Orange("Raid " .. self.index_start+1), "child_text3R", 1, "child_text3G", 1, "child_text3B", 1, "child_justify3", "RIGHT",
+      "text4", C:Orange("Raid " .. self.index_start+2), "child_text4R", 1, "child_text4G", 1, "child_text4B", 1, "child_justify4", "RIGHT",
+      "text5", C:Orange("Raid " .. self.index_start+3), "child_text5R", 1, "child_text5G", 1, "child_text5B", 1, "child_justify5", "RIGHT",
+      "text6", C:Orange("Raid " .. self.index_start+4), "child_text6R", 1, "child_text6G", 1, "child_text6B", 1, "child_justify6", "RIGHT"
     )
   local t = EPGP:BuildHistoryTable()
   for i = 1, table.getn(t) do
@@ -89,7 +90,7 @@ function EPGP_History:OnTooltipUpdate()
       "columns", 1
     )
   prev:AddLine(
-    "text", "Next",
+    "text", C:Colorize("00ffff", "Next"),
     "func", "NavigateNext",
     "arg1", self
     )

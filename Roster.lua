@@ -78,19 +78,6 @@ function EPGP:PointTable2String(t)
   return s
 end
 
-function EPGP:SumPoints(t, n, m)
-  local sum = 0
-  local num_raids = 0
-  for k,v in pairs(t) do
-    if (k > n) then break end
-    sum = sum + v
-    if (v > 0) then num_raids = num_raids + 1 end
-  end
-  if (not m) then return sum
-  elseif (num_raids >= m) then return sum
-  else return 0 end
-end
-
 function EPGP:GetEPGP(name)
   assert(name and type(name) == "string")
   local member = self.db.profile.roster[name]
@@ -168,21 +155,45 @@ function EPGP:AddGP2Member(member, points)
   self:PushRoster()
 end
 
+function EPGP:ComputeEP(t)
+  local ep = 0
+  local tep = 0
+  local nraids = 0
+  
+  for k,v in pairs(t) do
+    if (k > self.db.profile.raid_window_size) then break end
+    tep = tep + v
+    if (v > 0) then
+      nraids = nraids + 1
+    end
+  end
+  ep = (nraids < self.db.profile.min_raids) and 0 or tep
+  return tep, nraids, ep
+end
+
+function EPGP:ComputeGP(t)
+  local gp = 0
+  for k,v in pairs(t) do
+    if (k > self.db.profile.raid_window_size) then break end
+    gp = gp + v
+  end
+  return (gp == 0) and 1 or gp
+end
+  
 -- Builds a standings table with record:
--- name, EP, GP, PR
+-- name, EP, NR, EEP, GP, PR
 -- and sorted by PR
 function EPGP:BuildStandingsTable()
   local t = { }
   for n, d in pairs(self.db.profile.roster) do
-    local member_name, ep, gp = n, unpack(d)
+    local member_name, ept, gpt = n, unpack(d)
     if (not self.db.profile.alts or not self.db.profile.alts[member_name]) then
-      local total_ep = self:SumPoints(ep, self.db.profile.raid_window_size, self.db.profile.min_raids)
-      local total_gp = self:SumPoints(gp, self.db.profile.raid_window_size)
-      if (total_gp == 0) then total_gp = 1 end
-      table.insert(t, { member_name, total_ep, total_gp, total_ep/total_gp })
+      local tep, nraids, ep = self:ComputeEP(ept)
+      local gp = self:ComputeGP(gpt)
+      table.insert(t, { member_name, tep, nraids, ep, gp, ep/gp })
     end
   end
-  table.sort(t, function(a, b) return a[4] > b[4] end)
+  table.sort(t, function(a, b) return a[6] > b[6] end)
   return t
 end
 
