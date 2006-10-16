@@ -14,7 +14,7 @@ function EPGP_Standings:OnEnable()
     T:Register("EPGP_Standings",
       "children", function()
         T:SetTitle("EPGP Standings")
-        T:SetHint("EP: Effort Points, TEP: Total Effort Points, #Raid: Number of raids, GP: Gear Points, PR: Priority")
+        T:SetHint("EP: Effort Points, TEP: Total Effort Points, #R: Number of raids, GP: Gear Points, PR: Priority")
         self:OnTooltipUpdate()
       end,
       "data", self.db.char.data,
@@ -50,7 +50,7 @@ function EPGP_Standings:OnTooltipUpdate()
       "columns", 6,
       "text",  C:Orange("Name"),   "child_textR",    1, "child_textG",    1, "child_textB",    1, "child_justify",  "LEFT",
       "text2", C:Orange("TEP"),    "child_text2R", 0.5, "child_text2G", 0.5, "child_text2B", 0.5, "child_justify2", "RIGHT",
-      "text3", C:Orange("#raids"), "child_text3R",   1, "child_text3G",   1, "child_text3B",   1, "child_justify3", "RIGHT",
+      "text3", C:Orange("#R"),     "child_text3R",   1, "child_text3G",   1, "child_text3B",   1, "child_justify3", "RIGHT",
       "text4", C:Orange("EP"),     "child_text4R",   1, "child_text4G",   1, "child_text4B",   1, "child_justify4", "RIGHT",
       "text5", C:Orange("GP"),     "child_text5R",   1, "child_text5G",   1, "child_text5B",   1, "child_justify5", "RIGHT",
       "text6", C:Orange("PR"),     "child_text6R",   1, "child_text6G",   1, "child_text6B",   0, "child_justify6", "RIGHT"
