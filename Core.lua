@@ -141,7 +141,7 @@ function EPGP:BuildOptions()
     args = { },
     order = 2,
   }
-  for n, t in pairs(self.db.profile.roster) do
+  for n, t in pairs(self:GetRoster()) do
     local member_name = n
     options.args["ep"].args[member_name] = {
       type = "text",
@@ -163,7 +163,7 @@ function EPGP:BuildOptions()
     args = { },
     order = 4
   }
-  for n, t in pairs(self.db.profile.roster) do
+  for n, t in pairs(self:GetRoster()) do
     local member_name = n
     options.args["gp"].args[member_name] = {
       type = "text",

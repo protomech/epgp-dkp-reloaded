@@ -16,11 +16,6 @@ function EPGP:GetAlts()
   return self.alts
 end
 
-function EPGP:SetRoster(r)
-  assert(r and type(r) == "table", "Roster is not a table!")
-  self.roster = r
-end
-
 -- Reads roster from server
 function EPGP:PullRoster()
   -- Figure out alts
