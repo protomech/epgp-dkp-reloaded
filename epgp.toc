@@ -7,7 +7,7 @@
 ## SavedVariables: EPGP_DB, EPGP_Standings_DB, EPGP_History_DB
 ## SavedVariablesPerCharacter: EPGP_Standings_DB_CHAR, EPGP_History_DB_CHAR
 ## X-Category: Guild
-## X-Website: http://code.google.com/p/epgp
+## X-Website: http://groups-beta.google.com/group/epgp
 
 Libs\AceLibrary\AceLibrary.lua
 Libs\AceOO-2.0\AceOO-2.0.lua
