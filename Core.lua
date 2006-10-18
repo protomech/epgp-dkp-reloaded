@@ -14,11 +14,7 @@ EPGP:RegisterDefaults("profile", {
   -- EPs counted
   min_raids = 2,
   -- Default report channel
-  report_channel = "GUILD",
-  -- Guild Roster cache
-  roster = { },
-  -- Alts table
-  alts = { }
+  report_channel = "GUILD"
 })
 
 -------------------------------------------------------------------------------
@@ -31,9 +27,11 @@ end
 
 function EPGP:OnEnable()
   self:Print("EPGP addon is enabled")
+  self.roster = { }
+  self.alts = { }
   -- Keep Guild Roster up to date by calling GuildRoster() every 15 secs
   self:ScheduleRepeatingEvent(GuildRoster, 15); GuildRoster()
-  self:RegisterEvent("GUILD_ROSTER_UPDATE")
+  self:RegisterEvent("GUILD_ROSTER_UPDATE", 1)
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:ZONE_CHANGED_NEW_AREA()
   if (self:CanChangeRules()) then
@@ -41,6 +39,24 @@ function EPGP:OnEnable()
   else
     self:RegisterEvent("CHAT_MSG_ADDON")
   end
+end
+
+function EPGP:GetRaidWindow()
+  return self.db.profile.raid_window_size
+end
+
+function EPGP:SetRaidWindow(rw)
+  assert(rw and tonumber(rw), "Attempt to set raid window to something that is not a number!")
+  self.db.profile.raid_window_size = tonumber(rw)
+end
+
+function EPGP:GetMinRaids()
+  return self.db.profile.min_raids
+end
+
+function EPGP:SetMinRaids(mr)
+  assert(mr and tonumber(mr), "Attempt to set min raids to something that is not a number!")
+  self.db.profile.min_raids = tonumber(mr)
 end
 
 function EPGP:GUILD_ROSTER_UPDATE()
@@ -63,8 +79,8 @@ end
 function EPGP:SyncRules()
   local s = string.format("V:%d RW:%d MR:%d",
                           self.revision,
-                          self.db.profile.raid_window_size,
-                          self.db.profile.min_raids)
+                          self:GetRaidWindow(),
+                          self:GetMinRaids())
   SendAddonMessage("EPGP", s, "GUILD")
   self:Debug("Syncing rules.")
 end
@@ -79,12 +95,10 @@ function EPGP:CHAT_MSG_ADDON(prefix, msg, distr, sender)
     self:Print("Version mismatch. Please use the same clients across the guild!")
     return
   end
-  assert(tonumber(new_raid_window_size), "Raid window size should be a number!")
-  assert(tonumber(new_min_raids), "Min raids should be a number!")
-  self.db.profile.raid_window_size = tonumber(new_raid_window_size)
-  self.db.profile.min_raids = tonumber(new_min_raids)
-  self:Debug("Synced raid window size to %d", self.db.profile.raid_window_size)
-  self:Debug("Synced min raids to %d", self.db.profile.min_raids)
+  self:SetRaidWindow(new_raid_window_size)
+  self:SetMinRaids(new_min_raids)
+  self:Debug("Synced raid window size to %d", self:GetRaidWindow())
+  self:Debug("Synced min raids to %d", self:GetMinRaids())
 end
 
 function EPGP:OnDisable()
@@ -203,8 +217,8 @@ function EPGP:BuildOptions()
     step = 1,
     order = 1005,
     disabled = function() return not self:CanChangeRules() end,
-    get = function() return self.db.profile.raid_window_size end,
-    set = function(v) self.db.profile.raid_window_size = v end
+    get = function() return self:GetRaidWindow() end,
+    set = function(v) self:SetRaidWindow(v) end
   }
   -- Min raids
   options.args["min_raids"] = {
@@ -216,8 +230,8 @@ function EPGP:BuildOptions()
     step = 1,
     order = 1006,
     disabled = function() return not self:CanChangeRules() end,
-    get = function() return self.db.profile.min_raids end,
-    set = function(v) self.db.profile.min_raids = v end
+    get = function() return self:GetMinRaids() end,
+    set = function(v) self:SetMinRaids(v) end
   }
   -- Reset EPGP data
   options.args["reset"] = {
@@ -234,19 +248,7 @@ end
 
 function EPGP:Report(msg)
   SendChatMessage("EPGP: " .. msg, self.db.profile.report_channel)
-end
-
-function EPGP:ReportHistory()
-  local t = self:BuildHistoryTable()
-  self:Report("History (Name: EP/GP ...)")
-  for i = 1, table.getn(t) do
-    local record = t[i]
-    local history = record[1] .. ": "
-    for j = 1, table.getn(record[2]) do
-      history = history .. record[2][j] .. "/" .. record[3][j] .. " "
-    end
-    self:Report(history)
-  end
+  self:Debug("EPGP: " .. msg)
 end
 
 -------------------------------------------------------------------------------

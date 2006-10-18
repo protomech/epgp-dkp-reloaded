@@ -2,11 +2,14 @@ local T = AceLibrary("Tablet-2.0")
 local D = AceLibrary("Dewdrop-2.0")
 local C = AceLibrary("Crayon-2.0")
 
+local BC = AceLibrary("AceLocale-2.1"):GetInstance("Babble-Class-2.1")
+
 EPGP_History = EPGP:NewModule("EPGP_History", "AceDB-2.0")
 EPGP_History:RegisterDB("EPGP_History_DB", "EPGP_History_DB_CHAR")
 EPGP_History:RegisterDefaults("char", {
   data = { },
-  detached_data = { }
+  detached_data = { },
+  group_by_class = false
 })
 
 function EPGP_History:OnEnable()
@@ -22,7 +25,15 @@ function EPGP_History:OnEnable()
       "detachedData", self.db.char.detached_data,
   		"showTitleWhenDetached", true,
   		"showHintWhenDetached", true,
-  		"cantAttach", true
+  		"cantAttach", true,
+  		"menu", function()
+  		  D:AddLine(
+  		    "text", "Group by class",
+  		    "tooltipText", "Group members by class.",
+  		    "checked", self.db.char.group_by_class,
+  		    "func", function() EPGP_History:ToggleGroupByClass() end
+  		    )
+  		end
     )
   end
   if not T:IsAttached("EPGP_History") then
@@ -46,6 +57,11 @@ function EPGP_History:Toggle()
   end
 end
 
+function EPGP_History:ToggleGroupByClass()
+  self.db.char.group_by_class = not self.db.char.group_by_class
+  self:Refresh()
+end
+
 function EPGP_History:NavigateNext()
   self.index_start = math.min(11, self.index_start + 5)
   self:Refresh()
@@ -54,6 +70,31 @@ end
 function EPGP_History:NavigatePrevious()
   self.index_start = math.max(1, self.index_start - 5)
   self:Refresh()
+end
+
+-- Builds a history table with record:
+-- name, { ep1, ... }, { gp1, ... }
+function EPGP_History:BuildHistoryTable()
+  local t = { }
+  local alts = EPGP:GetAlts()
+  for n, d in pairs(EPGP:GetRoster()) do
+    local name, class, ep, gp = n, unpack(d)
+    if (not alts[name]) then
+      table.insert(t, { name, class, ep, gp })
+    end
+  end
+  -- Sort by name and group by class if necessary
+  if (self.db.char.group_by_class) then
+    table.sort(t, function(a,b)
+      if (a[2] ~= b[2]) then return a[2] > b[2]
+      else return a[1] < b[1] end
+    end)
+  else
+    table.sort(t, function(a,b)
+      return a[1] < b[1]
+    end)
+  end
+  return t
 end
 
 function EPGP_History:OnTooltipUpdate()
@@ -74,12 +115,12 @@ function EPGP_History:OnTooltipUpdate()
       "text5", C:Orange("Raid" .. self.index_start+3), "child_text5R", 1, "child_text5G", 1, "child_text5B", 1, "child_justify5", "RIGHT",
       "text6", C:Orange("Raid" .. self.index_start+4), "child_text6R", 1, "child_text6G", 1, "child_text6B", 1, "child_justify6", "RIGHT"
     )
-  local t = EPGP:BuildHistoryTable()
-  for i = 1, table.getn(t) do
-    local name, ept, gpt = unpack(t[i])
+  local t = self:BuildHistoryTable()
+  for k, v in pairs(t) do
+    local name, class, ept, gpt = unpack(v)
     assert(table.getn(ept) == table.getn(gpt), "EP and GP tables are not of equal length!")
     cat:AddLine(
-      "text",  name,
+      "text", C:Colorize(BC:GetHexColor(class), name),
       "text2", string.format("%d/%d", ept[self.index_start],   gpt[self.index_start]),
       "text3", string.format("%d/%d", ept[self.index_start+1], gpt[self.index_start+1]),
       "text4", string.format("%d/%d", ept[self.index_start+2], gpt[self.index_start+2]),

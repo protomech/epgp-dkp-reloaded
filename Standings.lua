@@ -2,11 +2,14 @@ local T = AceLibrary("Tablet-2.0")
 local D = AceLibrary("Dewdrop-2.0")
 local C = AceLibrary("Crayon-2.0")
 
+local BC = AceLibrary("AceLocale-2.1"):GetInstance("Babble-Class-2.1")
+
 EPGP_Standings = EPGP:NewModule("EPGP_Standings", "AceDB-2.0")
 EPGP_Standings:RegisterDB("EPGP_Standings_DB", "EPGP_Standings_DB_CHAR")
 EPGP_Standings:RegisterDefaults("char", {
   data = { },
-  detached_data = { }
+  detached_data = { },
+  group_by_class = false
 })
 
 function EPGP_Standings:OnEnable()
@@ -21,7 +24,15 @@ function EPGP_Standings:OnEnable()
       "detachedData", self.db.char.detached_data,
   		"showTitleWhenDetached", true,
   		"showHintWhenDetached", true,
-  		"cantAttach", true
+  		"cantAttach", true,
+  		"menu", function()
+  		  D:AddLine(
+  		    "text", "Group by class",
+  		    "tooltipText", "Group members by class.",
+  		    "checked", self.db.char.group_by_class,
+  		    "func", function() EPGP_Standings:ToggleGroupByClass() end
+  		    )
+  		end
     )
   end
   if not T:IsAttached("EPGP_Standings") then
@@ -45,6 +56,67 @@ function EPGP_Standings:Toggle()
   end
 end
 
+function EPGP_Standings:ToggleGroupByClass()
+  self.db.char.group_by_class = not self.db.char.group_by_class
+  self:Refresh()
+end
+
+function EPGP_Standings:ComputeEP(t)
+  local ep = 0
+  local tep = 0
+  local nraids = 0
+  local rw = EPGP:GetRaidWindow()
+  local mr = EPGP:GetMinRaids()
+  
+  for k,v in pairs(t) do
+    if (k > rw) then break end
+    tep = tep + v
+    if (v > 0) then
+      nraids = nraids + 1
+    end
+  end
+  ep = (nraids < mr) and 0 or tep
+  return tep, nraids, ep
+end
+
+function EPGP_Standings:ComputeGP(t)
+  local gp = 0
+  local rw = EPGP:GetRaidWindow()
+  for k,v in pairs(t) do
+    if (k > rw) then break end
+    gp = gp + v
+  end
+  return (gp == 0) and 1 or gp
+end
+  
+-- Builds a standings table with record:
+-- name, class, EP, NR, EEP, GP, PR
+-- and sorted by PR
+function EPGP_Standings:BuildStandingsTable()
+  local t = { }
+  local alts = EPGP:GetAlts()
+  for n, d in pairs(EPGP:GetRoster()) do
+    local name, class, ept, gpt = n, unpack(d)
+    if (not alts[name]) then
+      local tep, nraids, ep = self:ComputeEP(ept)
+      local gp = self:ComputeGP(gpt)
+      table.insert(t, { name, class, tep, nraids, ep, gp, ep/gp })
+    end
+  end
+  -- Sort by priority and group by class if necessary
+  if (self.db.char.group_by_class) then
+    table.sort(t, function(a,b)
+      if (a[2] ~= b[2]) then return a[2] > b[2]
+      else return a[7] > b[7] end
+    end)
+  else
+    table.sort(t, function(a,b)
+      return a[7] > b[7]
+    end)
+  end
+  return t
+end
+
 function EPGP_Standings:OnTooltipUpdate()
   local cat = T:AddCategory(
       "columns", 6,
@@ -55,11 +127,11 @@ function EPGP_Standings:OnTooltipUpdate()
       "text5", C:Orange("GP"),     "child_text5R",   1, "child_text5G",   1, "child_text5B",   1, "child_justify5", "RIGHT",
       "text6", C:Orange("PR"),     "child_text6R",   1, "child_text6G",   1, "child_text6B",   0, "child_justify6", "RIGHT"
     )
-  local t = EPGP:BuildStandingsTable()
+  local t = self:BuildStandingsTable()
   for i = 1, table.getn(t) do
-    local name, tep, nraids, ep, gp, pr = unpack(t[i])
+    local name, class, tep, nraids, ep, gp, pr = unpack(t[i])
     cat:AddLine(
-      "text", name,
+      "text", C:Colorize(BC:GetHexColor(class), name),
       "text2", string.format("%.4g", tep),
       "text3", string.format("%.2g", nraids),
       "text4", string.format("%.4g", ep),
@@ -69,6 +141,6 @@ function EPGP_Standings:OnTooltipUpdate()
   end
 
   local info = T:AddCategory("columns", 2)
-  info:AddLine("text", C:Red("Raid Window"), "text2", C:Red(EPGP.db.profile.raid_window_size))
-  info:AddLine("text", C:Red("Min Raids"), "text2", C:Red(EPGP.db.profile.min_raids))
+  info:AddLine("text", C:Red("Raid Window"), "text2", C:Red(EPGP:GetRaidWindow()))
+  info:AddLine("text", C:Red("Min Raids"), "text2", C:Red(EPGP:GetMinRaids()))
 end

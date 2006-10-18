@@ -1,24 +1,42 @@
-local EP_IDX = 1
-local GP_IDX = 2
-
 -------------------------------------------------------------------------------
 -- Roster handling code
 -------------------------------------------------------------------------------
+
+function EPGP:GetRoster()
+  if (not self.roster) then
+    self.roster = { }
+  end
+  return self.roster
+end
+
+function EPGP:GetAlts()
+  if (not self.alts) then
+    self.alts = { }
+  end
+  return self.alts
+end
+
+function EPGP:SetRoster(r)
+  assert(r and type(r) == "table", "Roster is not a table!")
+  self.roster = r
+end
 
 -- Reads roster from server
 function EPGP:PullRoster()
   -- Figure out alts
   local alts = GetGuildInfoText() or ""
+  local alts_table = self:GetAlts()
   for from, to in string.gfind(alts, "(%a+):(%a+)\n") do
     self:Debug("Adding %s as an alt for %s", to, from)
-    self.db.profile.alts[to] = from
+    alts_table[to] = from
   end
   -- Update roster
   for i = 1, GetNumGuildMembers(true) do
-    local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+    local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+    local roster = self:GetRoster()
     if (name) then
-      self.db.profile.roster[name] = {
-        self:PointString2Table(note), self:PointString2Table(officernote)
+      roster[name] = {
+        class, self:PointString2Table(note), self:PointString2Table(officernote)
       }
     end
   end
@@ -28,9 +46,11 @@ end
 function EPGP:PushRoster()
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
-    if (name and self.db.profile.roster[name]) then
-      local note = self:PointTable2String(self.db.profile.roster[name][EP_IDX])
-      local officernote = self:PointTable2String(self.db.profile.roster[name][GP_IDX])
+    local roster = self:GetRoster()
+    if (name and roster[name]) then
+      local _, ep, gp = unpack(roster[name])
+      local note = self:PointTable2String(ep)
+      local officernote = self:PointTable2String(gp)
       GuildRosterSetPublicNote(i, note)
       GuildRosterSetOfficerNote(i, officernote)
     end
@@ -80,20 +100,21 @@ end
 
 function EPGP:GetEPGP(name)
   assert(name and type(name) == "string")
-  local member = self.db.profile.roster[name]
-  assert(member, "Cannot find member record to update!")
-  assert(member[EP_IDX] and member[GP_IDX], "Member record corrupted!")
-  return unpack(member)
+  local roster = self:GetRoster()
+  assert(roster[name], "Cannot find member record to update!")
+  local _, ep, gp = unpack(roster[name])
+  assert(ep and gp, "Member record corrupted!")
+  return ep, gp
 end
 
 function EPGP:SetEPGP(name, ep, gp)
   assert(name and type(name) == "string")
   assert(ep and type(ep) == "table")
   assert(gp and type(gp) == "table")
-  local member = self.db.profile.roster[name]
-  assert(member, "Cannot find member record to update!")
-  member[EP_IDX] = ep
-  member[GP_IDX] = gp
+  local roster = self:GetRoster()
+  assert(roster[name], "Cannot find member record to update!")
+  local class, _, _ = unpack(roster[name])
+  roster[name] = { class, ep, gp }
 end
 
 -- Sets all EP/GP to 0
@@ -107,21 +128,23 @@ function EPGP:ResetEPGP()
 end
 
 function EPGP:NewRaid()
-  for n, t in pairs(self.db.profile.roster) do
-    local member_name, ep, gp = n, unpack(t)
+  local roster = self:GetRoster()
+  for n, t in pairs(roster) do
+    local name, _, ep, gp = n, unpack(t)
     table.remove(ep)
     table.insert(ep, 1, 0)
     table.remove(gp)
     table.insert(gp, 1, 0)
-    self:SetEPGP(member_name, ep, gp)
+    self:SetEPGP(name, ep, gp)
   end
-  self:Report("Created new raid.")
   self:PushRoster()
+  self:Report("Created new raid.")
 end
 
 function EPGP:ResolveMember(member)
-  while (self.db.profile.alts[member]) do
-    member = self.db.profile.alts[member]
+  local alts = self:GetAlts()
+  while (alts[member]) do
+    member = alts[member]
   end
   return member
 end
@@ -131,8 +154,8 @@ function EPGP:AddEP2Member(member, points)
   local ep, gp = self:GetEPGP(member)
   ep[1] = ep[1] + tonumber(points)
   self:SetEPGP(member, ep, gp)
-  self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
   self:PushRoster()
+  self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
 end
 
 function EPGP:AddEP2Raid(points)
@@ -151,62 +174,6 @@ function EPGP:AddGP2Member(member, points)
   local ep, gp = self:GetEPGP(member)
   gp[1] = gp[1] + tonumber(points)
   self:SetEPGP(member, ep, gp)
-  self:Report("Added " .. tostring(points) .. " GPs to " .. member .. ".")
   self:PushRoster()
-end
-
-function EPGP:ComputeEP(t)
-  local ep = 0
-  local tep = 0
-  local nraids = 0
-  
-  for k,v in pairs(t) do
-    if (k > self.db.profile.raid_window_size) then break end
-    tep = tep + v
-    if (v > 0) then
-      nraids = nraids + 1
-    end
-  end
-  ep = (nraids < self.db.profile.min_raids) and 0 or tep
-  return tep, nraids, ep
-end
-
-function EPGP:ComputeGP(t)
-  local gp = 0
-  for k,v in pairs(t) do
-    if (k > self.db.profile.raid_window_size) then break end
-    gp = gp + v
-  end
-  return (gp == 0) and 1 or gp
-end
-  
--- Builds a standings table with record:
--- name, EP, NR, EEP, GP, PR
--- and sorted by PR
-function EPGP:BuildStandingsTable()
-  local t = { }
-  for n, d in pairs(self.db.profile.roster) do
-    local member_name, ept, gpt = n, unpack(d)
-    if (not self.db.profile.alts or not self.db.profile.alts[member_name]) then
-      local tep, nraids, ep = self:ComputeEP(ept)
-      local gp = self:ComputeGP(gpt)
-      table.insert(t, { member_name, tep, nraids, ep, gp, ep/gp })
-    end
-  end
-  table.sort(t, function(a, b) return a[6] > b[6] end)
-  return t
-end
-
--- Builds a history table with record:
--- name, { ep1, ... }, { gp1, ... }
-function EPGP:BuildHistoryTable()
-  local t = { }
-  for n, d in pairs(self.db.profile.roster) do
-    local member_name, ep, gp = n, unpack(d)
-    if (not self.db.profile.alts or not self.db.profile.alts[member_name]) then
-      table.insert(t, { member_name, ep, gp })
-    end
-  end
-  table.sort(t, function(a, b) return a[1] < b[1] end)
-  return t
+  self:Report("Added " .. tostring(points) .. " GPs to " .. member .. ".")
 end
