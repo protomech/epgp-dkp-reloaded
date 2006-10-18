@@ -96,7 +96,10 @@ end
 function EPGP:GetEPGP(name)
   assert(name and type(name) == "string")
   local roster = self:GetRoster()
-  assert(roster[name], "Cannot find member record to update!")
+  if (not roster[name]) then
+    self:Print("Cannot find member record for member %s!", name)
+    return nil, nil
+  end
   local _, ep, gp = unpack(roster[name])
   assert(ep and gp, "Member record corrupted!")
   return ep, gp
@@ -107,7 +110,10 @@ function EPGP:SetEPGP(name, ep, gp)
   assert(ep and type(ep) == "table")
   assert(gp and type(gp) == "table")
   local roster = self:GetRoster()
-  assert(roster[name], "Cannot find member record to update!")
+  if (not roster[name]) then
+    self:Print("Cannot find member record to update for member %s!", name)
+    return
+  end
   local class, _, _ = unpack(roster[name])
   roster[name] = { class, ep, gp }
 end
@@ -154,14 +160,47 @@ function EPGP:AddEP2Member(member, points)
 end
 
 function EPGP:AddEP2Raid(points)
-  local raid = { }
+  if (not UnitInRaid("player")) then
+    self:Print("You are not in a raid group!")
+    return
+  end
+  local members = { }
   for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if (zone == self.current_zone) then
-      self:AddEP2Member(name, points)
+      name = self:ResolveMember(name)
+      local ep, gp = self:GetEPGP(name)
+      if (ep and gp) then
+        table.insert(members, name)
+        ep[1] = ep[1] + tonumber(points)
+        self:SetEPGP(name, ep, gp)
+      end
     end
   end
   self:PushRoster()
+  self:Report("Added " .. tostring(points) .. " EPs to " .. table.concat(members, ", "))
+end
+
+function EPGP:AddEPBonus2Raid(bonus)
+  if (not UnitInRaid("player")) then
+    self:Print("You are not in a raid group!")
+    return
+  end
+  local members = { }
+  for i = 1, GetNumRaidMembers() do
+    local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
+    if (zone == self.current_zone) then
+      name = self:ResolveMember(name)
+      local ep, gp = self:GetEPGP(name)
+      if (ep and gp) then
+        table.insert(members, name)
+        ep[1] = math.floor(ep[1] * (1 + tonumber(bonus)))
+        self:SetEPGP(name, ep, gp)
+      end
+    end
+  end
+  self:PushRoster()
+  self:Report("Added " .. tostring(bonus * 100) .. "% EP bonus to " .. table.concat(members, ", "))
 end
 
 function EPGP:AddGP2Member(member, points)

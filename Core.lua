@@ -129,8 +129,26 @@ function EPGP:BuildOptions()
     set = function(v) self:AddEP2Raid(tonumber(v)) end,
     usage = "<EP>",
     disabled = function() return not self:CanLogRaids() end,
-    validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end,
+    validate = function(v)
+      local n = tonumber(v)
+      return n and n >= 0 and n < 4096
+    end,
     order = 1
+  }
+  -- EP% to raid
+  options.args["ep_bonus_raid"] = {
+    type = "text",
+    name = "+EP bonus % to Raid",
+    desc = "Award EP % bonus to raid members that are zoned.",
+    get = false,
+    set = function(v) self:AddEPBonus2Raid(tonumber(v)/100) end,
+    usage = "<EP>",
+    disabled = function() return not self:CanLogRaids() end,
+    validate = function(v)
+      local n = tonumber(v)
+      return n and n > 0 and n <= 100
+    end,
+    order = 2
   }
   -- EPs to member
   options.args["ep"] = {
@@ -139,7 +157,7 @@ function EPGP:BuildOptions()
     desc = "Award EPs to member.",
     disabled = function() return not self:CanChangeRules() end,
     args = { },
-    order = 2,
+    order = 3,
   }
   for n, t in pairs(self:GetRoster()) do
     local member_name = n
