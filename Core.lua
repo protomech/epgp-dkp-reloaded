@@ -1,7 +1,6 @@
 EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "AceModuleCore-2.0", "FuBarPlugin-2.0")
 EPGP:SetModuleMixins("AceDebug-2.0")
 
-EPGP.revision = tonumber(string.sub("$Rev$", 7, -3))
 -------------------------------------------------------------------------------
 -- DB defaults
 -------------------------------------------------------------------------------
@@ -77,21 +76,21 @@ function EPGP:ZONE_CHANGED_NEW_AREA()
 end
 
 function EPGP:SyncRules()
-  local s = string.format("V:%d RW:%d MR:%d",
-                          self.revision,
+  local s = string.format("V:%s RW:%d MR:%d",
+                          self.version,
                           self:GetRaidWindow(),
                           self:GetMinRaids())
-  SendAddonMessage("EPGP", s, "GUILD")
+  SendAddonMessage(self.title, s, "GUILD")
   self:Debug("Syncing rules.")
 end
 
 function EPGP:CHAT_MSG_ADDON(prefix, msg, distr, sender)
-  if (prefix ~= "EPGP" or distr ~= "GUILD") then
+  if (prefix ~= self.title or distr ~= "GUILD") then
     return
   end
-  local _, _, remote_rev, new_raid_window_size, new_min_raids =
-    string.find(msg, "V:(%d+) RW:(%d+) MR:(%d+)")
-  if (not tonumber(remote_rev) or tonumber(remote_rev) ~= self.revision) then
+  local _, _, remote_ver, new_raid_window_size, new_min_raids =
+    string.find(msg, "V:(.+) RW:(%d+) MR:(%d+)")
+  if (remote_ver ~= self.version) then
     self:Print("Version mismatch. Please use the same clients across the guild!")
     return
   end
