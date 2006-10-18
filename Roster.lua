@@ -55,8 +55,6 @@ function EPGP:PushRoster()
       GuildRosterSetOfficerNote(i, officernote)
     end
   end
-  -- Cause the roster to be pulled from server
-  GuildRoster()
 end
 
 -------------------------------------------------------------------------------
