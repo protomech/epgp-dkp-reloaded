@@ -2,7 +2,7 @@ local T = AceLibrary("Tablet-2.0")
 local D = AceLibrary("Dewdrop-2.0")
 local C = AceLibrary("Crayon-2.0")
 
-local BC = AceLibrary("AceLocale-2.1"):GetInstance("Babble-Class-2.1")
+local BC = AceLibrary("Babble-Class-2.2")
 
 EPGP_Standings = EPGP:NewModule("EPGP_Standings", "AceDB-2.0")
 EPGP_Standings:RegisterDB("EPGP_Standings_DB", "EPGP_Standings_DB_CHAR")
