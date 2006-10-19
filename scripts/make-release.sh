@@ -6,7 +6,13 @@ if [ ! $# == 1 ]; then
 fi
 
 ORIGINAL_DIR=$PWD
-ADDON_DIR=$(dirname "$(readlink -f $0/..)")
+SCRIPT_NAME=$(readlink -f $0)
+
+echo "Script: $SCRIPT_NAME"
+
+ADDON_DIR=$(dirname $(dirname $SCRIPT_NAME))
+
+echo "Addon directory: $ADDON_DIR"
 
 cd /tmp
 cp -R "$ADDON_DIR" /tmp/
