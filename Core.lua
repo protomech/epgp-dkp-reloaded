@@ -6,12 +6,6 @@ EPGP:SetModuleMixins("AceDebug-2.0")
 -------------------------------------------------------------------------------
 EPGP:RegisterDB("EPGP_DB")
 EPGP:RegisterDefaults("profile", {
-  -- The raid_window size on which we count EPs and GPs.
-  -- Anything out of the window will not be taken into account.
-  raid_window_size = 10,
-  -- The min number of raids to attend in the window in order to get
-  -- EPs counted
-  min_raids = 2,
   -- Default report channel
   report_channel = "GUILD"
 })
@@ -26,36 +20,37 @@ end
 
 function EPGP:OnEnable()
   self:Print("EPGP addon is enabled")
-  self.roster = { }
-  self.alts = { }
   -- Keep Guild Roster up to date by calling GuildRoster() every 15 secs
   self:ScheduleRepeatingEvent(GuildRoster, 15); GuildRoster()
   self:RegisterEvent("GUILD_ROSTER_UPDATE", 1)
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:ZONE_CHANGED_NEW_AREA()
-  if (self:CanChangeRules()) then
-    self:ScheduleRepeatingEvent(self.SyncRules, 60, self)
-  else
-    self:RegisterEvent("CHAT_MSG_ADDON")
-  end
 end
 
 function EPGP:GetRaidWindow()
-  return self.db.profile.raid_window_size
+  return self.raid_window or 10
 end
 
 function EPGP:SetRaidWindow(rw)
   assert(rw and tonumber(rw), "Attempt to set raid window to something that is not a number!")
-  self.db.profile.raid_window_size = tonumber(rw)
+  rw = tonumber(rw)
+  if (self.raid_window ~= rw) then
+    self.raid_window = rw
+    self:Print("Raid Window set to " .. tostring(rw))
+  end
 end
 
 function EPGP:GetMinRaids()
-  return self.db.profile.min_raids
+  return self.min_raids or 2
 end
 
 function EPGP:SetMinRaids(mr)
   assert(mr and tonumber(mr), "Attempt to set min raids to something that is not a number!")
-  self.db.profile.min_raids = tonumber(mr)
+  mr = tonumber(mr)
+  if (self.min_raids ~= mr) then
+    self.min_raids = mr
+    self:Print("Min raids set to " .. tostring(mr))
+  end
 end
 
 function EPGP:GUILD_ROSTER_UPDATE()
@@ -73,31 +68,6 @@ end
 
 function EPGP:ZONE_CHANGED_NEW_AREA()
   self.current_zone = GetRealZoneText()
-end
-
-function EPGP:SyncRules()
-  local s = string.format("V:%s RW:%d MR:%d",
-                          self.version,
-                          self:GetRaidWindow(),
-                          self:GetMinRaids())
-  SendAddonMessage(self.title, s, "GUILD")
-  self:Debug("Syncing rules.")
-end
-
-function EPGP:CHAT_MSG_ADDON(prefix, msg, distr, sender)
-  if (prefix ~= self.title or distr ~= "GUILD") then
-    return
-  end
-  local _, _, remote_ver, new_raid_window_size, new_min_raids =
-    string.find(msg, "V:(.+) RW:(%d+) MR:(%d+)")
-  if (remote_ver ~= self.version) then
-    self:Print("Version mismatch. Please use the same clients across the guild!")
-    return
-  end
-  self:SetRaidWindow(new_raid_window_size)
-  self:SetMinRaids(new_min_raids)
-  self:Debug("Synced raid window size to %d", self:GetRaidWindow())
-  self:Debug("Synced min raids to %d", self:GetMinRaids())
 end
 
 function EPGP:OnDisable()
@@ -223,32 +193,6 @@ function EPGP:BuildOptions()
     desc = "Toggle the history browser.",
     order = 1004,
     func = function() EPGP_History:Toggle() end
-  }
-  -- Window size
-  options.args["window_size"] = {
-    type = "range",
-    name = "EP/GP Raid Window Size",
-    desc = "The number of raids back to be accounted for EP/GP calculations.",
-    min = 5,
-    max = 15,
-    step = 1,
-    order = 1005,
-    disabled = function() return not self:CanChangeRules() end,
-    get = function() return self:GetRaidWindow() end,
-    set = function(v) self:SetRaidWindow(v) end
-  }
-  -- Min raids
-  options.args["min_raids"] = {
-    type = "range",
-    name = "EP/GP Min Raids",
-    desc = "The minimum number of raids in the window, for EPs to be accounted.",
-    min = 0,
-    max = 7,
-    step = 1,
-    order = 1006,
-    disabled = function() return not self:CanChangeRules() end,
-    get = function() return self:GetMinRaids() end,
-    set = function(v) self:SetMinRaids(v) end
   }
   -- Reset EPGP data
   options.args["reset"] = {

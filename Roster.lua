@@ -18,12 +18,20 @@ end
 
 -- Reads roster from server
 function EPGP:PullRoster()
+  local text = GetGuildInfoText() or ""
+  -- Get raid window and min raids
+  local _,_, rw, mr = string.find(text, "RW:(%d+) MR:(%d+)")
+  self:SetRaidWindow(rw)
+  self:SetMinRaids(mr)
   -- Figure out alts
-  local alts = GetGuildInfoText() or ""
-  local alts_table = self:GetAlts()
-  for from, to in string.gfind(alts, "(%a+):(%a+)\n") do
-    self:Debug("Adding %s as an alt for %s", to, from)
-    alts_table[to] = from
+  local alts = self:GetAlts()
+  for main, alts_text in string.gfind(text, "(%a+):([%a ]+)\n") do
+    for alt in string.gfind(alts_text, "(%a+)") do
+      if (alts[alt] ~= main) then
+        alts[alt] = main
+        self:Print("Added alt for %s: %s", main, alt)
+      end
+    end
   end
   -- Update roster
   for i = 1, GetNumGuildMembers(true) do
