@@ -22,8 +22,9 @@ function EPGP:OnEnable()
   self:Print("EPGP addon is enabled")
   -- Keep Guild Roster up to date by calling GuildRoster() every 15 secs
   self:ScheduleRepeatingEvent(GuildRoster, 15); GuildRoster()
-  self:RegisterEvent("GUILD_ROSTER_UPDATE", 1)
+  self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+  self:RegisterEvent("EPGP_PULL_ROSTER", 1)
   self:ZONE_CHANGED_NEW_AREA()
 end
 
@@ -55,15 +56,10 @@ end
 
 function EPGP:GUILD_ROSTER_UPDATE()
   self:Debug("Processing GUILD_ROSTER_UPDATE")
+  self:ScheduleEvent("EPGP_PULL_ROSTER", 1)
   -- Change profile
   local guild_name, _, _ = GetGuildInfo("player")
   self:SetProfile(guild_name)
-  -- Cache roster
-  self:PullRoster()
-  -- Rebuild options
-  self.OnMenuRequest = self:BuildOptions()
-  EPGP_Standings:Refresh()
-  EPGP_History:Refresh()
 end
 
 function EPGP:ZONE_CHANGED_NEW_AREA()

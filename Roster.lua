@@ -16,6 +16,15 @@ function EPGP:GetAlts()
   return self.alts
 end
 
+function EPGP:EPGP_PULL_ROSTER()
+  -- Cache roster
+  self:PullRoster()
+  -- Rebuild options
+  self.OnMenuRequest = self:BuildOptions()
+  EPGP_Standings:Refresh()
+  EPGP_History:Refresh()
+end
+
 -- Reads roster from server
 function EPGP:PullRoster()
   local text = GetGuildInfoText() or ""
@@ -43,6 +52,7 @@ function EPGP:PullRoster()
       }
     end
   end
+  GuildRoster()
 end
 
 -- Writes roster to server
