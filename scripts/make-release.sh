@@ -5,18 +5,14 @@ if [ ! $# == 1 ]; then
   exit 1
 fi
 
-ORIGINAL_DIR=$PWD
-SCRIPT_NAME=$(readlink -f $0)
+if [ ! -f epgp.toc ]; then
+  echo "You must run this script from the root of the epgp directory!"
+  exit 1
+fi
 
-echo "Script: $SCRIPT_NAME"
+RELEASE_ZIP="$HOME/Desktop/epgp-$1.zip"
 
-ADDON_DIR=$(dirname $(dirname $SCRIPT_NAME))
+cd ..
+zip -r "$RELEASE_ZIP" epgp -x \*/.svn/\* -x \*/scripts/\*
 
-echo "Addon directory: $ADDON_DIR"
-
-cd /tmp
-cp -R "$ADDON_DIR" /tmp/
-find epgp -type d -name ".svn" | xargs rm -rf
-rm -rf epgp/scripts
-zip -r "$ORIGINAL_DIR"/epgp-$1.zip epgp
-rm -rf /tmp/epgp
+echo "Release file at $RELEASE_ZIP"
