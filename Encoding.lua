@@ -75,7 +75,7 @@ function EPGP:Encode(num)
   repeat
     local r = mod(num, 64)
     num = math.floor(num / 64)
-    s = NUM2STRING[r] .. s
+    s = (NUM2STRING[r] or "0") .. s
   until (num == 0)
   return s
 end
@@ -85,7 +85,7 @@ function EPGP:Decode(s)
   for i = 1, string.len(s) do
     local ss = string.sub(s, i, i)
     num = num * 64
-    num = num + STRING2NUM[ss]
+    num = num + (STRING2NUM[ss] or 0)
   end
   
   return num

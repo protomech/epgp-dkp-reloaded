@@ -30,8 +30,12 @@ function EPGP:PullRoster()
   local text = GetGuildInfoText() or ""
   -- Get raid window and min raids
   local _,_, rw, mr = string.find(text, "RW:(%d+) MR:(%d+)")
-  self:SetRaidWindow(rw)
-  self:SetMinRaids(mr)
+  if (rw and tonumber(rw)) then
+    self:SetRaidWindow(rw)
+  end
+  if (mr and tonumber(mr)) then
+    self:SetMinRaids(mr)
+  end
   -- Figure out alts
   local alts = self:GetAlts()
   for main, alts_text in string.gfind(text, "(%a+):([%a ]+)\n") do
