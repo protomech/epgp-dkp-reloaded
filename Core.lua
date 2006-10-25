@@ -133,8 +133,17 @@ function EPGP:BuildOptions()
     order = 3,
   }
   for n, t in pairs(self:GetRoster()) do
-    local member_name = n
-    options.args["ep"].args[member_name] = {
+    local member_name, class, _, _ = n, unpack(t)
+    if (not options.args["ep"].args[class]) then
+      options.args["ep"].args[class] = {
+        type = "group",
+        name = class,
+        desc = class .. " members",
+        disabled = function() return not self:CanChangeRules() end,
+        args = { }
+      }
+    end
+    options.args["ep"].args[class].args[member_name] = {
       type = "text",
       name = member_name,
       desc = "Award EPs to " .. member_name .. ".",
@@ -155,8 +164,17 @@ function EPGP:BuildOptions()
     order = 4
   }
   for n, t in pairs(self:GetRoster()) do
-    local member_name = n
-    options.args["gp"].args[member_name] = {
+    local member_name, class, _, _ = n, unpack(t)
+    if (not options.args["gp"].args[class]) then
+      options.args["gp"].args[class] = {
+        type = "group",
+        name = class,
+        desc = class .. " members",
+        disabled = function() return not self:CanChangeRules() end,
+        args = { }
+      }
+    end
+    options.args["gp"].args[class].args[member_name] = {
       type = "text",
       name = member_name,
       desc = "Account GPs to " .. member_name .. ".",
