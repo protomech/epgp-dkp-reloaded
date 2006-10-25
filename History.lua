@@ -52,6 +52,9 @@ end
 function EPGP_History:Toggle()
   if T:IsAttached("EPGP_History") then
     T:Detach("EPGP_History")
+    if (T:IsLocked("EPGP_History")) then
+      T:ToggleLocked("EPGP_History")
+    end
   else
     T:Attach("EPGP_History")
   end

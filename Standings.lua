@@ -51,6 +51,9 @@ end
 function EPGP_Standings:Toggle()
   if T:IsAttached("EPGP_Standings") then
     T:Detach("EPGP_Standings")
+    if (T:IsLocked("EPGP_Standings")) then
+      T:ToggleLocked("EPGP_Standings")
+    end
   else
     T:Attach("EPGP_Standings")
   end
