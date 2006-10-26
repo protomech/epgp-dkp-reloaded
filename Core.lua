@@ -207,14 +207,6 @@ function EPGP:BuildOptions()
     validate = { "PARTY", "RAID", "GUILD", "OFFICER" },
     order = 1002
   }
-  -- Report history
-  options.args["history"] = {
-    type = "execute",
-    name = "History browser",
-    desc = "Toggle the history browser.",
-    order = 1004,
-    func = function() EPGP_History:Toggle() end
-  }
   -- Reset EPGP data
   options.args["reset"] = {
     type = "execute",
@@ -244,9 +236,13 @@ EPGP.tooltipHidderWhenEmpty = false
 EPGP.hasIcon = "Interface\\Icons\\INV_Misc_Orb_04"
 
 function EPGP:OnTooltipUpdate()
-  T:SetHint("Click to show/hide EPGP standings.")
+  T:SetHint("Click to toggle EPGP standings.\nShift-Click to toggle EPGP history.")
 end
 
 function EPGP:OnClick()
-  EPGP_Standings:Toggle()
+  if (IsShiftKeyDown()) then
+    EPGP_History:Toggle()
+  else
+    EPGP_Standings:Toggle()
+  end
 end
