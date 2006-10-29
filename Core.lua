@@ -14,6 +14,9 @@ EPGP:RegisterDefaults("profile", {
 -- Init code
 -------------------------------------------------------------------------------
 function EPGP:OnInitialize()
+  self.DEFAULT_RAID_WINDOW = 10
+  self.DEFAULT_MIN_RAIDS = 2
+  self.DEFAULT_FLAT_CREDENTIALS = false
   self.OnMenuRequest = self:BuildOptions()
   self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest)
 end
@@ -28,8 +31,17 @@ function EPGP:OnEnable()
   self:PLAYER_GUILD_UPDATE()
 end
 
+function EPGP:IsFlatCredentials()
+  return self.flat_credentials or self.DEFAULT_FLAT_CREDENTIALS
+end
+
+function EPGP:SetFlatCredentials(val)
+  self.flat_credentials = val and true or false
+  self:Print("Flat credentials " .. (self.flat_credentials and "on" or "off"))
+end
+
 function EPGP:GetRaidWindow()
-  return self.raid_window or 10
+  return self.raid_window or self.DEFAULT_RAID_WINDOW
 end
 
 function EPGP:SetRaidWindow(rw)
@@ -42,7 +54,7 @@ function EPGP:SetRaidWindow(rw)
 end
 
 function EPGP:GetMinRaids()
-  return self.min_raids or 2
+  return self.min_raids or self.DEFAULT_MIN_RAIDS
 end
 
 function EPGP:SetMinRaids(mr)
@@ -82,7 +94,7 @@ function EPGP:CanLogRaids()
 end
 
 function EPGP:CanChangeRules()
-  return IsGuildLeader()
+  return IsGuildLeader() or (self:CanLogRaids() and self:IsFlatCredentials())
 end
 
 -- Builds an AceOptions table for the options

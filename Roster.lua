@@ -28,17 +28,29 @@ end
 -- Reads roster from server
 function EPGP:PullRoster()
   local text = GetGuildInfoText() or ""
-  -- Get raid window and min raids
-  local _,_, rw, mr = string.find(text, "RW:(%d+) MR:(%d+)")
-  if (rw and tonumber(rw)) then
-    self:SetRaidWindow(rw)
-  end
-  if (mr and tonumber(mr)) then
-    self:SetMinRaids(mr)
-  end
-  -- Figure out alts
+  -- Get options and alts
+  -- Format is:
+  --   @RW:<number>    // for raid window (defaults to 10)
+  --   @NR:<number>    // for min raids (defaults to 2)
+  --   @FC             // for flat credentials (true if specified, false otherwise)
+  --   Main:Alt1 Alt2  // Alt1 and Alt2 are alts for Main
+
+  -- Raid Window
+  local _, _, rw = string.find(text, "@RW:(%d+)\n")
+  if (not rw) then rw = self.DEFAULT_RAID_WINDOW end
+  if (rw ~= self:GetRaidWindow()) then self:SetRaidWindow(rw) end
+
+  -- Min Raids
+  local _, _, mr = string.find(text, "@MR:(%d)\n")
+  if (not mr) then mr = self.DEFAULT_MIN_RAIDS end
+  if (mr ~= self:GetMinRaids()) then self:SetMinRaids(mr) end
+  
+  -- Flat Credentials
+  local fc = (string.find(text, "@FC\n") and true or false)
+  if (fc ~= self:IsFlatCredentials()) then self:SetFlatCredentials(fc) end
+  
   local alts = self:GetAlts()
-  for main, alts_text in string.gfind(text, "(%a+):([%a ]+)\n") do
+  for main, alts_text in string.gfind(text, "(%a+):([%a%s]+)\n") do
     for alt in string.gfind(alts_text, "(%a+)") do
       if (alts[alt] ~= main) then
         alts[alt] = main
@@ -162,6 +174,20 @@ function EPGP:NewRaid()
   end
   self:PushRoster()
   self:Report("Created new raid.")
+end
+
+function EPGP:RemoveLastRaid()
+  local roster = self:GetRoster()
+  for n, t in pairs(roster) do
+    local name, _, ep, gp = n, unpack(t)
+    table.remove(ep, 1)
+    table.insert(ep, 0)
+    table.remove(gp, 1)
+    table.insert(gp, 0)
+    self:SetEPGP(name, ep, gp)
+  end
+  self:PushRoster()
+  self:Report("Removed last raid.")
 end
 
 function EPGP:ResolveMember(member)
