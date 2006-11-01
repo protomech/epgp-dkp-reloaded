@@ -16,13 +16,39 @@ function EPGP:GetAlts()
   return self.alts
 end
 
+function EPGP:GetStandingsIterator()
+  local i = 1
+  if (self.db.profile.raid_mode and UnitInRaid("player")) then
+    local e = GetNumRaidMembers()
+    return function()
+      local name, _ = GetRaidRosterInfo(i)
+      i = i + 1
+      return name
+    end
+  else
+    local alts = self:GetAlts()
+    return function()
+      local name, _
+      repeat
+        name, _ = GetGuildRosterInfo(i)
+        i = i + 1
+      until (self.db.profile.show_alts or not alts[name])
+      return name
+    end
+  end
+end
+
+function EPGP:RefreshTablets()
+  EPGP_Standings:Refresh()
+  EPGP_History:Refresh()
+end
+
 function EPGP:EPGP_PULL_ROSTER()
   -- Cache roster
   self:PullRoster()
   -- Rebuild options
   self.OnMenuRequest = self:BuildOptions()
-  EPGP_Standings:Refresh()
-  EPGP_History:Refresh()
+  self:RefreshTablets()
 end
 
 -- Reads roster from server
@@ -127,11 +153,23 @@ function EPGP:PointTable2String(t)
   return s
 end
 
+function EPGP:GetClass(name)
+  assert(name and type(name) == "string")
+  local roster = self:GetRoster()
+  if (not roster[name]) then
+    self:Debug("Cannot find member record for member %s!", name)
+    return nil
+  end
+  local class, _ = unpack(roster[name])
+  assert(class, "Member record corrupted!")
+  return class
+end
+
 function EPGP:GetEPGP(name)
   assert(name and type(name) == "string")
   local roster = self:GetRoster()
   if (not roster[name]) then
-    self:Print("Cannot find member record for member %s!", name)
+    self:Debug("Cannot find member record for member %s!", name)
     return nil, nil
   end
   local _, ep, gp = unpack(roster[name])

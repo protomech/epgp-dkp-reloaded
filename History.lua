@@ -80,10 +80,13 @@ end
 function EPGP_History:BuildHistoryTable()
   local t = { }
   local alts = EPGP:GetAlts()
-  for n, d in pairs(EPGP:GetRoster()) do
-    local name, class, ep, gp = n, unpack(d)
-    if (not alts[name]) then
-      table.insert(t, { name, class, ep, gp })
+  local roster = EPGP:GetRoster()
+  for n in EPGP:GetStandingsIterator() do
+    local name = n
+    local main_name = EPGP:ResolveMember(name)
+    local class, ept, gpt = EPGP:GetClass(name), EPGP:GetEPGP(main_name)
+    if (class and ept and gpt) then
+      table.insert(t, { name, class, ept, gpt })
     end
   end
   -- Sort by name and group by class if necessary

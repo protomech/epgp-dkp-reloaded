@@ -7,7 +7,9 @@ EPGP:SetModuleMixins("AceDebug-2.0")
 EPGP:RegisterDB("EPGP_DB")
 EPGP:RegisterDefaults("profile", {
   -- Default report channel
-  report_channel = "GUILD"
+  report_channel = "GUILD",
+  show_alts = false,
+  raid_mode = true,
 })
 
 -------------------------------------------------------------------------------
@@ -228,9 +230,25 @@ function EPGP:BuildOptions()
     disabled = function() return not self:CanChangeRules() end,
     func = function() EPGP:ResetEPGP() end
   }
+  -- Show alts
+  options.args["showalts"] = {
+    type = "toggle",
+    name = "Show alts",
+    desc = "Toggles showing of alts in standings/history lists",
+    get = function() return self.db.profile.show_alts or self.db.profile.raid_mode end,
+    set = function(v) self.db.profile.show_alts = v; self:RefreshTablets() end,
+    disabled = function() return self.db.profile.raid_mode end
+  }
+  -- Show alts
+  options.args["raidmode"] = {
+    type = "toggle",
+    name = "Show only raid members",
+    desc = "Toggles showing only raid members (if in raid) in standings/history lists",
+    get = function() return self.db.profile.raid_mode end,
+    set = function(v) self.db.profile.raid_mode = v; self:RefreshTablets() end
+  }
   return options
 end
-
 
 function EPGP:Report(msg)
   SendChatMessage("EPGP: " .. msg, self.db.profile.report_channel)
