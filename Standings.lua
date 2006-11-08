@@ -134,8 +134,8 @@ function EPGP_Standings:OnTooltipUpdate()
       "text6", C:Orange("PR"),     "child_text6R",   1, "child_text6G",   1, "child_text6B",   0, "child_justify6", "RIGHT"
     )
   local t = self:BuildStandingsTable()
-  for i = 1, table.getn(t) do
-    local name, class, tep, nraids, ep, gp, pr = unpack(t[i])
+  for k,v in pairs(t) do
+    local name, class, tep, nraids, ep, gp, pr = unpack(v)
     cat:AddLine(
       "text", C:Colorize(BC:GetHexColor(class), name),
       "text2", string.format("%.4g", tep),
