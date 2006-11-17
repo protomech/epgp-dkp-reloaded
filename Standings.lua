@@ -98,7 +98,6 @@ end
 function EPGP_Standings:BuildStandingsTable()
   local t = { }
   local alts = EPGP:GetAlts()
-  local roster = EPGP:GetRoster()
   for n in EPGP:GetStandingsIterator() do
     local name = n
     local main_name = EPGP:ResolveMember(name)
