@@ -2,14 +2,50 @@
 local string_gmatch = string.gmatch or string.gfind
 
 -------------------------------------------------------------------------------
--- Roster handling code
+-- Table utils
 -------------------------------------------------------------------------------
 
-function EPGP:GetRoster()
-  if (not self.roster) then
-    self.roster = { }
+-- This will not terminate if o1 or o2 are recursive datastructures
+function EPGP:Equal(o1, o2)
+  if (o1 == o2) then return true end
+  if (type(o1) ~= "table" or type(o2) ~= "table") then return false end
+  return self:TableContains(o1, o2) and self:TableContains(o2, o1)
+end
+
+-- This will not terminate if o1 or o2 are recursive datastructures
+function EPGP:TableContains(t1, t2)
+  if (type(t1) ~= "table" or type(t2) ~= "table") then return false end
+  for k,v in pairs(t1) do
+    if (not self:Equal(v, t2[k])) then return false end
   end
-  return self.roster
+  return true
+end
+
+function EPGP:TableEmpty(t1)
+  assert(type(t1) == "table")
+  local f, s, v = pairs(t1)
+  return not f(s, v)
+end
+
+-------------------------------------------------------------------------------
+-- Roster handling code
+-------------------------------------------------------------------------------
+function EPGP:GetRoster()
+  if (not self.db.profile.rosters or
+      not type(self.db.profile.rosters) == "table") then
+    self.db.profile.rosters = { }
+  end
+  local length = table.getn(self.db.profile.rosters)
+  if (length == 0) then
+    length = 1
+    self.db.profile.rosters[length] = { }
+  end
+  return self.db.profile.rosters[length]
+end
+
+function EPGP:PushRoster(roster)
+  assert(type(roster) == "table")
+  table.insert(self.db.profile.rosters, roster)
 end
 
 function EPGP:GetAlts()
@@ -46,16 +82,16 @@ function EPGP:RefreshTablets()
   EPGP_History:Refresh()
 end
 
-function EPGP:EPGP_PULL_ROSTER()
+function EPGP:EPGP_LOAD_ROSTER()
   -- Cache roster
-  self:PullRoster()
+  self:LoadRoster()
   -- Rebuild options
   self.OnMenuRequest = self:BuildOptions()
   self:RefreshTablets()
 end
 
 -- Reads roster from server
-function EPGP:PullRoster()
+function EPGP:LoadRoster()
   local text = GetGuildInfoText() or ""
   -- Get options and alts
   -- Format is:
@@ -88,20 +124,26 @@ function EPGP:PullRoster()
     end
   end
   -- Update roster
+  local roster = { }
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    local roster = self:GetRoster()
     if (name) then
       roster[name] = {
         class, self:PointString2Table(note), self:PointString2Table(officernote)
       }
     end
   end
+  self:Debug("roster empty: %s equal: %s",
+             self:TableEmpty(roster), self:Equal(roster, self:GetRoster()))
+  if (not self:TableEmpty(roster) and
+      not self:Equal(roster, self:GetRoster())) then
+    self:PushRoster(roster)
+  end
   GuildRoster()
 end
 
 -- Writes roster to server
-function EPGP:PushRoster()
+function EPGP:SaveRoster()
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
     local roster = self:GetRoster()
@@ -213,7 +255,7 @@ function EPGP:NewRaid()
     table.insert(gp, 1, 0)
     self:SetEPGP(name, ep, gp)
   end
-  self:PushRoster()
+  self:SaveRoster()
   self:Report("Created new raid.")
 end
 
@@ -227,7 +269,7 @@ function EPGP:RemoveLastRaid()
     table.insert(gp, 0)
     self:SetEPGP(name, ep, gp)
   end
-  self:PushRoster()
+  self:SaveRoster()
   self:Report("Removed last raid.")
 end
 
@@ -244,7 +286,7 @@ function EPGP:AddEP2Member(member, points)
   local ep, gp = self:GetEPGP(member)
   ep[1] = ep[1] + tonumber(points)
   self:SetEPGP(member, ep, gp)
-  self:PushRoster()
+  self:SaveRoster()
   self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
 end
 
@@ -266,7 +308,7 @@ function EPGP:AddEP2Raid(points)
       end
     end
   end
-  self:PushRoster()
+  self:SaveRoster()
   self:Report("Added " .. tostring(points) .. " EPs to " .. table.concat(members, ", "))
 end
 
@@ -288,7 +330,7 @@ function EPGP:AddEPBonus2Raid(bonus)
       end
     end
   end
-  self:PushRoster()
+  self:SaveRoster()
   self:Report("Added " .. tostring(bonus * 100) .. "% EP bonus to " .. table.concat(members, ", "))
 end
 
@@ -297,6 +339,6 @@ function EPGP:AddGP2Member(member, points)
   local ep, gp = self:GetEPGP(member)
   gp[1] = gp[1] + tonumber(points)
   self:SetEPGP(member, ep, gp)
-  self:PushRoster()
+  self:SaveRoster()
   self:Report("Added " .. tostring(points) .. " GPs to " .. member .. ".")
 end

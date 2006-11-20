@@ -6,6 +6,8 @@ EPGP:SetModuleMixins("AceDebug-2.0")
 -------------------------------------------------------------------------------
 EPGP:RegisterDB("EPGP_DB")
 EPGP:RegisterDefaults("profile", {
+  -- Undo queue
+  rosters = nil,
   -- Default report channel
   report_channel = "GUILD",
   show_alts = false,
@@ -28,7 +30,7 @@ function EPGP:OnEnable()
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_GUILD_UPDATE")
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-  self:RegisterEvent("EPGP_PULL_ROSTER", 1)
+  self:RegisterEvent("EPGP_LOAD_ROSTER", 1)
   self:ZONE_CHANGED_NEW_AREA()
   self:PLAYER_GUILD_UPDATE()
 end
@@ -80,7 +82,7 @@ end
 
 function EPGP:GUILD_ROSTER_UPDATE()
   self:Debug("Processing GUILD_ROSTER_UPDATE")
-  self:ScheduleEvent("EPGP_PULL_ROSTER", 1)
+  self:ScheduleEvent("EPGP_LOAD_ROSTER", 1)
 end
 
 function EPGP:ZONE_CHANGED_NEW_AREA()
