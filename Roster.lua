@@ -46,6 +46,10 @@ end
 function EPGP:PushRoster(roster)
   assert(type(roster) == "table")
   table.insert(self.db.profile.rosters, roster)
+  local MAX_UNDO_QUEUE = 10
+  while (table.getn(self.db.profile.rosters) > MAX_UNDO_QUEUE) do
+    table.remove(self.db.profile.rosters, 1)
+  end
 end
 
 function EPGP:GetAlts()
