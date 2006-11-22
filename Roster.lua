@@ -43,6 +43,17 @@ function EPGP:GetRoster()
   return self.db.profile.rosters[length]
 end
 
+function EPGP:HasActionsToUndo()
+  return table.getn(self.db.profile.rosters) > 0
+end
+
+function EPGP:Undo()
+  assert(self:HasActionsToUndo())
+  table.remove(self.db.profile.rosters)
+  self:SaveRoster();
+  self:Report("Undone last change.")
+end
+
 function EPGP:PushRoster(roster)
   assert(type(roster) == "table")
   table.insert(self.db.profile.rosters, roster)
@@ -137,10 +148,9 @@ function EPGP:LoadRoster()
       }
     end
   end
-  self:Debug("roster empty: %s equal: %s",
-             self:TableEmpty(roster), self:Equal(roster, self:GetRoster()))
   if (not self:TableEmpty(roster) and
       not self:Equal(roster, self:GetRoster())) then
+    self:Debug("Roster changed, pushing new roster in undo queue")
     self:PushRoster(roster)
   end
   GuildRoster()

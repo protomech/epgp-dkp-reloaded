@@ -232,6 +232,14 @@ function EPGP:BuildOptions()
     disabled = function() return not self:CanChangeRules() end,
     func = function() EPGP:ResetEPGP() end
   }
+  -- Undo last action
+  options.args["undo"] = {
+    type = "execute",
+    name = "Undo",
+    desc = "Undo last change.",
+    disabled = function() return not self:CanChangeRules() or not self:HasActionsToUndo() end,
+    func = function() EPGP:Undo() end
+  }
   -- Show alts
   options.args["showalts"] = {
     type = "toggle",
