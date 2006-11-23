@@ -82,6 +82,7 @@ end
 
 function EPGP:GUILD_ROSTER_UPDATE()
   self:Debug("Processing GUILD_ROSTER_UPDATE")
+  self:LoadConfig()
   self:ScheduleEvent("EPGP_LOAD_ROSTER", 1)
 end
 

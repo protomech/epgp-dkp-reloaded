@@ -80,10 +80,11 @@ end
 function EPGP_History:BuildHistoryTable()
   local t = { }
   local alts = EPGP:GetAlts()
+  local roster = EPGP:GetRoster()
   for n in EPGP:GetStandingsIterator() do
     local name = n
     local main_name = EPGP:ResolveMember(name)
-    local class, ept, gpt = EPGP:GetClass(name), EPGP:GetEPGP(main_name)
+    local class, ept, gpt = EPGP:GetClass(roster, name), EPGP:GetEPGP(roster, main_name)
     if (class and ept and gpt) then
       table.insert(t, { name, class, ept, gpt })
     end

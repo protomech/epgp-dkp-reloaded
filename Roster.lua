@@ -27,6 +27,19 @@ function EPGP:TableEmpty(t1)
   return not f(s, v)
 end
 
+function EPGP:CloneTable(t)
+  assert(type(t) == "table")
+  local r = { }
+  for k,v in pairs(t) do
+    local key = k
+    if (type(key) == "table") then key = self:CloneTable(key) end
+    local value = v
+    if (type(value) == "table") then value = self:CloneTable(value) end
+    r[key] = value
+  end
+  return r
+end
+
 -------------------------------------------------------------------------------
 -- Roster handling code
 -------------------------------------------------------------------------------
@@ -43,14 +56,20 @@ function EPGP:GetRoster()
   return self.db.profile.rosters[length]
 end
 
+function EPGP:GetPreviousRoster()
+  local length = table.getn(self.db.profile.rosters)
+  assert(length > 1)
+  return self.db.profile.rosters[length-1]
+end
+
 function EPGP:HasActionsToUndo()
-  return table.getn(self.db.profile.rosters) > 0
+  return table.getn(self.db.profile.rosters) > 1
 end
 
 function EPGP:Undo()
   assert(self:HasActionsToUndo())
-  table.remove(self.db.profile.rosters)
-  self:SaveRoster();
+  local roster = self:GetPreviousRoster()
+  self:SaveRoster(roster);
   self:Report("Undone last change.")
 end
 
@@ -98,15 +117,19 @@ function EPGP:RefreshTablets()
 end
 
 function EPGP:EPGP_LOAD_ROSTER()
-  -- Cache roster
-  self:LoadRoster()
+  -- Get roster from server
+  local roster = self:LoadRoster()
+  if (not self:TableEmpty(roster) and
+      not self:Equal(roster, self:GetRoster())) then
+    self:Debug("Roster changed, pushing new roster in undo queue")
+    self:PushRoster(roster)
+  end
   -- Rebuild options
   self.OnMenuRequest = self:BuildOptions()
   self:RefreshTablets()
 end
 
--- Reads roster from server
-function EPGP:LoadRoster()
+function EPGP:LoadConfig()
   local text = GetGuildInfoText() or ""
   -- Get options and alts
   -- Format is:
@@ -124,11 +147,11 @@ function EPGP:LoadRoster()
   local _, _, mr = string.find(text, "@MR:(%d)\n")
   if (not mr) then mr = self.DEFAULT_MIN_RAIDS end
   if (mr ~= self:GetMinRaids()) then self:SetMinRaids(mr) end
-  
+
   -- Flat Credentials
   local fc = (string.find(text, "@FC\n") and true or false)
   if (fc ~= self:IsFlatCredentials()) then self:SetFlatCredentials(fc) end
-  
+
   local alts = self:GetAlts()
   for main, alts_text in string_gmatch(text, "(%a+):([%a%s]+)\n") do
     for alt in string_gmatch(alts_text, "(%a+)") do
@@ -138,6 +161,11 @@ function EPGP:LoadRoster()
       end
     end
   end
+end
+
+-- Reads roster from server
+function EPGP:LoadRoster()
+  self:Debug("Loading roster from server")
   -- Update roster
   local roster = { }
   for i = 1, GetNumGuildMembers(true) do
@@ -148,19 +176,14 @@ function EPGP:LoadRoster()
       }
     end
   end
-  if (not self:TableEmpty(roster) and
-      not self:Equal(roster, self:GetRoster())) then
-    self:Debug("Roster changed, pushing new roster in undo queue")
-    self:PushRoster(roster)
-  end
   GuildRoster()
+  return roster
 end
 
 -- Writes roster to server
-function EPGP:SaveRoster()
+function EPGP:SaveRoster(roster)
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
-    local roster = self:GetRoster()
     if (name and roster[name]) then
       local _, ep, gp = unpack(roster[name])
       local note = self:PointTable2String(ep)
@@ -212,9 +235,8 @@ function EPGP:PointTable2String(t)
   return s
 end
 
-function EPGP:GetClass(name)
+function EPGP:GetClass(roster, name)
   assert(name and type(name) == "string")
-  local roster = self:GetRoster()
   if (not roster[name]) then
     self:Debug("Cannot find member record for member %s!", name)
     return nil
@@ -224,9 +246,9 @@ function EPGP:GetClass(name)
   return class
 end
 
-function EPGP:GetEPGP(name)
+function EPGP:GetEPGP(roster, name)
+  assert(roster and type(roster) == "table")
   assert(name and type(name) == "string")
-  local roster = self:GetRoster()
   if (not roster[name]) then
     self:Debug("Cannot find member record for member %s!", name)
     return nil, nil
@@ -234,19 +256,6 @@ function EPGP:GetEPGP(name)
   local _, ep, gp = unpack(roster[name])
   assert(ep and gp, "Member record corrupted!")
   return ep, gp
-end
-
-function EPGP:SetEPGP(name, ep, gp)
-  assert(name and type(name) == "string")
-  assert(ep and type(ep) == "table")
-  assert(gp and type(gp) == "table")
-  local roster = self:GetRoster()
-  if (not roster[name]) then
-    self:Print("Cannot find member record to update for member %s!", name)
-    return
-  end
-  local class, _, _ = unpack(roster[name])
-  roster[name] = { class, ep, gp }
 end
 
 -- Sets all EP/GP to 0
@@ -260,30 +269,28 @@ function EPGP:ResetEPGP()
 end
 
 function EPGP:NewRaid()
-  local roster = self:GetRoster()
+  local roster = self:CloneTable(self:GetRoster())
   for n, t in pairs(roster) do
     local name, _, ep, gp = n, unpack(t)
     table.remove(ep)
     table.insert(ep, 1, 0)
     table.remove(gp)
     table.insert(gp, 1, 0)
-    self:SetEPGP(name, ep, gp)
   end
-  self:SaveRoster()
+  self:SaveRoster(roster)
   self:Report("Created new raid.")
 end
 
 function EPGP:RemoveLastRaid()
-  local roster = self:GetRoster()
+  local roster = self:CloneTable(self:GetRoster())
   for n, t in pairs(roster) do
     local name, _, ep, gp = n, unpack(t)
     table.remove(ep, 1)
     table.insert(ep, 0)
     table.remove(gp, 1)
     table.insert(gp, 0)
-    self:SetEPGP(name, ep, gp)
   end
-  self:SaveRoster()
+  self:SaveRoster(roster)
   self:Report("Removed last raid.")
 end
 
@@ -296,11 +303,11 @@ function EPGP:ResolveMember(member)
 end
 
 function EPGP:AddEP2Member(member, points)
+  local roster = self:CloneTable(self:GetRoster())
   member = self:ResolveMember(member)
-  local ep, gp = self:GetEPGP(member)
+  local ep, gp = self:GetEPGP(roster, member)
   ep[1] = ep[1] + tonumber(points)
-  self:SetEPGP(member, ep, gp)
-  self:SaveRoster()
+  self:SaveRoster(roster)
   self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
 end
 
@@ -309,20 +316,20 @@ function EPGP:AddEP2Raid(points)
     self:Print("You are not in a raid group!")
     return
   end
+  local roster = self:CloneTable(self:GetRoster())
   local members = { }
   for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if (zone == self.current_zone) then
       name = self:ResolveMember(name)
-      local ep, gp = self:GetEPGP(name)
+      local ep, gp = self:GetEPGP(roster, name)
       if (ep and gp) then
         table.insert(members, name)
         ep[1] = ep[1] + tonumber(points)
-        self:SetEPGP(name, ep, gp)
       end
     end
   end
-  self:SaveRoster()
+  self:SaveRoster(roster)
   self:Report("Added " .. tostring(points) .. " EPs to " .. table.concat(members, ", "))
 end
 
@@ -331,28 +338,28 @@ function EPGP:AddEPBonus2Raid(bonus)
     self:Print("You are not in a raid group!")
     return
   end
+  local roster = self:CloneTable(self:GetRoster())
   local members = { }
   for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if (zone == self.current_zone) then
       name = self:ResolveMember(name)
-      local ep, gp = self:GetEPGP(name)
+      local ep, gp = self:GetEPGP(roster, name)
       if (ep and gp) then
         table.insert(members, name)
         ep[1] = math.floor(ep[1] * (1 + tonumber(bonus)))
-        self:SetEPGP(name, ep, gp)
       end
     end
   end
-  self:SaveRoster()
+  self:SaveRoster(roster)
   self:Report("Added " .. tostring(bonus * 100) .. "% EP bonus to " .. table.concat(members, ", "))
 end
 
 function EPGP:AddGP2Member(member, points)
+  local roster = self:CloneTable(self:GetRoster())
   member = self:ResolveMember(member)
-  local ep, gp = self:GetEPGP(member)
+  local ep, gp = self:GetEPGP(roster, member)
   gp[1] = gp[1] + tonumber(points)
-  self:SetEPGP(member, ep, gp)
-  self:SaveRoster()
+  self:SaveRoster(roster)
   self:Report("Added " .. tostring(points) .. " GPs to " .. member .. ".")
 end

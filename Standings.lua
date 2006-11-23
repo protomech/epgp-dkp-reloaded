@@ -98,10 +98,11 @@ end
 function EPGP_Standings:BuildStandingsTable()
   local t = { }
   local alts = EPGP:GetAlts()
+  local roster = EPGP:GetRoster()
   for n in EPGP:GetStandingsIterator() do
     local name = n
     local main_name = EPGP:ResolveMember(name)
-    local class, ept, gpt = EPGP:GetClass(name), EPGP:GetEPGP(main_name)
+    local class, ept, gpt = EPGP:GetClass(roster, name), EPGP:GetEPGP(roster, main_name)
     if (class and ept and gpt) then
       local tep, nraids, ep = self:ComputeEP(ept)
       local gp = self:ComputeGP(gpt)
