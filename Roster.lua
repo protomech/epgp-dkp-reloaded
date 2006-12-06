@@ -1,6 +1,3 @@
--- Lua 5.1 compatibility fix
-local string_gmatch = string.gmatch or string.gfind
-
 -------------------------------------------------------------------------------
 -- Table utils
 -------------------------------------------------------------------------------
@@ -153,8 +150,8 @@ function EPGP:LoadConfig()
   if (fc ~= self:IsFlatCredentials()) then self:SetFlatCredentials(fc) end
 
   local alts = self:GetAlts()
-  for main, alts_text in string_gmatch(text, "(%a+):([%a%s]+)\n") do
-    for alt in string_gmatch(alts_text, "(%a+)") do
+  for main, alts_text in string.gmatch(text, "(%a+):([%a%s]+)\n") do
+    for alt in string.gmatch(alts_text, "(%a+)") do
       if (alts[alt] ~= main) then
         alts[alt] = main
         self:Print("Added alt for %s: %s", main, alt)
