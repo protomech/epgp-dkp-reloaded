@@ -187,7 +187,7 @@ function EPGP:BuildOptions()
         type = "group",
         name = class,
         desc = class .. " members",
-        disabled = function() return not self:CanChangeRules() end,
+        disabled = function() return not self:CanLogRaids() end,
         args = { }
       }
     end
