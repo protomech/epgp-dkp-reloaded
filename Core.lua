@@ -250,7 +250,7 @@ function EPGP:BuildOptions()
     set = function(v) self.db.profile.show_alts = v; self:RefreshTablets() end,
     disabled = function() return self.db.profile.raid_mode end
   }
-  -- Show alts
+  -- Raid mode
   options.args["raidmode"] = {
     type = "toggle",
     name = "Show only raid members",
