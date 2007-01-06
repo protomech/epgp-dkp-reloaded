@@ -113,7 +113,13 @@ function EPGP:RefreshTablets()
   EPGP_History:Refresh()
 end
 
-function EPGP:EPGP_LOAD_ROSTER()
+function EPGP:GUILD_ROSTER_UPDATE(new_data)
+	self:Debug("Processing GUILD_ROSTER_UPDATE")
+	if new_data then
+		GuildRoster()
+		return
+	end
+	self:LoadConfig()
   -- Get roster from server
   local roster = self:LoadRoster()
   if (not self:TableEmpty(roster) and

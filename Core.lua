@@ -30,9 +30,9 @@ function EPGP:OnEnable()
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_GUILD_UPDATE")
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-  self:RegisterEvent("EPGP_LOAD_ROSTER", 1)
   self:ZONE_CHANGED_NEW_AREA()
   self:PLAYER_GUILD_UPDATE()
+	GuildRoster()
 end
 
 function EPGP:IsFlatCredentials()
@@ -71,19 +71,9 @@ function EPGP:SetMinRaids(mr)
 end
 
 function EPGP:PLAYER_GUILD_UPDATE()
-  -- Keep Guild Roster up to date by calling GuildRoster() every 15 secs
   if (IsInGuild()) then
     GuildRoster()
-    self:ScheduleRepeatingEvent(GuildRoster, 15)
-  else
-    self:CancelAllScheduledEvents()
   end
-end
-
-function EPGP:GUILD_ROSTER_UPDATE()
-  self:Debug("Processing GUILD_ROSTER_UPDATE")
-  self:LoadConfig()
-  self:ScheduleEvent("EPGP_LOAD_ROSTER", 1)
 end
 
 function EPGP:ZONE_CHANGED_NEW_AREA()
