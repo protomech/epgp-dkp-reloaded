@@ -2,12 +2,12 @@
 ## Title: EPGP
 ## Notes: Effort Points/Gear Points Loot System
 ## Author: Alkis Evlogimenos
-## Version: $Revision$
+## Version: 1.5
 ## OptionalDeps: Ace2
 ## SavedVariables: EPGP_DB, EPGP_Standings_DB, EPGP_History_DB
 ## SavedVariablesPerCharacter: EPGP_Standings_DB_CHAR, EPGP_History_DB_CHAR
 ## X-Category: Guild
-## X-Website: http://groups-beta.google.com/group/epgp
+## X-Website: http://code.google.com/p/epgp/
 
 Libs\AceLibrary\AceLibrary.lua
 Libs\AceOO-2.0\AceOO-2.0.lua
