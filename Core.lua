@@ -29,10 +29,10 @@ function EPGP:OnEnable()
   self:Print("EPGP addon is enabled")
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_GUILD_UPDATE")
+	self:RegisterEvent("CHAT_MSG_ADDON")
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
   self:ZONE_CHANGED_NEW_AREA()
   self:PLAYER_GUILD_UPDATE()
-	GuildRoster()
 end
 
 function EPGP:IsFlatCredentials()
@@ -72,7 +72,7 @@ end
 
 function EPGP:PLAYER_GUILD_UPDATE()
   if (IsInGuild()) then
-    GuildRoster()
+    self:GuildRoster()
   end
 end
 

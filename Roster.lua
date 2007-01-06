@@ -2,28 +2,6 @@
 -- Table utils
 -------------------------------------------------------------------------------
 
--- This will not terminate if o1 or o2 are recursive datastructures
-function EPGP:Equal(o1, o2)
-  if (o1 == o2) then return true end
-  if (type(o1) ~= "table" or type(o2) ~= "table") then return false end
-  return self:TableContains(o1, o2) and self:TableContains(o2, o1)
-end
-
--- This will not terminate if o1 or o2 are recursive datastructures
-function EPGP:TableContains(t1, t2)
-  if (type(t1) ~= "table" or type(t2) ~= "table") then return false end
-  for k,v in pairs(t1) do
-    if (not self:Equal(v, t2[k])) then return false end
-  end
-  return true
-end
-
-function EPGP:TableEmpty(t1)
-  assert(type(t1) == "table")
-  local f, s, v = pairs(t1)
-  return not f(s, v)
-end
-
 function EPGP:CloneTable(t)
   assert(type(t) == "table")
   local r = { }
@@ -113,23 +91,43 @@ function EPGP:RefreshTablets()
   EPGP_History:Refresh()
 end
 
-function EPGP:GUILD_ROSTER_UPDATE(new_data)
-	self:Debug("Processing GUILD_ROSTER_UPDATE")
-	if new_data then
+function EPGP:GuildRoster(no_time_check)
+	local time = GetTime()
+	if no_time_check or not self.last_guild_roster_time or time - self.last_guild_roster_time > 10 then
 		GuildRoster()
+		self.last_guild_roster_time = time
+	else
+		local delay = 10 + self.last_guild_roster_time - time
+		self:Debug("Delaying GuildRoster() for %f secs", delay)
+		self:ScheduleEvent(function() EPGP:GuildRoster() end,  delay)
+	end
+end
+
+function EPGP:GUILD_ROSTER_UPDATE(local_update)
+	self:Debug("Processing GUILD_ROSTER_UPDATE")
+	if local_update then
+		self:Debug("Detected changes; sending update to guild")
+		SendAddonMessage("EPGP", "UPDATE", "GUILD")
+		self:GuildRoster(true)
 		return
 	end
 	self:LoadConfig()
   -- Get roster from server
   local roster = self:LoadRoster()
-  if (not self:TableEmpty(roster) and
-      not self:Equal(roster, self:GetRoster())) then
+  if next(roster) then
     self:Debug("Roster changed, pushing new roster in undo queue")
     self:PushRoster(roster)
   end
   -- Rebuild options
   self.OnMenuRequest = self:BuildOptions()
   self:RefreshTablets()
+end
+
+function EPGP:CHAT_MSG_ADDON(prefix, msg, type, sender)
+	self:Debug("Processing CHAT_MSG_ADDON(%s,%s,%s,%s)", prefix, msg, type, sender)
+	if not prefix == "EPGP" then return end
+	if sender == UnitName("player") then return end
+	if msg == "UPDATE" then self:GuildRoster() end
 end
 
 function EPGP:LoadConfig()
@@ -179,7 +177,6 @@ function EPGP:LoadRoster()
       }
     end
   end
-  GuildRoster()
   return roster
 end
 
@@ -267,7 +264,6 @@ function EPGP:ResetEPGP()
     GuildRosterSetPublicNote(i, "")
     GuildRosterSetOfficerNote(i, "")
   end
-  GuildRoster()
   self:Report("All EP/GP are reset.")
 end
 
