@@ -10,9 +10,12 @@ if [ ! -f epgp.toc ]; then
   exit 1
 fi
 
-RELEASE_ZIP="$HOME/Desktop/epgp-$1.zip"
+EPGP_DIR=$PWD
+RELEASE_ZIP="$EPGP_DIR/epgp-$1.zip"
 
-cd ..
+pushd ..
 zip -r "$RELEASE_ZIP" epgp -x \*/.svn/\* -x \*/scripts/\*
+unzip -d "$EPGP_DIR" "$RELEASE_ZIP"
 
 echo "Release file at $RELEASE_ZIP"
+echo "Now you can tag this release by executing: svn import \"$EPGP_DIR/epgp\" https://epgp.googlecode.com/svn/tags/epgp-$1"
