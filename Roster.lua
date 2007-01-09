@@ -99,12 +99,12 @@ function EPGP:GuildRoster(no_time_check)
 	else
 		local delay = 10 + self.last_guild_roster_time - time
 		self:Debug("Delaying GuildRoster() for %f secs", delay)
-		self:ScheduleEvent(function() EPGP:GuildRoster() end,  delay)
+		self:ScheduleEvent("DELAYED_GUILD_ROSTER_UPDATE", EPGP.GuildRoster, delay, self)
 	end
 end
 
 function EPGP:GUILD_ROSTER_UPDATE(local_update)
-	self:Debug("Processing GUILD_ROSTER_UPDATE")
+	self:Debug("Processing GUILD_ROSTER_UPDATE"..tostring(local_update))
 	if local_update then
 		self:Debug("Detected changes; sending update to guild")
 		SendAddonMessage("EPGP", "UPDATE", "GUILD")
