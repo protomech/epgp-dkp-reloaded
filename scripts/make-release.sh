@@ -14,7 +14,7 @@ EPGP_DIR=$PWD
 RELEASE_ZIP="$EPGP_DIR/epgp-$1.zip"
 
 pushd ..
-zip -r "$RELEASE_ZIP" epgp -x \*/.svn/\* -x \*/scripts/\*
+zip -r "$RELEASE_ZIP" epgp -x \*/.svn/\* -x \*/scripts/\* -x \*/wiki/\* -x \*~
 unzip -d "$EPGP_DIR" "$RELEASE_ZIP"
 
 echo "Release file at $RELEASE_ZIP"
