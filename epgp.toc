@@ -29,6 +29,7 @@ Libs\Tablet-2.0\Tablet-2.0.lua
 
 Core.lua
 Encoding.lua
-Standings.lua
+GPValues.lua
 Roster.lua
+Standings.lua
 
