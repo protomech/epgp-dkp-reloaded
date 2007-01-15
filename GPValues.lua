@@ -1,4 +1,4 @@
-local GPValues = EPGP:NewModule("EPGP_GPValues", "AceHook-2.1")
+local mod = EPGP:NewModule("EPGP_GPValues", "AceHook-2.1")
 
 local EQUIPSLOT_VALUE = {
   ["INVTYPE_HEAD"] = 1,
@@ -30,8 +30,8 @@ local ILVL_TO_IVALUE = {
   [4] = function(ilvl) return (ilvl - 1.3) / 1.3 end,     -- Purple
 }
 
-function GPValues:Add2Tooltip(frame, itemLink)
-  local gp = self:Get(itemLink)
+function mod:AddGP2Tooltip(frame, itemLink)
+  local gp = self:GetGPValue(itemLink)
   if gp > 0 then
     frame:AddDoubleLine("GP", string.format("%d", gp),
       NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b,
@@ -40,7 +40,7 @@ function GPValues:Add2Tooltip(frame, itemLink)
   end
 end
 
-function GPValues:Get(itemLink)
+function mod:GetGPValue(itemLink)
   if not itemLink then return end
   local name, link, rarity, level, minlevel, type, subtype, count, equipLoc = GetItemInfo(itemLink)
   local islot_mod = EQUIPSLOT_VALUE[equipLoc]
@@ -52,19 +52,19 @@ function GPValues:Get(itemLink)
   end
 end
 
-function GPValues:OnEnable()
-  self:SecureHook(GameTooltip, "SetAuctionItem", function(this, type, index) GPValues:Add2Tooltip(this, GetAuctionItemLink(type, index)) end)
-  self:SecureHook(GameTooltip, "SetBagItem", function(this, bag, slot) GPValues:Add2Tooltip(this, GetContainerItemLink(bag, slot)) end)
-  self:SecureHook(GameTooltip, "SetHyperlink", function(this, link) GPValues:Add2Tooltip(this, link) end)
-  self:SecureHook(GameTooltip, "SetInventoryItem", function(this, unit, slot) GPValues:Add2Tooltip(this, GetInventoryItemLink(unit, slot)) end)
-  self:SecureHook(GameTooltip, "SetLootItem", function(this, slot) GPValues:Add2Tooltip(this, GetLootSlotLink(slot)) end)
-  self:SecureHook(GameTooltip, "SetLootRollItem", function(this, slot) GPValues:Add2Tooltip(this, GetLootRollItemLink(slot)) end)
-  self:SecureHook(GameTooltip, "SetMerchantItem", function(this, index) GPValues:Add2Tooltip(this, GetMerchantItemLink(index)) end)
-  self:SecureHook(GameTooltip, "SetQuestItem", function(this, type, index) GPValues:Add2Tooltip(this, GetQuestItemLink(type, index)) end)
-  self:SecureHook(GameTooltip, "SetQuestLogItem", function(this, type, index) GPValues:Add2Tooltip(this, GetQuestLogItemLink(type, index)) end)
-  self:SecureHook(GameTooltip, "SetSendMailItem", function(this) GPValues:Add2Tooltip(this, GetSendMailItem()) end)
-  self:SecureHook(GameTooltip, "SetTradePlayerItem", function(this, id) GPValues:Add2Tooltip(this, GetTradePlayerItemLink(id)) end)
-  self:SecureHook(GameTooltip, "SetTradeSkillItem", function(this, index) GPValues:Add2Tooltip(this, GetTradeSkillItemLink(index)) end)
-  self:SecureHook(GameTooltip, "SetTradeTargetItem", function(this, id) GPValues:Add2Tooltip(this, GetTradeTargetItemLink(id)) end)
-  self:SecureHook(ItemRefTooltip, "SetHyperlink", function(this, link) GPValues:Add2Tooltip(this, link) end)
+function mod:OnEnable()
+  self:SecureHook(GameTooltip, "SetAuctionItem", function(this, type, index) self:AddGP2Tooltip(this, GetAuctionItemLink(type, index)) end)
+  self:SecureHook(GameTooltip, "SetBagItem", function(this, bag, slot) self:AddGP2Tooltip(this, GetContainerItemLink(bag, slot)) end)
+  self:SecureHook(GameTooltip, "SetHyperlink", function(this, link) self:AddGP2Tooltip(this, link) end)
+  self:SecureHook(GameTooltip, "SetInventoryItem", function(this, unit, slot) self:AddGP2Tooltip(this, GetInventoryItemLink(unit, slot)) end)
+  self:SecureHook(GameTooltip, "SetLootItem", function(this, slot) self:AddGP2Tooltip(this, GetLootSlotLink(slot)) end)
+  self:SecureHook(GameTooltip, "SetLootRollItem", function(this, slot) self:AddGP2Tooltip(this, GetLootRollItemLink(slot)) end)
+  self:SecureHook(GameTooltip, "SetMerchantItem", function(this, index) self:AddGP2Tooltip(this, GetMerchantItemLink(index)) end)
+  self:SecureHook(GameTooltip, "SetQuestItem", function(this, type, index) self:AddGP2Tooltip(this, GetQuestItemLink(type, index)) end)
+  self:SecureHook(GameTooltip, "SetQuestLogItem", function(this, type, index) self:AddGP2Tooltip(this, GetQuestLogItemLink(type, index)) end)
+  self:SecureHook(GameTooltip, "SetSendMailItem", function(this) self:AddGP2Tooltip(this, GetSendMailItem()) end)
+  self:SecureHook(GameTooltip, "SetTradePlayerItem", function(this, id) self:AddGP2Tooltip(this, GetTradePlayerItemLink(id)) end)
+  self:SecureHook(GameTooltip, "SetTradeSkillItem", function(this, index) self:AddGP2Tooltip(this, GetTradeSkillItemLink(index)) end)
+  self:SecureHook(GameTooltip, "SetTradeTargetItem", function(this, id) self:AddGP2Tooltip(this, GetTradeTargetItemLink(id)) end)
+  self:SecureHook(ItemRefTooltip, "SetHyperlink", function(this, link) self:AddGP2Tooltip(this, link) end)
 end
