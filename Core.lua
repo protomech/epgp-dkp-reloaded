@@ -1,4 +1,4 @@
-EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "AceModuleCore-2.0", "FuBarPlugin-2.0")
+EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "AceHook-2.1", "AceModuleCore-2.0", "FuBarPlugin-2.0")
 EPGP:SetModuleMixins("AceDebug-2.0")
 
 -------------------------------------------------------------------------------
@@ -6,23 +6,96 @@ EPGP:SetModuleMixins("AceDebug-2.0")
 -------------------------------------------------------------------------------
 EPGP:RegisterDB("EPGP_DB")
 EPGP:RegisterDefaults("profile", {
-  -- Undo queue
-  rosters = nil,
+	-- Roster cache
+  roster = {},
   -- Default report channel
   report_channel = "GUILD",
   show_alts = false,
   raid_mode = true,
 })
 
+local function OnTooltipSetItem(obj)
+	EPGP:Print("OnTooltipSetItem")
+	for k,v in pairs(obj) do
+		EPGP:Print(tostring(k)..": "..tostring(v))
+	end
+end
+
 -------------------------------------------------------------------------------
 -- Init code
 -------------------------------------------------------------------------------
 function EPGP:OnInitialize()
-  self.DEFAULT_RAID_WINDOW = 10
-  self.DEFAULT_MIN_RAIDS = 2
+	self:SetDebugging(true)
+  self.DEFAULT_DECAY_PERCENT = 10
+  self.DEFAULT_MIN_EPS = 1000
   self.DEFAULT_FLAT_CREDENTIALS = false
+	self.MAX_POINTS = 99999
+	self.MAX_POINTS_TOTAL = 999999999
   self.OnMenuRequest = self:BuildOptions()
   self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest)
+
+	self:SecureHook(GameTooltip, "SetAuctionItem", function(this, type, index) EPGP:AddGPValue(this, GetAuctionItemLink(type, index)) end)
+	self:SecureHook(GameTooltip, "SetBagItem", function(this, bag, slot) EPGP:AddGPValue(this, GetContainerItemLink(bag, slot)) end)
+  self:SecureHook(GameTooltip, "SetHyperlink", function(this, link) EPGP:AddGPValue(this, link) end)
+	self:SecureHook(GameTooltip, "SetInventoryItem", function(this, unit, slot) EPGP:AddGPValue(this, GetInventoryItemLink(unit, slot)) end)
+	self:SecureHook(GameTooltip, "SetLootItem", function(this, slot) EPGP:AddGPValue(this, GetLootSlotLink(slot)) end)
+	self:SecureHook(GameTooltip, "SetLootRollItem", function(this, slot) EPGP:AddGPValue(this, GetLootRollItemLink(slot)) end)
+	self:SecureHook(GameTooltip, "SetMerchantItem", function(this, index) EPGP:AddGPValue(this, GetMerchantItemLink(index)) end)
+	self:SecureHook(GameTooltip, "SetQuestItem", function(this, type, index) EPGP:AddGPValue(this, GetQuestItemLink(type, index)) end)
+	self:SecureHook(GameTooltip, "SetQuestLogItem", function(this, type, index) EPGP:AddGPValue(this, GetQuestLogItemLink(type, index)) end)
+	self:SecureHook(GameTooltip, "SetSendMailItem", function(this) EPGP:AddGPValue(this, GetSendMailItem()) end)
+	self:SecureHook(GameTooltip, "SetTradePlayerItem", function(this, id) EPGP:AddGPValue(this, GetTradePlayerItemLink(id)) end)
+	self:SecureHook(GameTooltip, "SetTradeSkillItem", function(this, index) EPGP:AddGPValue(this, GetTradeSkillItemLink(index)) end)
+	self:SecureHook(GameTooltip, "SetTradeTargetItem", function(this, id) EPGP:AddGPValue(this, GetTradeTargetItemLink(id)) end)
+  self:SecureHook(ItemRefTooltip, "SetHyperlink", function(this, link) EPGP:AddGPValue(this, link) end)
+	GameTooltip:SetScript("OnTooltipSetItem", OnTooltipSetItem)
+end
+
+local EQUIPSLOT_VALUE = {
+	["INVTYPE_HEAD"] = 1,
+	["INVTYPE_NECK"] = 0.55,
+	["INVTYPE_SHOULDER"] = 0.777,
+	["INVTYPE_CHEST"] = 1,
+	["INVTYPE_ROBE"] = 1,
+	["INVTYPE_WAIST"] = 0.777,
+	["INVTYPE_LEGS"] = 1,
+	["INVTYPE_FEET"] = 0.777,
+	["INVTYPE_WRIST"] = 0.55,
+	["INVTYPE_HAND"] = 0.777,
+	["INVTYPE_FINGER"] = 0.55,
+	["INVTYPE_TRINKET"] = 0.7,
+	["INVTYPE_CLOAK"] = 0.55,
+	["INVTYPE_WEAPON"] = 0.42,
+	["INVTYPE_SHIELD"] = 0.55,
+	["INVTYPE_2HWEAPON"] = 1,
+	["INVTYPE_WEAPONMAINHAND"] = 0.42,
+	["INVTYPE_WEAPONOFFHAND"] = 0.42,
+	["INVTYPE_HOLDABLE"] = 0.55,
+	["INVTYPE_RANGED"] = 0.42,
+	["INVTYPE_RANGEDRIGHT"] = 0.42
+}
+
+local ILVL_TO_IVALUE = {
+	[2] = function(ilvl) return (ilvl - 4) / 2 end,         -- Green
+	[3] = function(ilvl) return (ilvl - 1.84) / 1.6 end,   -- Blue
+	[4] = function(ilvl) return (ilvl - 1.3) / 1.3 end,     -- Purple
+}
+function EPGP:AddGPValue(frame, itemLink)
+	if not itemLink then return end
+	local name, link, rarity, level, minlevel, type, subtype, count, equipLoc = GetItemInfo(itemLink)
+	local islot_mod = EQUIPSLOT_VALUE[equipLoc]
+	if not islot_mod then return end
+	local ilvl2ivalue = ILVL_TO_IVALUE[rarity]
+	if ilvl2ivalue then
+		local ivalue = ilvl2ivalue(level)
+		local gp = math.floor(ivalue^2 * 0.04 * islot_mod)
+		if gp > 0 then
+			frame:AddDoubleLine("GP", string.format("%d", gp),
+				NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b,
+				NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+			frame:Show()
+		end
+	end
 end
 
 function EPGP:OnEnable()
@@ -44,33 +117,39 @@ function EPGP:SetFlatCredentials(val)
   self:Print("Flat credentials " .. (self.flat_credentials and "on" or "off"))
 end
 
-function EPGP:GetRaidWindow()
-  return self.raid_window or self.DEFAULT_RAID_WINDOW
+function EPGP:GetDecayPercent()
+  return self.decay_percent or self.DEFAULT_DECAY_PERCENT
 end
 
-function EPGP:SetRaidWindow(rw)
-  assert(rw and tonumber(rw), "Attempt to set raid window to something that is not a number!")
-  rw = tonumber(rw)
-  if (self.raid_window ~= rw) then
-    self.raid_window = rw
-    self:Print("Raid Window set to " .. tostring(rw))
+function EPGP:GetDecayFactor()
+	return self:GetDecayPercent() * 0.01
+end
+
+function EPGP:SetDecayPercent(dp)
+  assert(dp and tonumber(dp), "Attempt to set decay percent to something that is not a number!")
+  dp = tonumber(dp)
+	assert(dp >= 0 and dp <= 100, "Decay percent should be between 0 and 100")
+  if (self.decay_percent ~= dp) then
+    self.decay_percent = dp
+    self:Print("Decay set to " .. tostring(dp) .. "%")
   end
 end
 
-function EPGP:GetMinRaids()
-  return self.min_raids or self.DEFAULT_MIN_RAIDS
+function EPGP:GetMinEPs()
+  return self.min_eps or self.DEFAULT_MIN_EPS
 end
 
-function EPGP:SetMinRaids(mr)
-  assert(mr and tonumber(mr), "Attempt to set min raids to something that is not a number!")
-  mr = tonumber(mr)
-  if (self.min_raids ~= mr) then
-    self.min_raids = mr
-    self:Print("Min raids set to " .. tostring(mr))
+function EPGP:SetMinEPs(mep)
+  assert(mep and tonumber(mep), "Attempt to set min EPs to something that is not a number!")
+  mep = tonumber(mep)
+  if (self.min_eps ~= mep) then
+    self.min_eps = mep
+    self:Print("Min EPs set to " .. tostring(mep))
   end
 end
 
 function EPGP:PLAYER_GUILD_UPDATE()
+	self:Debug("Processing PLAYER_GUILD_UPDATE")
   if (IsInGuild()) then
     self:GuildRoster()
   end
@@ -111,7 +190,7 @@ function EPGP:BuildOptions()
     disabled = function() return not self:CanLogRaids() end,
     validate = function(v)
       local n = tonumber(v)
-      return n and n >= 0 and n < 4096
+      return n and n >= 0 and n < 100000
     end,
     order = 1
   }
@@ -157,7 +236,10 @@ function EPGP:BuildOptions()
       usage = "<EP>",
       get = false,
       set = function(v) self:AddEP2Member(member_name, tonumber(v)) end,
-      validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end,
+	    validate = function(v)
+	      local n = tonumber(v)
+	      return n and n > 0 and n <= 10000
+	    end,
       order = 3
     }
   end
@@ -188,7 +270,10 @@ function EPGP:BuildOptions()
       usage = "<GP>",
       get = false,
       set = function(v) self:AddGP2Member(member_name, tonumber(v)) end,
-      validate = function(v) return (type(v) == "number" or tonumber(v)) and tonumber(v) < 4096 end
+	    validate = function(v)
+	      local n = tonumber(v)
+	      return n and n > 0 and n <= 10000
+	    end,
     }
   end
 
@@ -223,14 +308,21 @@ function EPGP:BuildOptions()
     disabled = function() return not self:CanChangeRules() end,
     func = function() EPGP:ResetEPGP() end
   }
-  -- Undo last action
-  options.args["undo"] = {
-    type = "execute",
-    name = "Undo",
-    desc = "Undo last change.",
-    disabled = function() return not self:CanChangeRules() or not self:HasActionsToUndo() end,
-    func = function() EPGP:Undo() end
-  }
+	-- Upgrade EPGP data
+	options.args["upgrade"] = {
+		type = "text",
+		name = "Upgrades EPGP",
+		desc = "Upgrades EPGP to new format and scales them by <scale>",
+		usage = "<scale>",
+		get = false,
+		set = function(v) self:UpgradeEPGP(tonumber(v)) end,
+    validate = function(v)
+      local n = tonumber(v)
+      return n and n > 0 and n <= 1000
+    end,
+		guiHidden = true,
+		disabled = function() return not self:CanChangeRules() end
+	}
   -- Show alts
   options.args["showalts"] = {
     type = "toggle",
@@ -267,13 +359,9 @@ EPGP.tooltipHidderWhenEmpty = false
 EPGP.hasIcon = "Interface\\Icons\\INV_Misc_Orb_04"
 
 function EPGP:OnTooltipUpdate()
-  T:SetHint("Click to toggle EPGP standings.\nShift-Click to toggle EPGP history.")
+  T:SetHint("Click to toggle EPGP standings.")
 end
 
 function EPGP:OnClick()
-  if (IsShiftKeyDown()) then
-    EPGP_History:Toggle()
-  else
-    EPGP_Standings:Toggle()
-  end
+  EPGP_Standings:Toggle()
 end

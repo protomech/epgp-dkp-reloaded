@@ -90,3 +90,17 @@ function EPGP:Decode(s)
   
   return num
 end
+
+function EPGP:EncodeNote(ep, tep, gp, tgp)
+	assert(type(ep) == "number" and ep >= 0 and ep <= 99999)
+	assert(type(tep) == "number" and tep >= 0 and tep <= 999999999)
+	assert(type(gp) == "number" and gp >= 0 and gp <= 99999)
+	assert(type(tgp) == "number" and tgp >= 0 and tgp <= 999999999)
+	return string.format("%d|%d|%d|%d", ep, tep, gp, tgp)	
+end
+
+function EPGP:ParseNote(note)
+	if note == "" then return 0, 0, 0, 0 end
+	local ep, tep, gp, tgp = string.match(note, "(%d+)|(%d+)|(%d+)|(%d+)")
+	return tonumber(ep), tonumber(tep), tonumber(gp), tonumber(tgp)
+end

@@ -17,7 +17,7 @@ function EPGP_Standings:OnEnable()
     T:Register("EPGP_Standings",
       "children", function()
         T:SetTitle("EPGP Standings")
-        T:SetHint("EP: Effort Points, TEP: Total Effort Points, #R: Number of raids, GP: Gear Points, PR: Priority")
+        T:SetHint("EP: Effort Points, GP: Gear Points, PR: Priority")
         self:OnTooltipUpdate()
       end,
       "data", self.db.char.data,
@@ -64,89 +64,61 @@ function EPGP_Standings:ToggleGroupByClass()
   self:Refresh()
 end
 
-function EPGP_Standings:ComputeEP(t)
-  local ep = 0
-  local tep = 0
-  local nraids = 0
-  local rw = EPGP:GetRaidWindow()
-  local mr = EPGP:GetMinRaids()
-  
-  for k,v in pairs(t) do
-    if (k > rw) then break end
-    tep = tep + v
-    if (v > 0) then
-      nraids = nraids + 1
-    end
-  end
-  ep = (nraids < mr) and 0 or tep
-  return tep, nraids, ep
-end
-
-function EPGP_Standings:ComputeGP(t)
-  local gp = 0
-  local rw = EPGP:GetRaidWindow()
-  for k,v in pairs(t) do
-    if (k > rw) then break end
-    gp = gp + v
-  end
-  return (gp == 0) and 1 or gp
-end
-  
 -- Builds a standings table with record:
--- name, class, EP, NR, EEP, GP, PR
--- and sorted by PR
+-- name, class, EP, GP, PR
+-- and sorted by PR with members with EP < MIN_EP at the end
 function EPGP_Standings:BuildStandingsTable()
   local t = { }
   local alts = EPGP:GetAlts()
   local roster = EPGP:GetRoster()
   for n in EPGP:GetStandingsIterator() do
-    local name = n
-    local main_name = EPGP:ResolveMember(name)
-    local class, ept, gpt = EPGP:GetClass(roster, name), EPGP:GetEPGP(roster, main_name)
-    if (class and ept and gpt) then
-      local tep, nraids, ep = self:ComputeEP(ept)
-      local gp = self:ComputeGP(gpt)
-      table.insert(t, { name, class, tep, nraids, ep, gp, ep/gp })
+  	local name = EPGP:ResolveMember(n)
+  	local class, ep, tep, gp, tgp = unpack(roster[name])
+    if (class and ep and tep and gp and tgp) then
+			local EP,GP = tep + ep, tgp + gp
+			local PR = GP == 0 and EP or EP/GP
+      table.insert(t, { n, class, EP, GP, PR })
     end
   end
-  -- Sort by priority and group by class if necessary
+  -- Normal sorting function
+	local function SortPR(a,b)
+		local a_low = a[3] < EPGP:GetMinEPs()
+		local b_low = b[3] < EPGP:GetMinEPs()
+		if a_low and not b_low then return false
+		elseif not a_low and b_low then return true
+		else return a[5] > b[5] end
+	end
   if (self.db.char.group_by_class) then
     table.sort(t, function(a,b)
-      if (a[2] ~= b[2]) then return a[2] > b[2]
-      else return a[7] > b[7] end
+      if (a[2] ~= b[2]) then return a[2] < b[2]
+      else return SortPR(a, b) end
     end)
   else
-    table.sort(t, function(a,b)
-      return a[7] > b[7]
-    end)
+    table.sort(t, SortPR)
   end
   return t
 end
 
 function EPGP_Standings:OnTooltipUpdate()
   local cat = T:AddCategory(
-      "columns", 6,
+      "columns", 4,
       "text",  C:Orange("Name"),   "child_textR",    1, "child_textG",    1, "child_textB",    1, "child_justify",  "LEFT",
-      "text2", C:Orange("TEP"),    "child_text2R", 0.5, "child_text2G", 0.5, "child_text2B", 0.5, "child_justify2", "RIGHT",
-      "text3", C:Orange("#R"),     "child_text3R",   1, "child_text3G",   1, "child_text3B",   1, "child_justify3", "RIGHT",
-      "text4", C:Orange("EP"),     "child_text4R",   1, "child_text4G",   1, "child_text4B",   1, "child_justify4", "RIGHT",
-      "text5", C:Orange("GP"),     "child_text5R",   1, "child_text5G",   1, "child_text5B",   1, "child_justify5", "RIGHT",
-      "text6", C:Orange("PR"),     "child_text6R",   1, "child_text6G",   1, "child_text6B",   0, "child_justify6", "RIGHT"
+      "text2", C:Orange("EP"),     "child_text2R",   1, "child_text2G",   1, "child_text2B",   1, "child_justify4", "RIGHT",
+      "text3", C:Orange("GP"),     "child_text3R",   1, "child_text3G",   1, "child_text3B",   1, "child_justify5", "RIGHT",
+      "text4", C:Orange("PR"),     "child_text4R",   1, "child_text4G",   1, "child_text4B",   0, "child_justify6", "RIGHT"
     )
   local t = self:BuildStandingsTable()
   for k,v in pairs(t) do
-    local name, class, tep, nraids, ep, gp, pr = unpack(v)
+    local name, class, ep, gp, pr = unpack(v)
+		local ep_str, gp_str, pr_str = string.format("%d", ep), string.format("%d", gp), string.format("%.4g", pr)
     cat:AddLine(
       "text", C:Colorize(BC:GetHexColor(class), name),
-      "text2", string.format("%.4g", tep),
-      "text3", string.format("%.2g", nraids),
-      "text4", string.format("%.4g", ep),
-      "text5", string.format("%.4g", gp),
-      "text6", string.format("%.4g", pr)
+      "text2", ep < EPGP:GetMinEPs() and C:Colorize("7f7f7f", ep_str) or ep_str,
+      "text3", ep < EPGP:GetMinEPs() and C:Colorize("7f7f7f", gp_str) or gp_str,
+      "text4", ep < EPGP:GetMinEPs() and C:Colorize("7f7f00", pr_str) or pr_str
     )
   end
 
   local info = T:AddCategory("columns", 2)
-  info:AddLine("text", C:Red("Raid Window"), "text2", C:Red(EPGP:GetRaidWindow()))
-  info:AddLine("text", C:Red("Min Raids"), "text2", C:Red(EPGP:GetMinRaids()))
+  info:AddLine("text", C:Red("Min EPs"), "text2", C:Red(EPGP:GetMinEPs()))
 end

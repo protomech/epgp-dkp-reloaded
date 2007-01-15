@@ -19,42 +19,13 @@ end
 -- Roster handling code
 -------------------------------------------------------------------------------
 function EPGP:GetRoster()
-  if (not self.db.profile.rosters or
-      not type(self.db.profile.rosters) == "table") then
-    self.db.profile.rosters = { }
-  end
-  local length = table.getn(self.db.profile.rosters)
-  if (length == 0) then
-    length = 1
-    self.db.profile.rosters[length] = { }
-  end
-  return self.db.profile.rosters[length]
+  assert(type(self.db.profile.roster) == "table")
+  return self.db.profile.roster
 end
 
-function EPGP:GetPreviousRoster()
-  local length = table.getn(self.db.profile.rosters)
-  assert(length > 1)
-  return self.db.profile.rosters[length-1]
-end
-
-function EPGP:HasActionsToUndo()
-  return table.getn(self.db.profile.rosters) > 1
-end
-
-function EPGP:Undo()
-  assert(self:HasActionsToUndo())
-  local roster = self:GetPreviousRoster()
-  self:SaveRoster(roster);
-  self:Report("Undone last change.")
-end
-
-function EPGP:PushRoster(roster)
-  assert(type(roster) == "table")
-  table.insert(self.db.profile.rosters, roster)
-  local MAX_UNDO_QUEUE = 10
-  while (table.getn(self.db.profile.rosters) > MAX_UNDO_QUEUE) do
-    table.remove(self.db.profile.rosters, 1)
-  end
+function EPGP:SetRoster(roster)
+	assert(type(roster) == "table")
+	self.db.profile.roster = roster
 end
 
 function EPGP:GetAlts()
@@ -88,7 +59,6 @@ end
 
 function EPGP:RefreshTablets()
   EPGP_Standings:Refresh()
-  EPGP_History:Refresh()
 end
 
 function EPGP:GuildRoster(no_time_check)
@@ -115,12 +85,12 @@ function EPGP:GUILD_ROSTER_UPDATE(local_update)
   -- Get roster from server
   local roster = self:LoadRoster()
   if next(roster) then
-    self:Debug("Roster changed, pushing new roster in undo queue")
-    self:PushRoster(roster)
+    self:Debug("Caching new roster information")
+    self:SetRoster(roster)
+	  -- Rebuild options
+	  self.OnMenuRequest = self:BuildOptions()
+	  self:RefreshTablets()
   end
-  -- Rebuild options
-  self.OnMenuRequest = self:BuildOptions()
-  self:RefreshTablets()
 end
 
 function EPGP:CHAT_MSG_ADDON(prefix, msg, type, sender)
@@ -131,49 +101,54 @@ function EPGP:CHAT_MSG_ADDON(prefix, msg, type, sender)
 end
 
 function EPGP:LoadConfig()
-  local text = GetGuildInfoText() or ""
-  -- Get options and alts
-  -- Format is:
-  --   @RW:<number>    // for raid window (defaults to 10)
-  --   @NR:<number>    // for min raids (defaults to 2)
-  --   @FC             // for flat credentials (true if specified, false otherwise)
-  --   Main:Alt1 Alt2  // Alt1 and Alt2 are alts for Main
-
-  -- Raid Window
-  local _, _, rw = string.find(text, "@RW:(%d+)\n")
-  if (not rw) then rw = self.DEFAULT_RAID_WINDOW end
-  if (rw ~= self:GetRaidWindow()) then self:SetRaidWindow(rw) end
-
-  -- Min Raids
-  local _, _, mr = string.find(text, "@MR:(%d)\n")
-  if (not mr) then mr = self.DEFAULT_MIN_RAIDS end
-  if (mr ~= self:GetMinRaids()) then self:SetMinRaids(mr) end
-
-  -- Flat Credentials
-  local fc = (string.find(text, "@FC\n") and true or false)
-  if (fc ~= self:IsFlatCredentials()) then self:SetFlatCredentials(fc) end
-
+  local lines = {string.split("\n", GetGuildInfoText() or "")}
+	local in_block = false
   local alts = self:GetAlts()
-  for main, alts_text in string.gmatch(text, "(%a+):([%a%s]+)\n") do
-    for alt in string.gmatch(alts_text, "(%a+)") do
-      if (alts[alt] ~= main) then
-        alts[alt] = main
-        self:Print("Added alt for %s: %s", main, alt)
-      end
-    end
-  end
+	for _,line in pairs(lines) do
+		if line == "-EPGP-" then
+			in_block = not in_block
+		elseif in_block then
+		  -- Get options and alts
+		  -- Format is:
+		  --   @DECAY_P:<number>    // for decay percent (defaults to 10)
+		  --   @MIN_EP:<number>     // for min eps until member can need items (defaults to 1000)
+		  --   @FC                  // for flat credentials (true if specified, false otherwise)
+		  --   Main:Alt1 Alt2       // Alt1 and Alt2 are alts for Main
+
+		  -- Decay percent
+			local dp = tonumber(line:match("@DECAY_P:(%d+)")) or self.DEFAULT_DECAY_PERCENT
+			if dp ~= self:GetDecayPercent() then self:SetDecayPercent(dp) end
+			
+		  -- Min EPs
+			local mep = tonumber(line:match("@MIN_EP:(%d+)")) or self.DEFAULT_MIN_EPS
+		  if mep ~= self:GetMinEPs() then self:SetMinEPs(mep) end
+
+		  -- Flat Credentials
+		  local fc = line == "@FC"
+		  if fc then self:SetFlatCredentials(fc) end
+
+			-- Read in alts
+		  for main, alts_text in line:gmatch("(%a+):([%a%s]+)") do
+		    for alt in alts_text:gmatch("(%a+)") do
+		      if (alts[alt] ~= main) then
+		        alts[alt] = main
+		        self:Print("Added alt for %s: %s", main, alt)
+		      end
+		    end
+		  end
+		end
+	end
 end
 
 -- Reads roster from server
 function EPGP:LoadRoster()
-  self:Debug("Loading roster from server")
   -- Update roster
   local roster = { }
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, class, _, note, officernote, _, _ = GetGuildRosterInfo(i)
     if (name) then
       roster[name] = {
-        class, self:PointString2Table(note), self:PointString2Table(officernote)
+        class, self:ParseNote(officernote)
       }
     end
   end
@@ -185,10 +160,8 @@ function EPGP:SaveRoster(roster)
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, _, _, _, _, _, _ = GetGuildRosterInfo(i)
     if (name and roster[name]) then
-      local _, ep, gp = unpack(roster[name])
-      local note = self:PointTable2String(ep)
-      local officernote = self:PointTable2String(gp)
-      GuildRosterSetPublicNote(i, note)
+      local _, ep, tep, gp, tgp = unpack(roster[name])
+      local officernote = self:EncodeNote(ep, tep, gp, tgp)
       GuildRosterSetOfficerNote(i, officernote)
     end
   end
@@ -213,7 +186,7 @@ end
 -- Bonus EPs are added to the last/current raid.
 
 function EPGP:PointString2Table(s)
-  if (string.len(s) == 0) then
+  if (s == "") then
     local EMPTY_POINTS = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
     return EMPTY_POINTS
   end
@@ -225,72 +198,50 @@ function EPGP:PointString2Table(s)
   return t
 end
 
-function EPGP:PointTable2String(t)
-  local s = ""
-  for k, v in pairs(t) do
-    local ss = string.format("%02s", self:Encode(v))
-    assert(string.len(ss) == 2)
-    s = s .. ss
-  end
-  return s
-end
-
-function EPGP:GetClass(roster, name)
-  assert(name and type(name) == "string")
-  if (not roster[name]) then
-    self:Debug("Cannot find member record for member %s!", name)
-    return nil
-  end
-  local class, _ = unpack(roster[name])
-  assert(class, "Member record corrupted!")
-  return class
-end
-
-function EPGP:GetEPGP(roster, name)
-  assert(roster and type(roster) == "table")
-  assert(name and type(name) == "string")
-  if (not roster[name]) then
-    self:Debug("Cannot find member record for member %s!", name)
-    return nil, nil
-  end
-  local _, ep, gp = unpack(roster[name])
-  assert(ep and gp, "Member record corrupted!")
-  return ep, gp
-end
-
 -- Sets all EP/GP to 0
 function EPGP:ResetEPGP()
   for i = 1, GetNumGuildMembers(true) do
-    GuildRosterSetPublicNote(i, "")
-    GuildRosterSetOfficerNote(i, "")
+    GuildRosterSetOfficerNote(i, self:EncodeNote(self:ParseNote("")))
   end
   self:Report("All EP/GP are reset.")
+end
+
+function EPGP:UpgradeEPGP(scale)
+	assert(type(scale) == "number" and scale > 0, "Scaling factor should be a positive number")
+	for i = 1, GetNumGuildMembers(true) do
+  	local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+		local ept, gpt = self:PointString2Table(note), self:PointString2Table(officernote)
+		assert(#ept == #gpt, "EP and GP tables are not of the same size")
+		local tep = 0
+		for i = #ept,1,-1 do
+			tep = tep + ept[i]*scale
+			tep = math.floor(tep * (1 - self:GetDecayFactor()))
+		end
+		local tgp = 0
+		for i = #gpt,1,-1 do
+			tgp = tgp + gpt[i]*scale
+			tgp = math.floor(tgp * (1 - self:GetDecayFactor()))
+		end
+		tep, tgp = math.floor(tep), math.floor(tgp)
+		self:Print("%s EP/GP: %d/%d", name, tep, tgp)
+	end
+	self:Report("All EP/GP are upgraded.")
 end
 
 function EPGP:NewRaid()
   local roster = self:CloneTable(self:GetRoster())
   for n, t in pairs(roster) do
-    local name, _, ep, gp = n, unpack(t)
-    table.remove(ep)
-    table.insert(ep, 1, 0)
-    table.remove(gp)
-    table.insert(gp, 1, 0)
+		self:Debug("%s EP: %d,%d GP: %d,%d", n, t[2], t[3], t[4], t[5])
+		t[3] = t[3] + t[2]
+		t[2] = 0
+    t[3] = math.floor(t[3] * (1 - self:GetDecayFactor()))
+		t[5] = t[5] + t[4]
+    t[4] = 0
+		t[5] = math.floor(t[5] * (1 - self:GetDecayFactor()))
+		self:Debug("%s EP: %d,%d GP: %d,%d", n, t[2], t[3], t[4], t[5])
   end
   self:SaveRoster(roster)
   self:Report("Created new raid.")
-end
-
-function EPGP:RemoveLastRaid()
-  local roster = self:CloneTable(self:GetRoster())
-  for n, t in pairs(roster) do
-    local name, _, ep, gp = n, unpack(t)
-    table.remove(ep, 1)
-    table.insert(ep, 0)
-    table.remove(gp, 1)
-    table.insert(gp, 0)
-  end
-  self:SaveRoster(roster)
-  self:Report("Removed last raid.")
 end
 
 function EPGP:ResolveMember(member)
@@ -301,30 +252,40 @@ function EPGP:ResolveMember(member)
   return member
 end
 
-function EPGP:AddEP2Member(member, points)
+function EPGP:AddEP2Member(name, points)
+	assert(type(name) == "string")
+	assert(type(points) == "number")
   local roster = self:CloneTable(self:GetRoster())
-  member = self:ResolveMember(member)
-  local ep, gp = self:GetEPGP(roster, member)
-  ep[1] = ep[1] + tonumber(points)
+  name = self:ResolveMember(name)
+  roster[name][2] = roster[name][2] + tonumber(points)
   self:SaveRoster(roster)
-  self:Report("Added " .. tostring(points) .. " EPs to " .. member .. ".")
+  self:Report("Added " .. tostring(points) .. " EPs to " .. name .. ".")
 end
 
-function EPGP:AddEP2Raid(points)
+function EPGP:AddEP2Raid(total_points)
+	assert(type(total_points) == "number")
   if (not UnitInRaid("player")) then
     self:Print("You are not in a raid group!")
     return
   end
   local roster = self:CloneTable(self:GetRoster())
   local members = { }
+	local num_members = 0
+  for i = 1, GetNumRaidMembers() do
+    local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
+    if (zone == self.current_zone) then
+			num_members = num_members + 1
+		end
+	end
+
+	local points = math.floor(total_points / num_members)
   for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if (zone == self.current_zone) then
       name = self:ResolveMember(name)
-      local ep, gp = self:GetEPGP(roster, name)
-      if (ep and gp) then
-        table.insert(members, name)
-        ep[1] = ep[1] + tonumber(points)
+      if (roster[name]) then
+        roster[name][2] = roster[name][2] + points
+				table.insert(members, name)
       end
     end
   end
@@ -333,6 +294,7 @@ function EPGP:AddEP2Raid(points)
 end
 
 function EPGP:AddEPBonus2Raid(bonus)
+	assert(type(bonus) == "number" and bonus >= 0 and bonus <= 1)
   if (not UnitInRaid("player")) then
     self:Print("You are not in a raid group!")
     return
@@ -343,10 +305,9 @@ function EPGP:AddEPBonus2Raid(bonus)
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if (zone == self.current_zone) then
       name = self:ResolveMember(name)
-      local ep, gp = self:GetEPGP(roster, name)
-      if (ep and gp) then
-        table.insert(members, name)
-        ep[1] = math.floor(ep[1] * (1 + tonumber(bonus)))
+      if (roster[name]) then
+        roster[name][2] = math.floor(roster[name][2] * (1 + bonus))
+				table.insert(members, name)
       end
     end
   end
@@ -354,11 +315,12 @@ function EPGP:AddEPBonus2Raid(bonus)
   self:Report("Added " .. tostring(bonus * 100) .. "% EP bonus to " .. table.concat(members, ", "))
 end
 
-function EPGP:AddGP2Member(member, points)
+function EPGP:AddGP2Member(name, points)
+	assert(type(name) == "string")
+	assert(type(points) == "number")
   local roster = self:CloneTable(self:GetRoster())
-  member = self:ResolveMember(member)
-  local ep, gp = self:GetEPGP(roster, member)
-  gp[1] = gp[1] + tonumber(points)
+  name = self:ResolveMember(name)
+	roster[name][4] = roster[name][4] + points
   self:SaveRoster(roster)
-  self:Report("Added " .. tostring(points) .. " GPs to " .. member .. ".")
+  self:Report("Added " .. tostring(points) .. " GPs to " .. name .. ".")
 end
