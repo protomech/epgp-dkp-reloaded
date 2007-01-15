@@ -15,7 +15,15 @@ RELEASE_ZIP="$EPGP_DIR/epgp-$1.zip"
 
 pushd ..
 zip -r "$RELEASE_ZIP" epgp -x \*/.svn/\* -x \*/scripts/\* -x \*/wiki/\* -x \*~
-unzip -d "$EPGP_DIR" "$RELEASE_ZIP"
+popd
+
+unzip "$RELEASE_ZIP"
+
+pushd epgp
+sed -i "s/@VERSION@/$1/" epgp.toc
+popd
+
+zip -u -r "$RELEASE_ZIP" epgp/epgp.toc
 
 echo "Release file at $RELEASE_ZIP"
 echo "Now you can tag this release by executing: svn import \"$EPGP_DIR/epgp\" https://epgp.googlecode.com/svn/tags/epgp-$1"

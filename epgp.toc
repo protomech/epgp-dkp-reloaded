@@ -2,7 +2,7 @@
 ## Title: EPGP
 ## Notes: Effort Points/Gear Points Loot System
 ## Author: Alkis Evlogimenos
-## Version: 2.0
+## Version: @VERSION@
 ## OptionalDeps: Ace2
 ## SavedVariables: EPGP_DB, EPGP_Standings_DB
 ## SavedVariablesPerCharacter: EPGP_Standings_DB_CHAR
