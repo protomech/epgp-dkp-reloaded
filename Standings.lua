@@ -1,18 +1,51 @@
+EPGP_Standings = EPGP:NewModule("EPGP_Standings", "AceDB-2.0", "AceEvent-2.0")
+
+EPGP_Standings:RegisterDB("EPGP_Standings_DB")
+EPGP_Standings:RegisterDefaults("profile", {
+  data = { },
+  detached_data = { },
+  standings = { },
+  group_by_class = false,
+  show_alts = false,
+  raid_mode = true
+})
+
 local T = AceLibrary("Tablet-2.0")
 local D = AceLibrary("Dewdrop-2.0")
 local C = AceLibrary("Crayon-2.0")
 
 local BC = AceLibrary("Babble-Class-2.2")
 
-EPGP_Standings = EPGP:NewModule("EPGP_Standings", "AceDB-2.0")
-EPGP_Standings:RegisterDB("EPGP_Standings_DB", "EPGP_Standings_DB_CHAR")
-EPGP_Standings:RegisterDefaults("char", {
-  data = { },
-  detached_data = { },
-  group_by_class = false
-})
+local function RaidIterator(obj, i)
+  local name = GetRaidRosterInfo(i)
+  if not name then return end
+  return i+1, name
+end
+
+local function GuildIterator(obj, i)
+  local name
+  repeat
+    name = GetGuildRosterInfo(i)
+    i = i+1
+  until obj.db.profile.show_alts or not obj.cache:IsAlt(name)
+  if not name then return end
+  return i, name
+end
+
+function EPGP_Standings:GetStandingsIterator()
+  if (self.db.profile.raid_mode and UnitInRaid("player")) then
+    return RaidIterator, self, 1
+  else
+    return GuildIterator, self, 1
+  end
+end
+
+function EPGP_Standings:OnInitialize()
+  self.cache = EPGP:GetModule("EPGP_Cache")
+end
 
 function EPGP_Standings:OnEnable()
+  self:RegisterEvent("EPGP_CACHE_UPDATE")
   if not T:IsRegistered("EPGP_Standings") then
     T:Register("EPGP_Standings",
       "children", function()
@@ -20,18 +53,31 @@ function EPGP_Standings:OnEnable()
         T:SetHint("EP: Effort Points, GP: Gear Points, PR: Priority")
         self:OnTooltipUpdate()
       end,
-      "data", self.db.char.data,
-      "detachedData", self.db.char.detached_data,
+      "data", self.db.profile.data,
+      "detachedData", self.db.profile.detached_data,
   		"showTitleWhenDetached", true,
   		"showHintWhenDetached", true,
   		"cantAttach", true,
   		"menu", function()
   		  D:AddLine(
   		    "text", "Group by class",
-  		    "tooltipText", "Group members by class.",
+  		    "tooltipText", "Toggles grouping members by class.",
   		    "checked", self.db.char.group_by_class,
-  		    "func", function() EPGP_Standings:ToggleGroupByClass() end
-  		    )
+  		    "func", function() self.db.profile.group_by_class = not self.db.profile.group_by_class; self:Refresh() end
+  		  )
+  		  D:AddLine(
+  		    "text", "Show Alts",
+  		    "tooltipText", "Toggles listing of Alts in standings.",
+  		    "checked", self.db.profile.show_alts or self.db.profile.raid_mode,
+  		    "disabled", self.db.profile.raid_mode,
+  		    "func", function() self.db.profile.show_alts = not self.db.profile.show_alts; self:Refresh() end
+  		  )
+  		  D:AddLine(
+  		    "text", "Raid Mode",
+  		    "tooltipText", "Toggles listing only raid members (if in raid).",
+  		    "checked", self.db.profile.raid_mode,
+  		    "func", function() self.db.profile.raid_mode = not self.db.profile.raid_mode; self:Refresh() end
+  		  )
   		end
     )
   end
@@ -44,7 +90,8 @@ function EPGP_Standings:OnDisable()
   T:Close("EPGP_Standings")
 end
 
-function EPGP_Standings:Refresh()
+function EPGP_Standings:EPGP_CACHE_UPDATE()
+  self.standings = self:BuildStandingsTable()
   T:Refresh("EPGP_Standings")
 end
 
@@ -59,31 +106,23 @@ function EPGP_Standings:Toggle()
   end
 end
 
-function EPGP_Standings:ToggleGroupByClass()
-  self.db.char.group_by_class = not self.db.char.group_by_class
-  self:Refresh()
-end
-
 -- Builds a standings table with record:
 -- name, class, EP, GP, PR
 -- and sorted by PR with members with EP < MIN_EP at the end
 function EPGP_Standings:BuildStandingsTable()
-  local t = { }
-  local alts = EPGP:GetAlts()
-  local roster = EPGP:GetRoster()
-  for n in EPGP:GetStandingsIterator() do
-  	local name = EPGP:ResolveMember(n)
-  	local class, ep, tep, gp, tgp = unpack(roster[name])
+  local t = {}
+  for i,name in self:GetStandingsIterator() do
+  	local ep, tep, gp, tgp, class = self.cache:GetMemberInfo(name)
     if (class and ep and tep and gp and tgp) then
 			local EP,GP = tep + ep, tgp + gp
 			local PR = GP == 0 and EP or EP/GP
-      table.insert(t, { n, class, EP, GP, PR })
+      table.insert(t, { name, class, EP, GP, PR })
     end
   end
   -- Normal sorting function
 	local function SortPR(a,b)
-		local a_low = a[3] < EPGP:GetMinEPs()
-		local b_low = b[3] < EPGP:GetMinEPs()
+		local a_low = a[3] < self.cache.db.profile.min_eps
+		local b_low = b[3] < self.cache.db.profile.min_eps
 		if a_low and not b_low then return false
 		elseif not a_low and b_low then return true
 		else return a[5] > b[5] end
@@ -100,6 +139,9 @@ function EPGP_Standings:BuildStandingsTable()
 end
 
 function EPGP_Standings:OnTooltipUpdate()
+  if not self.standings then
+    self.standings = self:BuildStandingsTable()
+  end
   local cat = T:AddCategory(
       "columns", 4,
       "text",  C:Orange("Name"),   "child_textR",    1, "child_textG",    1, "child_textB",    1, "child_justify",  "LEFT",
@@ -107,18 +149,17 @@ function EPGP_Standings:OnTooltipUpdate()
       "text3", C:Orange("GP"),     "child_text3R",   1, "child_text3G",   1, "child_text3B",   1, "child_justify5", "RIGHT",
       "text4", C:Orange("PR"),     "child_text4R",   1, "child_text4G",   1, "child_text4B",   0, "child_justify6", "RIGHT"
     )
-  local t = self:BuildStandingsTable()
-  for k,v in pairs(t) do
+  for k,v in pairs(self.standings) do
     local name, class, ep, gp, pr = unpack(v)
 		local ep_str, gp_str, pr_str = string.format("%d", ep), string.format("%d", gp), string.format("%.4g", pr)
     cat:AddLine(
       "text", C:Colorize(BC:GetHexColor(class), name),
-      "text2", ep < EPGP:GetMinEPs() and C:Colorize("7f7f7f", ep_str) or ep_str,
-      "text3", ep < EPGP:GetMinEPs() and C:Colorize("7f7f7f", gp_str) or gp_str,
-      "text4", ep < EPGP:GetMinEPs() and C:Colorize("7f7f00", pr_str) or pr_str
+      "text2", ep < self.cache.db.profile.min_eps and C:Colorize("7f7f7f", ep_str) or ep_str,
+      "text3", ep < self.cache.db.profile.min_eps and C:Colorize("7f7f7f", gp_str) or gp_str,
+      "text4", ep < self.cache.db.profile.min_eps and C:Colorize("7f7f00", pr_str) or pr_str
     )
   end
 
   local info = T:AddCategory("columns", 2)
-  info:AddLine("text", C:Red("Min EPs"), "text2", C:Red(EPGP:GetMinEPs()))
+  info:AddLine("text", C:Red("Min EPs"), "text2", C:Red(self.cache.db.profile.min_eps))
 end

@@ -4,8 +4,7 @@
 ## Author: Alkis Evlogimenos
 ## Version: @VERSION@
 ## OptionalDeps: Ace2
-## SavedVariables: EPGP_DB, EPGP_Standings_DB
-## SavedVariablesPerCharacter: EPGP_Standings_DB_CHAR
+## SavedVariables: EPGP_Backend_DB, EPGP_Standings_DB, EPGP_Cache_DB
 ## X-Category: Guild
 ## X-Website: http://code.google.com/p/epgp/
 
@@ -28,8 +27,8 @@ Libs\FuBarPlugin-2.0\FuBarPlugin-2.0.lua
 Libs\Tablet-2.0\Tablet-2.0.lua
 
 Core.lua
-Encoding.lua
+Cache.lua
+Backend.lua
 GPValues.lua
-Roster.lua
 Standings.lua
 
