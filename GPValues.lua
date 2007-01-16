@@ -32,7 +32,7 @@ local ILVL_TO_IVALUE = {
 
 function mod:AddGP2Tooltip(frame, itemLink)
   local gp = self:GetGPValue(itemLink)
-  if gp > 0 then
+  if gp and gp > 0 then
     frame:AddDoubleLine("GP", string.format("%d", gp),
       NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b,
       NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
