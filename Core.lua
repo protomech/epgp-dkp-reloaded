@@ -14,11 +14,6 @@ EPGP:RegisterDefaults("profile", {
 -------------------------------------------------------------------------------
 function EPGP:OnInitialize()
 	self:RegisterEvent("EPGP_CACHE_UPDATE")
-	self.cache = self:GetModule("EPGP_Cache")
-	self.backend = self:GetModule("EPGP_Backend")
-	self.MAX_POINTS = 99999
-	self.MAX_POINTS_TOTAL = 999999999
-  self.OnMenuRequest = self.backend:BuildOptions()
   self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest)
 end
 
@@ -41,5 +36,5 @@ function EPGP:OnTooltipUpdate()
 end
 
 function EPGP:OnClick()
-  EPGP_Standings:Toggle()
+  self:GetModule("EPGP_Standings"):Toggle()
 end
