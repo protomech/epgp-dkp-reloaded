@@ -29,6 +29,6 @@ Libs\Tablet-2.0\Tablet-2.0.lua
 Core.lua
 Cache.lua
 Backend.lua
-GPValues.lua
+GPTooltip.lua
 Standings.lua
 

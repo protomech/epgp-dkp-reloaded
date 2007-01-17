@@ -1,4 +1,4 @@
-local mod = EPGP:NewModule("EPGP_GPValues", "AceHook-2.1")
+local mod = EPGP:NewModule("EPGP_GPTooltip", "AceHook-2.1")
 
 local EQUIPSLOT_VALUE = {
   ["INVTYPE_HEAD"] = 1,
