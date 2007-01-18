@@ -46,6 +46,7 @@ end
 
 function EPGP_Standings:OnEnable()
   self:RegisterEvent("EPGP_CACHE_UPDATE")
+  self:RegisterEvent("RAID_ROSTER_UPDATE")
   if not T:IsRegistered("EPGP_Standings") then
     T:Register("EPGP_Standings",
       "children", function()
@@ -93,6 +94,12 @@ end
 function EPGP_Standings:EPGP_CACHE_UPDATE()
   self.standings = self:BuildStandingsTable()
   T:Refresh("EPGP_Standings")
+end
+
+function EPGP_Standings:RAID_ROSTER_UPDATE()
+  if self.db.profile.raid_mode then
+    T:Refresh("EPGP_Standings")
+  end
 end
 
 function EPGP_Standings:Toggle()
