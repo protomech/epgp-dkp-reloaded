@@ -20,7 +20,7 @@ popd
 unzip "$RELEASE_ZIP"
 
 pushd epgp
-sed -i "s/@VERSION@/$1/" epgp.toc
+sed -i -e "s/@VERSION@/$1/" epgp.toc
 popd
 
 zip -u -r "$RELEASE_ZIP" epgp/epgp.toc
