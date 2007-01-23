@@ -1,7 +1,7 @@
-EPGP_Standings = EPGP:NewModule("EPGP_Standings", "AceDB-2.0", "AceEvent-2.0")
+local mod = EPGP:NewModule("EPGP_Standings", "AceDB-2.0", "AceEvent-2.0")
 
-EPGP_Standings:RegisterDB("EPGP_Standings_DB")
-EPGP_Standings:RegisterDefaults("profile", {
+mod:RegisterDB("EPGP_Standings_DB")
+mod:RegisterDefaults("profile", {
   data = { },
   detached_data = { },
   standings = { },
@@ -32,7 +32,7 @@ local function GuildIterator(obj, i)
   return i, name
 end
 
-function EPGP_Standings:GetStandingsIterator()
+function mod:GetStandingsIterator()
   if (self.db.profile.raid_mode and UnitInRaid("player")) then
     return RaidIterator, self, 1
   else
@@ -40,11 +40,11 @@ function EPGP_Standings:GetStandingsIterator()
   end
 end
 
-function EPGP_Standings:OnInitialize()
+function mod:OnInitialize()
   self.cache = EPGP:GetModule("EPGP_Cache")
 end
 
-function EPGP_Standings:OnEnable()
+function mod:OnEnable()
   self:RegisterEvent("EPGP_CACHE_UPDATE")
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   if not T:IsRegistered("EPGP_Standings") then
@@ -64,20 +64,20 @@ function EPGP_Standings:OnEnable()
   		    "text", "Group by class",
   		    "tooltipText", "Toggles grouping members by class.",
   		    "checked", self.db.char.group_by_class,
-  		    "func", function() self.db.profile.group_by_class = not self.db.profile.group_by_class; self:Refresh() end
+  		    "func", function() self.db.profile.group_by_class = not self.db.profile.group_by_class; self:EPGP_CACHE_UPDATE() end
   		  )
   		  D:AddLine(
   		    "text", "Show Alts",
   		    "tooltipText", "Toggles listing of Alts in standings.",
   		    "checked", self.db.profile.show_alts or self.db.profile.raid_mode,
   		    "disabled", self.db.profile.raid_mode,
-  		    "func", function() self.db.profile.show_alts = not self.db.profile.show_alts; self:Refresh() end
+  		    "func", function() self.db.profile.show_alts = not self.db.profile.show_alts; self:EPGP_CACHE_UPDATE() end
   		  )
   		  D:AddLine(
   		    "text", "Raid Mode",
   		    "tooltipText", "Toggles listing only raid members (if in raid).",
   		    "checked", self.db.profile.raid_mode,
-  		    "func", function() self.db.profile.raid_mode = not self.db.profile.raid_mode; self:Refresh() end
+  		    "func", function() self.db.profile.raid_mode = not self.db.profile.raid_mode; self:EPGP_CACHE_UPDATE() end
   		  )
   		end
     )
@@ -87,22 +87,22 @@ function EPGP_Standings:OnEnable()
   end
 end
 
-function EPGP_Standings:OnDisable()
+function mod:OnDisable()
   T:Close("EPGP_Standings")
 end
 
-function EPGP_Standings:EPGP_CACHE_UPDATE()
+function mod:EPGP_CACHE_UPDATE()
   self.standings = self:BuildStandingsTable()
   T:Refresh("EPGP_Standings")
 end
 
-function EPGP_Standings:RAID_ROSTER_UPDATE()
+function mod:RAID_ROSTER_UPDATE()
   if self.db.profile.raid_mode then
     T:Refresh("EPGP_Standings")
   end
 end
 
-function EPGP_Standings:Toggle()
+function mod:Toggle()
   if T:IsAttached("EPGP_Standings") then
     T:Detach("EPGP_Standings")
     if (T:IsLocked("EPGP_Standings")) then
@@ -116,7 +116,7 @@ end
 -- Builds a standings table with record:
 -- name, class, EP, GP, PR
 -- and sorted by PR with members with EP < MIN_EP at the end
-function EPGP_Standings:BuildStandingsTable()
+function mod:BuildStandingsTable()
   local t = {}
   for i,name in self:GetStandingsIterator() do
   	local ep, tep, gp, tgp, class = self.cache:GetMemberInfo(name)
@@ -145,7 +145,7 @@ function EPGP_Standings:BuildStandingsTable()
   return t
 end
 
-function EPGP_Standings:OnTooltipUpdate()
+function mod:OnTooltipUpdate()
   if not self.standings then
     self.standings = self:BuildStandingsTable()
   end
