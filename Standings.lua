@@ -121,7 +121,6 @@ function mod:BuildStandingsTable()
   for i,name in self:GetStandingsIterator() do
   	local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
     local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
-    ChatFrame1:AddMessage("name: "..tostring(name).." class: "..tostring(rankIndex))
     if ep and tep and gp and tgp then
 			local EP,GP = tep + ep, tgp + gp
 			local PR = GP == 0 and EP or EP/GP
