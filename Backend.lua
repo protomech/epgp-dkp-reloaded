@@ -30,7 +30,7 @@ end
 function mod:ResetEPGP()
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
-    self.cache:SetMemberInfo(name, 0, 0, 0, 0)
+    self.cache:SetMemberEPGP(name, 0, 0, 0, 0)
   end
   self.cache:SaveRoster()
   self:Report("All EP/GP are reset.")
@@ -41,12 +41,12 @@ function mod:NewRaid()
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
     if not self.cache:IsAlt(name) then
-      local ep, tep, gp, tgp = self.cache:GetMemberInfo(name)
+      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       tep = math.floor((ep+tep) * factor)
       ep = 0
       gep = math.floor((gp+tgp) * factor)
       gp = 0
-      self.cache:SetMemberInfo(name, ep, tep, gp, tgp)
+      self.cache:SetMemberEPGP(name, ep, tep, gp, tgp)
     end
   end
   self.cache:SaveRoster()
@@ -56,8 +56,8 @@ end
 function mod:AddEP2Member(name, points)
 	assert(type(name) == "string")
 	assert(type(points) == "number")
-  local ep, tep, gp, tgp = self.cache:GetMemberInfo(name)
-  self.cache:SetMemberInfo(name, ep+points, tep, gp, tgp)
+  local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+  self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
   self.cache:SaveRoster()
   self:Report("Added %d EPs to %s.", points, name)
 end
@@ -71,8 +71,8 @@ function mod:AddEP2Raid(points)
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if zone == leader_zone then
       table.insert(members, name)
-      local ep, tep, gp, tgp = self.cache:GetMemberInfo(name)
-      self.cache:SetMemberInfo(name, ep+points, tep, gp, tgp)
+      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+      self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
     end
   end
   self.cache:SaveRoster()
@@ -103,8 +103,8 @@ function mod:AddEPBonus2Raid(bonus)
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if zone == leader_zone then
       table.insert(members, name)
-      local ep, tep, gp, tgp = self.cache:GetMemberInfo(name)
-      self.cache:SetMemberInfo(name, ep*(1+bonus), tep, gp, tgp)
+      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+      self.cache:SetMemberEPGP(name, ep*(1+bonus), tep, gp, tgp)
     end
   end
   self.cache:SaveRoster()
@@ -114,8 +114,8 @@ end
 function mod:AddGP2Member(name, points)
 	assert(type(name) == "string")
 	assert(type(points) == "number")
-  local ep, tep, gp, tgp = self.cache:GetMemberInfo(name)
-  self.cache:SetMemberInfo(name, ep, tep, gp+points, tgp)
+  local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+  self.cache:SetMemberEPGP(name, ep, tep, gp+points, tgp)
   self.cache:SaveRoster()
   self:Report("Added %d GPs to %s.", points, name)
 end

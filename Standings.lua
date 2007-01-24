@@ -63,7 +63,7 @@ function mod:OnEnable()
   		  D:AddLine(
   		    "text", "Group by class",
   		    "tooltipText", "Toggles grouping members by class.",
-  		    "checked", self.db.char.group_by_class,
+  		    "checked", self.db.profile.group_by_class,
   		    "func", function() self.db.profile.group_by_class = not self.db.profile.group_by_class; self:EPGP_CACHE_UPDATE() end
   		  )
   		  D:AddLine(
@@ -119,8 +119,10 @@ end
 function mod:BuildStandingsTable()
   local t = {}
   for i,name in self:GetStandingsIterator() do
-  	local ep, tep, gp, tgp, class = self.cache:GetMemberInfo(name)
-    if (class and ep and tep and gp and tgp) then
+  	local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+    local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
+    ChatFrame1:AddMessage("name: "..tostring(name).." class: "..tostring(rankIndex))
+    if ep and tep and gp and tgp then
 			local EP,GP = tep + ep, tgp + gp
 			local PR = GP == 0 and EP or EP/GP
       table.insert(t, { name, class, EP, GP, PR })
@@ -134,7 +136,7 @@ function mod:BuildStandingsTable()
 		elseif not a_low and b_low then return true
 		else return a[5] > b[5] end
 	end
-  if (self.db.char.group_by_class) then
+  if (self.db.profile.group_by_class) then
     table.sort(t, function(a,b)
       if (a[2] ~= b[2]) then return a[2] < b[2]
       else return SortPR(a, b) end

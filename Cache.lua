@@ -3,7 +3,8 @@ local mod = EPGP:NewModule("EPGP_Cache", "AceConsole-2.0", "AceDB-2.0", "AceDebu
 mod:RegisterDB("EPGP_Cache_DB")
 mod:RegisterDefaults("profile", {
   alts = {},
-  roster = {},
+  data = {},
+  info = {},
   flat_credentials = false,
   min_eps = 1000,
   decay_percent = 10
@@ -64,30 +65,35 @@ function mod:LoadConfig()
 	end
 end
 
-local function GetMemberInfoTable(obj, name)
+local function GetMemberData(obj, name)
   local real_name = obj.db.profile.alts[name]
-  return obj.db.profile.roster[real_name or name]
+  return obj.db.profile.data[real_name or name]
 end
 
 function mod:IsAlt(name)
   return not not self.db.profile.alts[name]
 end
 
-function mod:GetMemberInfo(name)
-  local t = GetMemberInfoTable(self, name)
+function mod:GetMemberEPGP(name)
+  local t = GetMemberData(self, name)
   if t[1] then
     return unpack(t)
   else
-    return 0,0,0,0,t[5]
+    return 0,0,0,0
   end
 end
 
-function mod:SetMemberInfo(name, ep, tep, gp, tgp)
+function mod:GetMemberInfo(name)
+  local t = self.db.profile.info[name]
+  if t then return unpack(t) end
+end
+
+function mod:SetMemberEPGP(name, ep, tep, gp, tgp)
   assert(type(ep) == "number" and ep >= 0 and ep <= 99999)
   assert(type(tep) == "number" and tep >= 0 and tep <= 999999999)
   assert(type(gp) == "number" and gp >= 0 and gp <= 99999)
   assert(type(tgp) == "number" and tgp >= 0 and tgp <= 999999999)
-  local t = GetMemberInfoTable(self, name)
+  local t = GetMemberData(self, name)
   t[1] = ep
   t[2] = tep
   t[3] = gp
@@ -102,13 +108,16 @@ end
 
 function mod:LoadRoster()
   self:Debug("Loading roster")
-  local roster = {}
+  local data = {}
+  local info = {}
   for i = 1, GetNumGuildMembers(true) do
-    local name, _, _, _, class, _, _, officernote, _, _ = GetGuildRosterInfo(i)
+    local name, rank, rankIndex, level, class, zone, note, officernote, online, status = GetGuildRosterInfo(i)
     local ep, tep, gp, tgp = ParseNote(officernote)
-    roster[name] = { ep, tep, gp, tgp, class }
+    data[name] = { ep, tep, gp, tgp }
+    info[name] = { rank, rankIndex, level, class, zone, note, officernote, online, status }
   end
-  self.db.profile.roster = roster
+  self.db.profile.data = data
+  self.db.profile.info = info
 end
 
 local function EncodeNote(ep, tep, gp, tgp)
@@ -118,7 +127,7 @@ end
 function mod:SaveRoster()
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, _, _, _, officernote, _, _ = GetGuildRosterInfo(i)
-    local ep, tep, gp, tgp = self:GetMemberInfo(name)    
+    local ep, tep, gp, tgp = self:GetMemberEPGP(name)
     if ep then
       local new_officernote = EncodeNote(ep, tep, gp, tgp)
       if new_officernote ~= officernote then
@@ -281,6 +290,6 @@ function mod:UpgradeFromVersion1(scale)
   		tgp = math.floor(tgp * factor)
   	end
   	self:Debug("%s EP/GP: %d/%d", name, tep, tgp)
-  	self:SetMemberInfo(name, 0, tep, 0, tgp)
+  	self:SetMemberEPGP(name, 0, tep, 0, tgp)
   end
 end
