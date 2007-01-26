@@ -76,10 +76,12 @@ end
 
 function mod:GetMemberEPGP(name)
   local t = GetMemberData(self, name)
-  if t[1] then
-    return unpack(t)
-  else
+  if not t then
+    return
+  elseif not t[1] then
     return 0,0,0,0
+  else
+    return unpack(t)
   end
 end
 
