@@ -31,10 +31,9 @@ local ILVL_TO_IVALUE = {
 }
 
 function mod:AddGP2Tooltip(frame, itemLink)
-  local gp = self:GetGPValue(itemLink)
+  local gp, ilvl, ivalue = self:GetGPValue(itemLink)
   if gp and gp > 0 then
-    frame:AddDoubleLine("GP", string.format("%d", gp),
-      NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b,
+    frame:AddLine(string.format("GP: %d [ItemLevel=%d ItemValue=%d]", gp, ilvl, ivalue),
       NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
     frame:Show()
   end
@@ -48,23 +47,44 @@ function mod:GetGPValue(itemLink)
   local ilvl2ivalue = ILVL_TO_IVALUE[rarity]
   if ilvl2ivalue then
     local ivalue = ilvl2ivalue(level)
-    return math.floor(ivalue^2 * 0.04 * islot_mod)
+    return math.floor(ivalue^2 * 0.04 * islot_mod), level, ivalue
   end
 end
 
+local TOOLTIPS = {
+	ItemRefTooltip,
+	GameTooltip,
+	ShoppingTooltip1,
+	ShoppingTooltip2,
+	--EquipCompare support
+	ComparisonTooltip1,
+	ComparisonTooltip2,
+	-- MultiTips support
+	ItemRefTooltip2,
+	ItemRefTooltip3,
+	ItemRefTooltip4,
+	ItemRefTooltip5,
+}
+
+function mod.OnTooltipSetItem(tooltip)
+  local _, itemlink = tooltip:GetItem()
+  mod:AddGP2Tooltip(tooltip, itemlink)
+end
+
 function mod:OnEnable()
-  self:SecureHook(GameTooltip, "SetAuctionItem", function(this, type, index) self:AddGP2Tooltip(this, GetAuctionItemLink(type, index)) end)
-  self:SecureHook(GameTooltip, "SetBagItem", function(this, bag, slot) self:AddGP2Tooltip(this, GetContainerItemLink(bag, slot)) end)
-  self:SecureHook(GameTooltip, "SetHyperlink", function(this, link) self:AddGP2Tooltip(this, link) end)
-  self:SecureHook(GameTooltip, "SetInventoryItem", function(this, unit, slot) self:AddGP2Tooltip(this, GetInventoryItemLink(unit, slot)) end)
-  self:SecureHook(GameTooltip, "SetLootItem", function(this, slot) self:AddGP2Tooltip(this, GetLootSlotLink(slot)) end)
-  self:SecureHook(GameTooltip, "SetLootRollItem", function(this, slot) self:AddGP2Tooltip(this, GetLootRollItemLink(slot)) end)
-  self:SecureHook(GameTooltip, "SetMerchantItem", function(this, index) self:AddGP2Tooltip(this, GetMerchantItemLink(index)) end)
-  self:SecureHook(GameTooltip, "SetQuestItem", function(this, type, index) self:AddGP2Tooltip(this, GetQuestItemLink(type, index)) end)
-  self:SecureHook(GameTooltip, "SetQuestLogItem", function(this, type, index) self:AddGP2Tooltip(this, GetQuestLogItemLink(type, index)) end)
-  self:SecureHook(GameTooltip, "SetSendMailItem", function(this) self:AddGP2Tooltip(this, GetSendMailItem()) end)
-  self:SecureHook(GameTooltip, "SetTradePlayerItem", function(this, id) self:AddGP2Tooltip(this, GetTradePlayerItemLink(id)) end)
-  self:SecureHook(GameTooltip, "SetTradeSkillItem", function(this, index) self:AddGP2Tooltip(this, GetTradeSkillItemLink(index)) end)
-  self:SecureHook(GameTooltip, "SetTradeTargetItem", function(this, id) self:AddGP2Tooltip(this, GetTradeTargetItemLink(id)) end)
-  self:SecureHook(ItemRefTooltip, "SetHyperlink", function(this, link) self:AddGP2Tooltip(this, link) end)
+  for _, tooltip in pairs(TOOLTIPS) do
+    if tooltip then
+      if tooltip:HasScript("OnTooltipSetItem") then
+        local old_script = tooltip:GetScript("OnTooltipSetItem")
+        if old_script then
+          tooltip:SetScript("OnTooltipSetItem", function(tooltip)
+            old_script(tooltip)
+            mod.OnTooltipSetItem(tooltip)
+          end)
+        else
+          tooltip:SetScript("OnTooltipSetItem", mod.OnTooltipSetItem)
+        end
+      end
+    end
+  end
 end
