@@ -1,7 +1,7 @@
 local C = AceLibrary("Crayon-2.0")
 local BC = AceLibrary("Babble-Class-2.2")
 
-local mod = EPGP:NewModule("EPGP_Backend", "AceDB-2.0", "AceConsole-2.0")
+local mod = EPGP:NewModule("EPGP_Backend", "AceDB-2.0", "AceEvent-2.0", "AceConsole-2.0")
 
 mod:RegisterDB("EPGP_Backend_DB")
 mod:RegisterDefaults("profile", {
@@ -11,6 +11,15 @@ mod:RegisterDefaults("profile", {
 
 function mod:OnInitialize()
   self.cache = EPGP:GetModule("EPGP_Cache")
+end
+
+function mod:OnEnable()
+  self:RegisterEvent("EPGP_CACHE_UPDATE")
+end
+
+function mod:EPGP_CACHE_UPDATE()
+  local guild_name = GetGuildInfo("player")
+  if guild_name ~= self:GetProfile() then self:SetProfile(guild_name) end
 end
 
 function mod:CanLogRaids()

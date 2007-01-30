@@ -164,6 +164,9 @@ function mod:PLAYER_GUILD_UPDATE()
 end
 
 function mod:GUILD_ROSTER_UPDATE(local_update)
+  local guild_name = GetGuildInfo("player")
+  if guild_name ~= self:GetProfile() then self:SetProfile(guild_name) end
+
 	if local_update then
 		self:Debug("Detected changes; sending update to guild")
 		SendAddonMessage("EPGP", "UPDATE", "GUILD")
