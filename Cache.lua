@@ -140,11 +140,15 @@ function mod:SaveRoster()
 end
 
 function mod:GuildRosterNow()
+  if not IsInGuild() then return end
+
   GuildRoster()
   self.last_guild_roster_time = GetTime()
 end
 
 function mod:GuildRoster()
+  if not IsInGuild() then return end
+
 	local time = GetTime()
 	if not self.last_guild_roster_time or time - self.last_guild_roster_time > 10 then
 		self:GuildRosterNow()
@@ -156,9 +160,7 @@ function mod:GuildRoster()
 end
 
 function mod:PLAYER_GUILD_UPDATE()
-  if IsInGuild() then
-    self:GuildRoster()
-  end
+  self:GuildRoster()
 end
 
 function mod:GUILD_ROSTER_UPDATE(local_update)
