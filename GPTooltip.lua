@@ -51,40 +51,27 @@ function mod:GetGPValue(itemLink)
   end
 end
 
-local TOOLTIPS = {
-	ItemRefTooltip,
-	GameTooltip,
-	ShoppingTooltip1,
-	ShoppingTooltip2,
-	--EquipCompare support
-	ComparisonTooltip1,
-	ComparisonTooltip2,
-	-- MultiTips support
-	ItemRefTooltip2,
-	ItemRefTooltip3,
-	ItemRefTooltip4,
-	ItemRefTooltip5,
-}
-
 function mod.OnTooltipSetItem(tooltip)
   local _, itemlink = tooltip:GetItem()
   mod:AddGP2Tooltip(tooltip, itemlink)
 end
 
 function mod:OnEnable()
-  for _, tooltip in pairs(TOOLTIPS) do
-    if tooltip then
-      if tooltip:HasScript("OnTooltipSetItem") then
-        local old_script = tooltip:GetScript("OnTooltipSetItem")
+  local obj = EnumerateFrames()
+  while obj do
+    if obj:IsObjectType("GameTooltip") then
+      if obj:HasScript("OnTooltipSetItem") then
+        local old_script = obj:GetScript("OnTooltipSetItem")
         if old_script then
-          tooltip:SetScript("OnTooltipSetItem", function(tooltip)
-            old_script(tooltip)
-            mod.OnTooltipSetItem(tooltip)
+          obj:SetScript("OnTooltipSetItem", function(obj)
+            old_script(obj)
+            mod.OnTooltipSetItem(obj)
           end)
         else
-          tooltip:SetScript("OnTooltipSetItem", mod.OnTooltipSetItem)
+          obj:SetScript("OnTooltipSetItem", mod.OnTooltipSetItem)
         end
       end
     end
+    obj = EnumerateFrames(obj)
   end
 end
