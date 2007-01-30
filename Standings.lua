@@ -4,7 +4,6 @@ mod:RegisterDB("EPGP_Standings_DB")
 mod:RegisterDefaults("profile", {
   data = { },
   detached_data = { },
-  standings = { },
   group_by_class = false,
   show_alts = false,
   raid_mode = true
