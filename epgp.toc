@@ -30,5 +30,6 @@ Core.lua
 Cache.lua
 Backend.lua
 GPTooltip.lua
+GPUtils.lua
 Standings.lua
 
