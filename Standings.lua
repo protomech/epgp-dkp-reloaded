@@ -41,6 +41,36 @@ end
 
 function mod:OnInitialize()
   self.cache = EPGP:GetModule("EPGP_Cache")
+  StaticPopupDialogs["EPGP_Standings_HTML"] = {
+    text = "HTML table of the current EPGP standings.",
+    hasEditBox = 1,
+    OnShow = function()
+      local text = "<table>"..
+      "<caption>EPGP Standings</caption>"..
+      "<tr><th>Name</th><th>Class</th><th>EP</th><th>GP</th><th>PR</th></tr>"
+      for k,v in pairs(self.standings) do
+        local name, class, ep, gp, pr = unpack(v)
+        text = text..string.format(
+          "<tr><td>%s</td><td><spam style=\"color:#%s\">%s</td><td>%d</td><td>%d</td><td>%.4g</td></tr>",
+          name, BC:GetHexColor(class), class, ep, gp, pr)
+      end
+      text = text.."</table>"
+      local editBox = getglobal(this:GetName().."EditBox")
+      editBox:SetText(text)
+      editBox:HighlightText()
+      editBox:SetFocus()
+    end,
+    EditBoxOnEnterPressed = function()
+      this:GetParent():Hide()
+    end,
+    EditBoxOnEscapePressed = function()
+      this:GetParent():Hide();
+    end,
+    timeout = 0,
+    exclusive = 1,
+    whileDead = 1,
+    hideOnEscape = 1,
+  }
 end
 
 function mod:OnEnable()
@@ -77,6 +107,11 @@ function mod:OnEnable()
   		    "tooltipText", "Toggles listing only raid members (if in raid).",
   		    "checked", self.db.profile.raid_mode,
   		    "func", function() self.db.profile.raid_mode = not self.db.profile.raid_mode; self:EPGP_CACHE_UPDATE() end
+  		  )
+  		  D:AddLine(
+  		    "text", "Export to HTML",
+  		    "tooltipText", "Exports current standings window to an HTML table.",
+  		    "func", function() StaticPopup_Show("EPGP_Standings_HTML") end
   		  )
   		end
     )
