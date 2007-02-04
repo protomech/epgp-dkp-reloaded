@@ -28,6 +28,7 @@ local ILVL_TO_IVALUE = {
   [4] = function(ilvl) return (ilvl - 1.3) / 1.3 end,     -- Purple
 }
 
+GPUtils = {}
 function GPUtils:GetGPValue(itemLink)
   if not itemLink then return end
   local name, link, rarity, level, minlevel, type, subtype, count, equipLoc = GetItemInfo(itemLink)
