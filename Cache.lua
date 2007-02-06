@@ -22,7 +22,7 @@ function mod:LoadConfig()
   self:Debug("Loading config")
   local lines = {string.split("\n", GetGuildInfoText() or "")}
 	local in_block = false
-  self.db.profile.alts = {}
+	self:ResetDB("profile")
 	for _,line in pairs(lines) do
 		if line == "-EPGP-" then
 			in_block = not in_block
