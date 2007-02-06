@@ -81,7 +81,9 @@ function mod:AddEP2Raid(points)
     if zone == leader_zone then
       table.insert(members, name)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-      self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
+      if ep then -- If the member is not in the guild we get nil
+        self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
+      end
     end
   end
   self.cache:SaveRoster()
