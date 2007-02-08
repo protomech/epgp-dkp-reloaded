@@ -52,8 +52,8 @@ function mod:LoadConfig()
       end
 
 		  -- Flat Credentials
-		  local fc = line == "@FC"
-		  if fc then self.db.profile.flat_credentials = fc end
+		  local fc = line:match("@FC")
+		  if fc then self.db.profile.flat_credentials = true end
 
 			-- Read in alts
 		  for main, alts_text in line:gmatch("(%a+):([%a%s]+)") do
