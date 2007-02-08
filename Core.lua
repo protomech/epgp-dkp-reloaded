@@ -14,11 +14,11 @@ EPGP:RegisterDefaults("profile", {
 -------------------------------------------------------------------------------
 function EPGP:OnInitialize()
 	self:RegisterEvent("EPGP_CACHE_UPDATE")
-  self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest)
 end
 
 function EPGP:EPGP_CACHE_UPDATE()
   self.OnMenuRequest = self:GetModule("EPGP_Backend"):BuildOptions()
+  self:RegisterChatCommand({ "/epgp" }, self.OnMenuRequest, "EPGP")
 end
 
 -------------------------------------------------------------------------------
