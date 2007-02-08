@@ -53,7 +53,7 @@ function mod:NewRaid()
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       tep = math.floor((ep+tep) * factor)
       ep = 0
-      gep = math.floor((gp+tgp) * factor)
+      tgp = math.floor((gp+tgp) * factor)
       gp = 0
       self.cache:SetMemberEPGP(name, ep, tep, gp, tgp)
     end
