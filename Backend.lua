@@ -183,7 +183,8 @@ function mod:BuildOptions()
     disabled = function() return not self:CanLogRaids() end,
     func =  function() self:NewRaid() end,
     order = 2,
-    confirm = true
+    confirm = string.format("Create a new raid and decay all past EP and GP by %d%%%%?",
+                            self.cache.db.profile.decay_percent)
   }
 
   local raid = options.args["raid"]
@@ -311,7 +312,8 @@ function mod:BuildOptions()
     desc = "Reset all EPGP data.",
     guiHidden = true,
     disabled = function() return not self:CanChangeRules() end,
-    func = function() self:ResetEPGP() end
+    func = function() self:ResetEPGP() end,
+    confirm = "Reset all EP and GP to 0?"
   }
   -- Upgrade EPGP data
   options.args["upgrade"] = {
@@ -342,7 +344,7 @@ function mod:BuildOptions()
     desc = "Restores public and officer notes from last backup.",
     disabled = function() return not self:CanLogRaids() end,
     func = function() self:RestoreNotes() end,
-    confirm = true
+    confirm = "Restore public and officer notes from the last backup?"
   }
   return options
 end
