@@ -14,21 +14,24 @@ function mod.OnTooltipSetItem(tooltip)
   mod:AddGP2Tooltip(tooltip, itemlink)
 end
 
+local function HookScript(obj, name, func)
+  local old_script = obj:GetScript(name)
+  if old_script then
+    obj:SetScript(name, function(...)
+      old_script(...)
+      func(...)
+    end)
+  else
+    obj:SetScript(name, func)
+  end
+end
+
 function mod:OnEnable()
   local obj = EnumerateFrames()
   while obj do
     if obj:IsObjectType("GameTooltip") then
-      if obj:HasScript("OnTooltipSetItem") then
-        local old_script = obj:GetScript("OnTooltipSetItem")
-        if old_script then
-          obj:SetScript("OnTooltipSetItem", function(obj)
-            old_script(obj)
-            mod.OnTooltipSetItem(obj)
-          end)
-        else
-          obj:SetScript("OnTooltipSetItem", mod.OnTooltipSetItem)
-        end
-      end
+      assert(obj:HasScript("OnTooltipSetItem"))
+      HookScript(obj, "OnTooltipSetItem", mod.OnTooltipSetItem)
     end
     obj = EnumerateFrames(obj)
   end
