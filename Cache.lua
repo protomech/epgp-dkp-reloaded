@@ -37,7 +37,6 @@ function mod:LoadConfig()
 		  -- Decay percent
 			local dp = line:match("@DECAY_P:(%d+)")
 			if dp then
-			  self:Debug(dp)
 			  dp = tonumber(dp)
 			  if dp and dp >= 0 and dp <= 100 then self.db.profile.decay_percent = dp
 			  else self:Print("Decay Percent should be a number between 0 and 100") end
@@ -46,7 +45,6 @@ function mod:LoadConfig()
 		  -- Min EPs
 			local mep = tonumber(line:match("@MIN_EP:(%d+)"))
       if mep then
-  			self:Debug(mep)
   		  if mep and mep >= 0 then self.db.profile.min_eps = mep
   		  else self:Print("Min EPs should be a positive number") end
       end
