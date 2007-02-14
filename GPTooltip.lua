@@ -1,4 +1,4 @@
-local mod = EPGP:NewModule("EPGP_GPTooltip")
+local mod = EPGP:NewModule("EPGP_GPTooltip", "AceHook-2.1")
 
 function mod:AddGP2Tooltip(frame, itemLink)
   local gp, ilvl, ivalue = GPUtils:GetGPValue(itemLink)
@@ -9,21 +9,10 @@ function mod:AddGP2Tooltip(frame, itemLink)
   end
 end
 
-function mod.OnTooltipSetItem(tooltip)
+function mod:OnTooltipSetItem(tooltip)
   local _, itemlink = tooltip:GetItem()
-  mod:AddGP2Tooltip(tooltip, itemlink)
-end
-
-local function HookScript(obj, name, func)
-  local old_script = obj:GetScript(name)
-  if old_script then
-    obj:SetScript(name, function(...)
-      old_script(...)
-      func(...)
-    end)
-  else
-    obj:SetScript(name, func)
-  end
+  self.hooks[tooltip]["OnTooltipSetItem"]()
+  self:AddGP2Tooltip(tooltip, itemlink)
 end
 
 function mod:OnEnable()
@@ -31,7 +20,7 @@ function mod:OnEnable()
   while obj do
     if obj:IsObjectType("GameTooltip") then
       assert(obj:HasScript("OnTooltipSetItem"))
-      HookScript(obj, "OnTooltipSetItem", mod.OnTooltipSetItem)
+      self:HookScript(obj, "OnTooltipSetItem")
     end
     obj = EnumerateFrames(obj)
   end
