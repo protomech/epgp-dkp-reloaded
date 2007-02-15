@@ -62,11 +62,86 @@ end
 function EPGP:BuildOptions()
   local backend = self:GetModule("EPGP_Backend")
   local cache = self:GetModule("EPGP_Cache")
-  -- Build static options first
   local options = {
     type = "group",
     desc = "EPGP Options",
     args = {
+      -- Now build dynamic options
+      ["raid"] = {
+        type = "group",
+        name = "+EP Raid",
+        desc = "Award EPs to raid members that are in "..GetRealZoneText()..".",
+        args = {
+          ["add"] = {
+            type = "text",
+            name = "Add EPs to Raid",
+            desc = "Add EPs to raid members that are in "..GetRealZoneText()..".",
+            get = false,
+            set = function(v) backend:AddEP2Raid(tonumber(v)) end,
+            usage = "<EP>",
+            disabled = function() return not (backend:CanLogRaids() and UnitInRaid("player")) end,
+            validate = function(v)
+              local n = tonumber(v)
+              return n and n >= 0 and n < 100000
+            end,
+          },
+          ["distribute"] = {
+            type = "text",
+            name = "Distribute EPs to Raid",
+            desc = "Distribute EPs to raid members that are in "..GetRealZoneText()..".",
+            get = false,
+            set = function(v) backend:DistributeEP2Raid(tonumber(v)) end,
+            usage = "<EP>",
+            disabled = function() return not (backend:CanLogRaids() and UnitInRaid("player")) end,
+            validate = function(v)
+              local n = tonumber(v)
+              return n and n >= 0 and n < 1000000
+            end,
+          },
+          ["bonus"] = {
+            type = "text",
+            name = "Add bonus EP to Raid",
+            desc = "Add % EP bonus to raid members that are in "..GetRealZoneText()..".",
+            get = false,
+            set = function(v) backend:AddEPBonus2Raid(tonumber(v)*0.01) end,
+            usage = "<Bonus%>",
+            disabled = function() return not (backend:CanLogRaids() and UnitInRaid("player")) end,
+            validate = function(v)
+              local n = tonumber(v)
+              return n and n > 0 and n <= 100
+            end,
+          },
+        },
+        order = 1
+      },
+      ["ep"] = {
+        type = "group",
+        name = "+EP",
+        desc = "Award EPs to member.",
+        disabled = function() return not backend:CanChangeRules() end,
+        args = {},
+        order = 2
+      },
+      ["gp"] = {
+        type = "group",
+        name = "+GP",
+        desc = "Add GPs to member.",
+        disabled = function() return not backend:CanLogRaids() end,
+        args = {},
+        order = 3
+      },
+      ["newraid"] = {
+        type = "execute",
+        name = "New Raid",
+        desc = "Create a new raid and decay all past EP and GP by"..
+               tostring(cache.db.profile.decay_percent).."%.",
+        disabled = function() return not backend:CanLogRaids() end,
+        func =  function() backend:NewRaid() end,
+        order = 4,
+        confirm = "Create a new raid and decay all past EP and GP by "..
+                  tostring(cache.db.profile.decay_percent).."%%?",
+      },
+      -- Static options
       ["channel"] = {
         type = "text",
         name = "Channel",
@@ -83,7 +158,8 @@ function EPGP:BuildOptions()
         guiHidden = true,
         disabled = function() return not backend:CanChangeRules() end,
         func = function() backend:ResetEPGP() end,
-        confirm = "Reset all EP and GP to 0?"
+        confirm = "Reset all EP and GP to 0?",
+        order = 1001,
       },
       ["upgrade"] = {
       	type = "text",
@@ -97,13 +173,14 @@ function EPGP:BuildOptions()
           return n and n > 0 and n <= 1000
         end,
       	guiHidden = true,
-      	disabled = function() return not backend:CanChangeRules() end
+      	disabled = function() return not backend:CanChangeRules() end,
       },
       ["backup"] = {
         type = "execute",
         name = "Backup",
         desc = "Backup public and officer notes and replace last backup.",
-        func = function() self:BackupNotes() end,
+        func = function() backend:BackupNotes() end,
+        order = 1002,
       },
       ["restore"] = {
         type = "execute",
@@ -111,86 +188,12 @@ function EPGP:BuildOptions()
         desc = "Restores public and officer notes from last backup.",
         disabled = function() return not backend:CanLogRaids() end,
         func = function() backend:RestoreNotes() end,
-        confirm = "Restore public and officer notes from the last backup?"
+        confirm = "Restore public and officer notes from the last backup?",
+        order = 1003
       },
     },
   }
-  -- Now build dynamic options
-  options.args = {
-    ["raid"] = {
-      type = "group",
-      name = "+EP Raid",
-      desc = "Award EPs to raid members that are in "..GetRealZoneText()..".",
-      args = {
-        ["add"] = {
-          type = "text",
-          name = "Add EPs to Raid",
-          desc = "Add EPs to raid members that are in "..GetRealZoneText()..".",
-          get = false,
-          set = function(v) backend:AddEP2Raid(tonumber(v)) end,
-          usage = "<EP>",
-          disabled = function() return not (backend:CanLogRaids() and UnitInRaid("player")) end,
-          validate = function(v)
-            local n = tonumber(v)
-            return n and n >= 0 and n < 100000
-          end,
-        },
-        ["distribute"] = {
-          type = "text",
-          name = "Distribute EPs to Raid",
-          desc = "Distribute EPs to raid members that are in "..GetRealZoneText()..".",
-          get = false,
-          set = function(v) backend:DistributeEP2Raid(tonumber(v)) end,
-          usage = "<EP>",
-          disabled = function() return not (backend:CanLogRaids() and UnitInRaid("player")) end,
-          validate = function(v)
-            local n = tonumber(v)
-            return n and n >= 0 and n < 1000000
-          end,
-        },
-        ["bonus"] = {
-          type = "text",
-          name = "Add bonus EP to Raid",
-          desc = "Add % EP bonus to raid members that are in "..GetRealZoneText()..".",
-          get = false,
-          set = function(v) backend:AddEPBonus2Raid(tonumber(v)*0.01) end,
-          usage = "<Bonus%>",
-          disabled = function() return not (backend:CanLogRaids() and UnitInRaid("player")) end,
-          validate = function(v)
-            local n = tonumber(v)
-            return n and n > 0 and n <= 100
-          end,
-        },
-      },
-      order = 1
-    },
-    ["newraid"] = {
-      type = "execute",
-      name = "New Raid",
-      desc = "Create a new raid and decay all past EP and GP by"..
-             tostring(cache.db.profile.decay_percent).."%.",
-      disabled = function() return not backend:CanLogRaids() end,
-      func =  function() backend:NewRaid() end,
-      order = 2,
-      confirm = "Create a new raid and decay all past EP and GP by "..
-                tostring(cache.db.profile.decay_percent).."%%",
-    },
-    ["ep"] = {
-      type = "group",
-      name = "+EP",
-      desc = "Award EPs to member.",
-      disabled = function() return not backend:CanChangeRules() end,
-      args = {},
-    },
-    ["gp"] = {
-      type = "group",
-      name = "+GP",
-      desc = "Add GPs to member.",
-      disabled = function() return not backend:CanLogRaids() end,
-      args = {},
-    }
-  }
-  -- now add per member options
+  -- Add per member options to dynamic ones
 	for i = 1, GetNumGuildMembers(true) do
   	local name, _, _, _, class = GetGuildRosterInfo(i)
   	local ep_group = options.args.ep
