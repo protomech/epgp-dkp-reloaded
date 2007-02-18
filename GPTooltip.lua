@@ -9,9 +9,9 @@ function mod:AddGP2Tooltip(frame, itemLink)
   end
 end
 
-function mod:OnTooltipSetItem(tooltip)
+function mod:OnTooltipSetItem(tooltip, ...)
   local _, itemlink = tooltip:GetItem()
-  self.hooks[tooltip]["OnTooltipSetItem"]()
+  self.hooks[tooltip]["OnTooltipSetItem"](tooltip, ...)
   self:AddGP2Tooltip(tooltip, itemlink)
 end
 
