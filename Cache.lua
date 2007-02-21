@@ -11,7 +11,7 @@ mod:RegisterDefaults("profile", {
 })
 
 function mod:OnEnable()
-  --self:SetDebugging(true)
+  self:SetDebugging(true)
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_GUILD_UPDATE")
 	self:RegisterEvent("CHAT_MSG_ADDON")
@@ -177,10 +177,11 @@ function mod:GUILD_ROSTER_UPDATE(local_update)
 end
 
 function mod:CHAT_MSG_ADDON(prefix, msg, type, sender)
-	self:Debug("Processing CHAT_MSG_ADDON(%s,%s,%s,%s)", prefix, msg, type, sender)
-	if not prefix == "EPGP" then return end
-	if sender == UnitName("player") then return end
-	if msg == "UPDATE" then self:GuildRoster() end
+	if prefix == "EPGP" then
+	  self:Debug("Processing CHAT_MSG_ADDON(%s,%s,%s,%s)", prefix, msg, type, sender)
+  	if sender == UnitName("player") then return end
+  	if msg == "UPDATE" then self:GuildRoster() end
+  end
 end
 
 -------------------------------------------------------------------------------
