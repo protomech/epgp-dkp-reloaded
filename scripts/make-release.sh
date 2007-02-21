@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -x
+
 if [ ! $# == 1 ]; then
   echo "Usage: $0 <release_version>"
   exit 1
@@ -20,7 +22,7 @@ popd
 unzip "$RELEASE_ZIP"
 
 pushd epgp
-sed -i "" -e "s/@VERSION@/$1/" epgp.toc
+sed --in-place=tmp --expression="s/@VERSION@/$1/" epgp.toc
 popd
 
 zip -u -r "$RELEASE_ZIP" epgp/epgp.toc
