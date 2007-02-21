@@ -11,7 +11,7 @@ mod:RegisterDefaults("profile", {
 })
 
 function mod:OnEnable()
-  self:SetDebugging(true)
+  --self:SetDebugging(true)
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_GUILD_UPDATE")
 	self:RegisterEvent("CHAT_MSG_ADDON")
@@ -19,7 +19,6 @@ function mod:OnEnable()
 end
 
 function mod:LoadConfig()
-  self:Debug("Loading config")
   local lines = {string.split("\n", GetGuildInfoText() or "")}
 	local in_block = false
 	self:ResetDB("profile")
@@ -107,7 +106,6 @@ local function ParseNote(note)
 end
 
 function mod:LoadRoster()
-  self:Debug("Loading roster")
   local data = {}
   local info = {}
   for i = 1, GetNumGuildMembers(true) do
@@ -135,6 +133,8 @@ function mod:SaveRoster()
       end
     end
   end
+	self:Debug("Notes changed - sending update to guild")
+	SendAddonMessage("EPGP", "UPDATE", "GUILD")
 end
 
 function mod:GuildRosterNow()
@@ -166,11 +166,10 @@ function mod:GUILD_ROSTER_UPDATE(local_update)
   if guild_name ~= self:GetProfile() then self:SetProfile(guild_name) end
 
 	if local_update then
-		self:Debug("Detected changes; sending update to guild")
-		SendAddonMessage("EPGP", "UPDATE", "GUILD")
-		self:GuildRosterNow()
+	  self:GuildRosterNow()
 		return
 	end
+  self:Debug("Reloading roster and config from game")
 	self:LoadConfig()
 	self:LoadRoster()
 	self:TriggerEvent("EPGP_CACHE_UPDATE")
@@ -178,7 +177,7 @@ end
 
 function mod:CHAT_MSG_ADDON(prefix, msg, type, sender)
 	if prefix == "EPGP" then
-	  self:Debug("Processing CHAT_MSG_ADDON(%s,%s,%s,%s)", prefix, msg, type, sender)
+    self:Debug("Processing CHAT_MSG_ADDON(%s,%s,%s,%s)", prefix, msg, type, sender)
   	if sender == UnitName("player") then return end
   	if msg == "UPDATE" then self:GuildRoster() end
   end
@@ -296,6 +295,8 @@ function mod:UpgradeFromVersion1(scale)
   		tgp = math.floor(tgp * factor)
   	end
   	self:Debug("%s EP/GP: %d/%d", name, tep, tgp)
-  	self:SetMemberEPGP(name, 0, tep, 0, tgp)
+  	if not self:IsAlt(name) then
+  	  self:SetMemberEPGP(name, 0, tep, 0, tgp)
+  	end
   end
 end
