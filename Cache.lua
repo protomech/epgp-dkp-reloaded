@@ -10,6 +10,10 @@ mod:RegisterDefaults("profile", {
   decay_percent = 10
 })
 
+function mod:OnInitialize()
+  self.guild_member_count = 0
+end
+
 function mod:OnEnable()
   --self:SetDebugging(true)
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
@@ -116,6 +120,11 @@ function mod:LoadRoster()
   end
   self.db.profile.data = data
   self.db.profile.info = info
+
+  local old_count = self.guild_member_count
+  self.guild_member_count = GetNumGuildMembers(true)
+  self:Debug("old:%d new:%d", old_count, self.guild_member_count)
+  return old_count ~= self.guild_member_count
 end
 
 local function EncodeNote(ep, tep, gp, tgp)
@@ -171,8 +180,8 @@ function mod:GUILD_ROSTER_UPDATE(local_update)
 	end
   self:Debug("Reloading roster and config from game")
 	self:LoadConfig()
-	self:LoadRoster()
-	self:TriggerEvent("EPGP_CACHE_UPDATE")
+	local member_change = self:LoadRoster()
+	self:TriggerEvent("EPGP_CACHE_UPDATE", member_change)
 end
 
 function mod:CHAT_MSG_ADDON(prefix, msg, type, sender)

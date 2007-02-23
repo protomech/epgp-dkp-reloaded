@@ -17,19 +17,13 @@ EPGP:RegisterDefaults("profile", {
 -- Init code
 -------------------------------------------------------------------------------
 function EPGP:OnInitialize()
-  self:RegisterEvent("EPGP_CACHE_UPDATE", "UpdateOptions")
-  self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateOptions")
-  self:UpdateOptions()
+  self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateZoneOptions")
+  self:RegisterEvent("EPGP_CACHE_UPDATE", "UpdateMemberOptions")
+  self:BuildOptions()
 end
 
-function EPGP:UpdateOptions()
-  self:RegisterChatCommand({ "/epgp" }, self:BuildOptions(), "EPGP")
-  if Dewdrop:IsOpen() then
-    Dewdrop:Refresh(1)
-    Dewdrop:Refresh(2)
-    Dewdrop:Refresh(3)
-    Dewdrop:Refresh(4)
-  end
+function EPGP:OnEnable()
+  self:UpdateZoneOptions()
 end
 
 -------------------------------------------------------------------------------
@@ -52,7 +46,7 @@ function EPGP:OnClick()
 end
 
 function EPGP:OnMenuRequest(level, value, inTooltip, valueN_1, valueN_2, valueN_3, valueN_4)
-  Dewdrop:FeedAceOptionsTable(self:BuildOptions())
+  Dewdrop:FeedAceOptionsTable(self.options)
   if level == 1 then
     Dewdrop:AddLine()
   end
@@ -62,7 +56,7 @@ end
 function EPGP:BuildOptions()
   local backend = self:GetModule("EPGP_Backend")
   local cache = self:GetModule("EPGP_Cache")
-  local options = {
+  self.options = {
     type = "group",
     desc = "EPGP Options",
     args = {
@@ -70,12 +64,12 @@ function EPGP:BuildOptions()
       ["raid"] = {
         type = "group",
         name = "+EP Raid",
-        desc = "Award EPs to raid members that are in "..GetRealZoneText()..".",
+        -- desc = "Award EPs to raid members that are in "..GetRealZoneText()..".",
         args = {
           ["add"] = {
             type = "text",
             name = "Add EPs to Raid",
-            desc = "Add EPs to raid members that are in "..GetRealZoneText()..".",
+            -- desc = "Add EPs to raid members that are in "..GetRealZoneText()..".",
             get = false,
             set = function(v) backend:AddEP2Raid(tonumber(v)) end,
             usage = "<EP>",
@@ -88,7 +82,7 @@ function EPGP:BuildOptions()
           ["distribute"] = {
             type = "text",
             name = "Distribute EPs to Raid",
-            desc = "Distribute EPs to raid members that are in "..GetRealZoneText()..".",
+            -- desc = "Distribute EPs to raid members that are in "..GetRealZoneText()..".",
             get = false,
             set = function(v) backend:DistributeEP2Raid(tonumber(v)) end,
             usage = "<EP>",
@@ -101,7 +95,7 @@ function EPGP:BuildOptions()
           ["bonus"] = {
             type = "text",
             name = "Add bonus EP to Raid",
-            desc = "Add % EP bonus to raid members that are in "..GetRealZoneText()..".",
+            -- desc = "Add % EP bonus to raid members that are in "..GetRealZoneText()..".",
             get = false,
             set = function(v) backend:AddEPBonus2Raid(tonumber(v)*0.01) end,
             usage = "<Bonus%>",
@@ -193,11 +187,34 @@ function EPGP:BuildOptions()
       },
     },
   }
-  -- Add per member options to dynamic ones
+end
+
+function EPGP:UpdateOptionDisplay()
+  self:RegisterChatCommand({ "/epgp" }, self.options, "EPGP")
+  if Dewdrop:IsOpen() then
+    Dewdrop:Refresh(1)
+    Dewdrop:Refresh(2)
+    Dewdrop:Refresh(3)
+    Dewdrop:Refresh(4)
+  end
+end
+
+function EPGP:UpdateZoneOptions()
+  self.options.args.raid.desc = "Award EPs to raid members that are in "..GetRealZoneText().."."
+  self.options.args.raid.args.add.desc = "Add EPs to raid members that are in "..GetRealZoneText().."."
+  self.options.args.raid.args.distribute.desc = "Distribute EPs to raid members that are in "..GetRealZoneText().."."
+  self.options.args.raid.args.bonus.desc = "Add %EP bonus to raid members that are in "..GetRealZoneText().."."
+  self:UpdateOptionDisplay()
+end
+
+function EPGP:UpdateMemberOptions(member_change)
+  local backend = self:GetModule("EPGP_Backend")
+  local cache = self:GetModule("EPGP_Cache")
+  if not member_change then return end
 	for i = 1, GetNumGuildMembers(true) do
   	local name, _, _, _, class = GetGuildRosterInfo(i)
-  	local ep_group = options.args.ep
-  	local gp_group = options.args.gp
+  	local ep_group = self.options.args.ep
+  	local gp_group = self.options.args.gp
   	if not ep_group.args[class] then
   	  ep_group.args[class] = {
         type = "group",
@@ -241,5 +258,5 @@ function EPGP:BuildOptions()
       end,
 	  }
 	end
-	return options
+  self:UpdateOptionDisplay()
 end
