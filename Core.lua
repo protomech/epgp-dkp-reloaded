@@ -7,7 +7,7 @@ Dewdrop = AceLibrary("Dewdrop-2.0")
 -------------------------------------------------------------------------------
 -- DB defaults
 -------------------------------------------------------------------------------
-EPGP:RegisterDB("EPGP_DB")
+EPGP:RegisterDB("EPGP_Core_DB", "EPGP_Core_PerCharDB")
 EPGP:RegisterDefaults("profile", {
   -- Default report channel
   report_channel = "GUILD",
