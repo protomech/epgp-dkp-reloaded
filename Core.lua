@@ -20,6 +20,7 @@ function EPGP:OnInitialize()
   self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateZoneOptions")
   self:RegisterEvent("EPGP_CACHE_UPDATE", "UpdateMemberOptions")
   self:BuildOptions()
+  self.OnMenuRequest = self.options
 end
 
 function EPGP:OnEnable()
@@ -35,7 +36,6 @@ EPGP.defaultMinimapPosition = 180
 EPGP.cannotDetachTooltip = true
 EPGP.tooltipHidderWhenEmpty = false
 EPGP.hasIcon = "Interface\\Icons\\INV_Misc_Orb_04"
-EPGP.overrideMenu = true
 
 function EPGP:OnTooltipUpdate()
   T:SetHint("Click to toggle EPGP standings.")
@@ -43,14 +43,6 @@ end
 
 function EPGP:OnClick()
   self:GetModule("EPGP_Standings"):Toggle()
-end
-
-function EPGP:OnMenuRequest(level, value, inTooltip, valueN_1, valueN_2, valueN_3, valueN_4)
-  Dewdrop:FeedAceOptionsTable(self.options)
-  if level == 1 then
-    Dewdrop:AddLine()
-  end
-  self:AddImpliedMenuOptions()
 end
 
 function EPGP:BuildOptions()
