@@ -134,7 +134,7 @@ function EPGP:BuildOptions()
         desc = "Channel used by reporting functions.",
         get = function() return backend.db.profile.report_channel end,
         set = function(v) backend.db.profile.report_channel = v end,
-        validate = { "PARTY", "RAID", "GUILD", "OFFICER" },
+        validate = { "PARTY", "RAID", "GUILD", "OFFICER", "NONE" },
         order = 1000,
       },
       ["reset"] = {

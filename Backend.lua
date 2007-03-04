@@ -28,9 +28,11 @@ function mod:CanChangeRules()
 end
 
 function mod:Report(fmt, ...)
-  -- FIXME: Chop-off message to 255 character chunks as necessary
-  local msg = string.format(fmt, ...)
-  SendChatMessage("EPGP: " .. msg, self.db.profile.report_channel)
+  if self.db.profile.report_channel ~= "NONE" then
+    -- FIXME: Chop-off message to 255 character chunks as necessary
+    local msg = string.format(fmt, ...)
+    SendChatMessage("EPGP: " .. msg, self.db.profile.report_channel)
+  end
 end
 
 function mod:ResetEPGP()
