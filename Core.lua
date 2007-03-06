@@ -234,7 +234,7 @@ function EPGP:UpdateMemberOptions(member_change)
       set = function(v) backend:AddEP2Member(name, tonumber(v)) end,
       validate = function(v)
         local n = tonumber(v)
-        return n and n > 0 and n <= 10000
+        return n and n > -10000 and n <= 10000
       end,
 	  }
 	  gp_group.args[class].args[name] = {
@@ -246,7 +246,7 @@ function EPGP:UpdateMemberOptions(member_change)
       set = function(v) backend:AddGP2Member(name, tonumber(v)) end,
       validate = function(v)
         local n = tonumber(v)
-        return n and n > 0 and n <= 10000
+        return n and n > -10000 and n <= 10000
       end,
 	  }
 	end

@@ -35,7 +35,6 @@ function mod:LoadConfig()
 		  --   @DECAY_P:<number>    // for decay percent (defaults to 10)
 		  --   @MIN_EP:<number>     // for min eps until member can need items (defaults to 1000)
 		  --   @FC                  // for flat credentials (true if specified, false otherwise)
-		  --   Main:Alt1 Alt2       // Alt1 and Alt2 are alts for Main
 
 		  -- Decay percent
 			local dp = line:match("@DECAY_P:(%d+)")
@@ -55,13 +54,6 @@ function mod:LoadConfig()
 		  -- Flat Credentials
 		  local fc = line:match("@FC")
 		  if fc then self.db.profile.flat_credentials = true end
-
-			-- Read in alts
-		  for main, alts_text in line:gmatch("(%a+):([%a%s]+)") do
-		    for alt in alts_text:gmatch("(%a+)") do
-	        self.db.profile.alts[alt] = main
-		    end
-		  end
 		end
 	end
 end
@@ -112,14 +104,23 @@ end
 function mod:LoadRoster()
   local data = {}
   local info = {}
+  local alts = {}
   for i = 1, GetNumGuildMembers(true) do
     local name, rank, rankIndex, level, class, zone, note, officernote, online, status = GetGuildRosterInfo(i)
-    local ep, tep, gp, tgp = ParseNote(officernote)
-    data[name] = { ep, tep, gp, tgp }
+    -- This is an alt and officernote stores the main
+    if string.match(officernote, "%u%l*") == officernote then
+      alts[name] = officernote
+      data[name] = nil
+    -- This is a main and officernote stores EPGP
+    else
+      local ep, tep, gp, tgp = ParseNote(officernote)
+      data[name] = { ep, tep, gp, tgp }
+    end
     info[name] = { rank, rankIndex, level, class, zone, note, officernote, online, status }
   end
   self.db.profile.data = data
   self.db.profile.info = info
+  self.db.profile.alts = alts
 
   local old_count = self.guild_member_count
   self.guild_member_count = GetNumGuildMembers(true)
@@ -134,11 +135,13 @@ end
 function mod:SaveRoster()
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, _, _, _, officernote, _, _ = GetGuildRosterInfo(i)
-    local ep, tep, gp, tgp = self:GetMemberEPGP(name)
-    if ep then
-      local new_officernote = EncodeNote(ep, tep, gp, tgp)
-      if new_officernote ~= officernote then
-        GuildRosterSetOfficerNote(i, new_officernote)
+    if not self:IsAlt(name) then
+      local ep, tep, gp, tgp = self:GetMemberEPGP(name)
+      if ep then
+        local new_officernote = EncodeNote(ep, tep, gp, tgp)
+        if new_officernote ~= officernote then
+          GuildRosterSetOfficerNote(i, new_officernote)
+        end
       end
     end
   end
