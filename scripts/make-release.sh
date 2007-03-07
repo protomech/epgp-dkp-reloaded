@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -x
-
 if [ ! $# == 1 ]; then
   echo "Usage: $0 <release_version>"
   exit 1
@@ -27,5 +25,15 @@ popd
 
 zip -u -r "$RELEASE_ZIP" epgp/epgp.toc
 
-echo "Release file at $RELEASE_ZIP"
-echo "Now you can tag this release by executing: svn import \"$EPGP_DIR/epgp\" https://epgp.googlecode.com/svn/tags/epgp-$1"
+cat <<INFO
+=============================================================================
+The release file is located at:
+$RELEASE_ZIP
+
+Tag this release in svn:
+svn import \"$EPGP_DIR/epgp\" https://epgp.googlecode.com/svn/tags/epgp-$1
+
+Upload release file to googlecode:
+"$EPGP_DIR/scripts/googlecode/googlecode-upload.py" -s "epgp-$1" -p epgp -u evlogimenos "$RELEASE_ZIP"
+=============================================================================
+INFO
