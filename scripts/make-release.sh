@@ -31,7 +31,7 @@ The release file is located at:
 $RELEASE_ZIP
 
 Tag this release in svn:
-svn import \"$EPGP_DIR/epgp\" https://epgp.googlecode.com/svn/tags/epgp-$1
+svn import "$EPGP_DIR/epgp" https://epgp.googlecode.com/svn/tags/epgp-$1
 
 Upload release file to googlecode:
 "$EPGP_DIR/scripts/googlecode/googlecode-upload.py" -s "epgp-$1" -p epgp -u evlogimenos "$RELEASE_ZIP"
