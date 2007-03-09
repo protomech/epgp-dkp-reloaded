@@ -11,7 +11,15 @@ function mod:OnInitialize()
 end
 
 function mod:OnEnable()
+  self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("EPGP_CACHE_UPDATE")
+  self:RegisterEvent("EPGP_STOP_RECURRING_EP_AWARDS")
+end
+
+function mod:RAID_ROSTER_UPDATE()
+  if not UnitInRaid("player") then
+    self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
+  end
 end
 
 function mod:EPGP_CACHE_UPDATE()
@@ -89,6 +97,18 @@ function mod:AddEP2Raid(points)
   self:Report("Added %d EPs to %s.", points, table.concat(members, ", "))
 end
 
+local RECURRING_EP_PERIOD_SECS = 900
+function mod:AddRecurringEP2Raid(points)
+  assert(type(points) == "number")
+  assert(UnitInRaid("player"))
+  if points == 0 then
+    self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
+  else
+    self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2Raid, RECURRING_EP_PERIOD_SECS, self, points)
+    self:Report("Adding %d EPs to raid every %dmin.", points, RECURRING_EP_PERIOD_SECS/60)
+  end
+end
+
 function mod:DistributeEP2Raid(total_points)
 	assert(type(total_points) == "number")
 	assert(UnitInRaid("player"))
@@ -102,6 +122,24 @@ function mod:DistributeEP2Raid(total_points)
   end
   local points = math.floor(total_points / count)
   self:AddEP2Raid(points)
+end
+
+function mod:DistributeRecurringEP2Raid(total_points)
+  assert(type(total_points) == "number")
+  assert(UnitInRaid("player"))
+  if points == 0 then
+    self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
+  else
+    self:ScheduleRepeatingEvent("RECURRING_EP", mod.DistributeEP2Raid, RECURRING_EP_PERIOD_SECS, self, total_points)
+    self:Report("Distributing %d EPs to raid every %dmin.", points, RECURRING_EP_PERIOD_SECS/60)
+  end
+end
+
+function mod:EPGP_STOP_RECURRING_EP_AWARDS()
+  if self:IsEventScheduled("RECURRING_EP") then
+    self:CancelScheduledEvent("RECURRING_EP")
+    self:Report("Recurring EP awards stopped.")
+  end
 end
 
 function mod:AddEPBonus2Raid(bonus)
