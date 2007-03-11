@@ -38,11 +38,15 @@ EPGP.tooltipHidderWhenEmpty = false
 EPGP.hasIcon = "Interface\\Icons\\INV_Misc_Orb_04"
 
 function EPGP:OnTooltipUpdate()
-  T:SetHint("Click to toggle EPGP standings.")
+  T:SetHint("Click to toggle EPGP standings.\nShift-Click to toggle EPGP Config.")
 end
 
 function EPGP:OnClick()
-  self:GetModule("EPGP_Standings"):Toggle()
+  if not IsModifierKeyDown() then
+    self:GetModule("EPGP_Standings"):Toggle()
+  elseif IsShiftKeyDown() then
+    self:GetModule("EPGP_Config"):Toggle()
+  end
 end
 
 function EPGP:BuildOptions()

@@ -4,7 +4,7 @@
 ## Author: Alkis Evlogimenos
 ## Version: @VERSION@
 ## OptionalDeps: Ace2
-## SavedVariables: EPGP_Core_DB, EPGP_Backend_DB, EPGP_Standings_DB, EPGP_Cache_DB
+## SavedVariables: EPGP_Core_DB, EPGP_Backend_DB, EPGP_Standings_DB, EPGP_Cache_DB, EPGP_Config_DB
 ## SavedVariablesPerCharacter: EPGP_Core_PerCharDB
 ## X-Category: Guild
 ## X-Website: http://code.google.com/p/epgp/
@@ -29,6 +29,7 @@ Libs\Tablet-2.0\Tablet-2.0.lua
 
 Core.lua
 Cache.lua
+Config.lua
 Backend.lua
 GPUtils.lua
 GPTooltip.lua

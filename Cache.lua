@@ -3,6 +3,8 @@ local mod = EPGP:NewModule("EPGP_Cache", "AceConsole-2.0", "AceDB-2.0", "AceDebu
 mod:RegisterDB("EPGP_Cache_DB")
 mod:RegisterDefaults("profile", {
   alts = {},
+  outsiders = {},
+  dummies = {},
   data = {},
   info = {},
   flat_credentials = false,
@@ -54,17 +56,36 @@ function mod:LoadConfig()
 		  -- Flat Credentials
 		  local fc = line:match("@FC")
 		  if fc then self.db.profile.flat_credentials = true end
+		  
+		  -- Read in Outsiders
+		  for outsider, dummy in line:gmatch("(%a+):(%a+)") do
+		    self.db.profile.outsiders[outsider] = dummy
+		    self.db.profile.dummies[dummy] = outsider
+		  end
 		end
 	end
 end
 
 local function GetMemberData(obj, name)
-  local real_name = obj.db.profile.alts[name]
-  return obj.db.profile.data[real_name or name]
+  if obj:IsOutsider(name) then
+    return obj.db.profile.data[obj.db.profile.outsiders[name]]
+  elseif obj:IsAlt(name) then
+    return obj.db.profile.data[obj.db.profile.alts[name]]
+  else
+    return obj.db.profile.data[name]
+  end
 end
 
 function mod:IsAlt(name)
   return not not self.db.profile.alts[name]
+end
+
+function mod:IsOutsider(name)
+  return not not self.db.profile.outsiders[name]
+end
+
+function mod:IsDummy(name)
+  return not not self.db.profile.dummies[name]
 end
 
 function mod:GetMemberEPGP(name)
@@ -79,7 +100,11 @@ function mod:GetMemberEPGP(name)
 end
 
 function mod:GetMemberInfo(name)
-  local t = self.db.profile.info[name]
+  local guild_name = name
+  if self:IsOutsider(name) then
+    guild_name = self.db.profile.outsiders[name]
+  end
+  local t = self.db.profile.info[guild_name]
   if t then return unpack(t) end
 end
 

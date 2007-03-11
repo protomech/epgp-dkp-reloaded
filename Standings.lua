@@ -25,6 +25,10 @@ local function GuildIterator(obj, i)
   local name
   repeat
     name = GetGuildRosterInfo(i)
+    -- Handle dummies
+    if obj.cache:IsDummy(name) then
+		  name = obj.cache.db.profile.dummies[name]
+		end
     i = i+1
   until obj.db.profile.show_alts or not obj.cache:IsAlt(name)
   if not name then return end
@@ -186,10 +190,10 @@ function mod:OnTooltipUpdate()
   end
   local cat = T:AddCategory(
       "columns", 4,
-      "text",  C:Orange("Name"),   "child_textR",    1, "child_textG",    1, "child_textB",    1, "child_justify",  "LEFT",
-      "text2", C:Orange("EP"),     "child_text2R",   1, "child_text2G",   1, "child_text2B",   1, "child_justify4", "RIGHT",
-      "text3", C:Orange("GP"),     "child_text3R",   1, "child_text3G",   1, "child_text3B",   1, "child_justify5", "RIGHT",
-      "text4", C:Orange("PR"),     "child_text4R",   1, "child_text4G",   1, "child_text4B",   0, "child_justify6", "RIGHT"
+      "text",  C:Red("Name"),   "child_textR",    1, "child_textG",    1, "child_textB",    1, "child_justify",  "LEFT",
+      "text2", C:Red("EP"),     "child_text2R",   1, "child_text2G",   1, "child_text2B",   1, "child_justify4", "RIGHT",
+      "text3", C:Red("GP"),     "child_text3R",   1, "child_text3G",   1, "child_text3B",   1, "child_justify5", "RIGHT",
+      "text4", C:Red("PR"),     "child_text4R",   1, "child_text4G",   1, "child_text4B",   0, "child_justify6", "RIGHT"
     )
   for k,v in pairs(self.standings) do
     local name, class, ep, gp, pr = unpack(v)
@@ -201,7 +205,4 @@ function mod:OnTooltipUpdate()
       "text4", ep < self.cache.db.profile.min_eps and C:Colorize("7f7f00", pr_str) or pr_str
     )
   end
-
-  local info = T:AddCategory("columns", 2)
-  info:AddLine("text", C:Red("Min EPs"), "text2", C:Red(self.cache.db.profile.min_eps))
 end
