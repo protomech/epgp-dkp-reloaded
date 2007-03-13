@@ -49,14 +49,14 @@ function mod:OnInitialize()
     text = "HTML table of the current EPGP standings.",
     hasEditBox = 1,
     OnShow = function()
-      local text = "<table>"..
+      local text = "<table id=\"epgp-standings\">"..
       "<caption>EPGP Standings</caption>"..
       "<tr><th>Name</th><th>Class</th><th>EP</th><th>GP</th><th>PR</th></tr>"
       for k,v in pairs(self.standings) do
         local name, class, ep, gp, pr = unpack(v)
         text = text..string.format(
-          "<tr><td>%s</td><td><spam style=\"color:#%s\">%s</td><td>%d</td><td>%d</td><td>%.4g</td></tr>",
-          name, BC:GetHexColor(class), class, ep, gp, pr)
+          "<tr><td class=\"%s\">%s</td><td class=\"%s\">%s</td><td>%d</td><td>%d</td><td>%.4g</td></tr>",
+          class, name, class, class, ep, gp, pr)
       end
       text = text.."</table>"
       local editBox = getglobal(this:GetName().."EditBox")
