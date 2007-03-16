@@ -27,8 +27,8 @@ local function GuildIterator(obj, i)
     name = GetGuildRosterInfo(i)
     -- Handle dummies
     if obj.cache:IsDummy(name) then
-		  name = obj.cache.db.profile.dummies[name]
-		end
+      name = obj.cache.db.profile.dummies[name]
+    end
     i = i+1
   until obj.db.profile.show_alts or not obj.cache:IsAlt(name)
   if not name then return end
@@ -89,35 +89,35 @@ function mod:OnEnable()
       end,
       "data", self.db.profile.data,
       "detachedData", self.db.profile.detached_data,
-  		"showTitleWhenDetached", true,
-  		"showHintWhenDetached", true,
-  		"cantAttach", true,
-  		"menu", function()
-  		  D:AddLine(
-  		    "text", "Group by class",
-  		    "tooltipText", "Toggles grouping members by class.",
-  		    "checked", self.db.profile.group_by_class,
-  		    "func", function() self.db.profile.group_by_class = not self.db.profile.group_by_class; self:EPGP_CACHE_UPDATE() end
-  		  )
-  		  D:AddLine(
-  		    "text", "Show Alts",
-  		    "tooltipText", "Toggles listing of Alts in standings.",
-  		    "checked", self.db.profile.show_alts or self.db.profile.raid_mode,
-  		    "disabled", self.db.profile.raid_mode,
-  		    "func", function() self.db.profile.show_alts = not self.db.profile.show_alts; self:EPGP_CACHE_UPDATE() end
-  		  )
-  		  D:AddLine(
-  		    "text", "Raid Mode",
-  		    "tooltipText", "Toggles listing only raid members (if in raid).",
-  		    "checked", self.db.profile.raid_mode,
-  		    "func", function() self.db.profile.raid_mode = not self.db.profile.raid_mode; self:EPGP_CACHE_UPDATE() end
-  		  )
-  		  D:AddLine(
-  		    "text", "Export to HTML",
-  		    "tooltipText", "Exports current standings window to an HTML table.",
-  		    "func", function() StaticPopup_Show("EPGP_Standings_HTML") end
-  		  )
-  		end
+      "showTitleWhenDetached", true,
+      "showHintWhenDetached", true,
+      "cantAttach", true,
+      "menu", function()
+        D:AddLine(
+          "text", "Group by class",
+          "tooltipText", "Toggles grouping members by class.",
+          "checked", self.db.profile.group_by_class,
+          "func", function() self.db.profile.group_by_class = not self.db.profile.group_by_class; self:EPGP_CACHE_UPDATE() end
+        )
+        D:AddLine(
+          "text", "Show Alts",
+          "tooltipText", "Toggles listing of Alts in standings.",
+          "checked", self.db.profile.show_alts or self.db.profile.raid_mode,
+          "disabled", self.db.profile.raid_mode,
+          "func", function() self.db.profile.show_alts = not self.db.profile.show_alts; self:EPGP_CACHE_UPDATE() end
+        )
+        D:AddLine(
+          "text", "Raid Mode",
+          "tooltipText", "Toggles listing only raid members (if in raid).",
+          "checked", self.db.profile.raid_mode,
+          "func", function() self.db.profile.raid_mode = not self.db.profile.raid_mode; self:EPGP_CACHE_UPDATE() end
+        )
+        D:AddLine(
+          "text", "Export to HTML",
+          "tooltipText", "Exports current standings window to an HTML table.",
+          "func", function() StaticPopup_Show("EPGP_Standings_HTML") end
+        )
+      end
     )
   end
   if not T:IsAttached("EPGP_Standings") then
@@ -157,22 +157,22 @@ end
 function mod:BuildStandingsTable()
   local t = {}
   for i,name in self:GetStandingsIterator() do
-  	local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+    local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
     local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
     if ep and tep and gp and tgp then
-			local EP,GP = tep + ep, tgp + gp
-			local PR = GP == 0 and EP or EP/GP
+      local EP,GP = tep + ep, tgp + gp
+      local PR = GP == 0 and EP or EP/GP
       table.insert(t, { name, class, EP, GP, PR })
     end
   end
   -- Normal sorting function
-	local function SortPR(a,b)
-		local a_low = a[3] < self.cache.db.profile.min_eps
-		local b_low = b[3] < self.cache.db.profile.min_eps
-		if a_low and not b_low then return false
-		elseif not a_low and b_low then return true
-		else return a[5] > b[5] end
-	end
+  local function SortPR(a,b)
+    local a_low = a[3] < self.cache.db.profile.min_eps
+    local b_low = b[3] < self.cache.db.profile.min_eps
+    if a_low and not b_low then return false
+    elseif not a_low and b_low then return true
+    else return a[5] > b[5] end
+  end
   if (self.db.profile.group_by_class) then
     table.sort(t, function(a,b)
       if (a[2] ~= b[2]) then return a[2] < b[2]
@@ -197,7 +197,7 @@ function mod:OnTooltipUpdate()
     )
   for k,v in pairs(self.standings) do
     local name, class, ep, gp, pr = unpack(v)
-		local ep_str, gp_str, pr_str = string.format("%d", ep), string.format("%d", gp), string.format("%.4g", pr)
+    local ep_str, gp_str, pr_str = string.format("%d", ep), string.format("%d", gp), string.format("%.4g", pr)
     cat:AddLine(
       "text", C:Colorize(BC:GetHexColor(class), name),
       "text2", ep < self.cache.db.profile.min_eps and C:Colorize("7f7f7f", ep_str) or ep_str,

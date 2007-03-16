@@ -26,9 +26,9 @@ function mod:OnEnable()
       end,
       "data", self.db.profile.data,
       "detachedData", self.db.profile.detached_data,
-  		"showTitleWhenDetached", true,
-  		"showHintWhenDetached", true,
-  		"cantAttach", true
+      "showTitleWhenDetached", true,
+      "showHintWhenDetached", true,
+      "cantAttach", true
     )
   end
   if not T:IsAttached("EPGP_Config") then

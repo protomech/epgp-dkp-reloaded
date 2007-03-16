@@ -20,50 +20,50 @@ function mod:OnEnable()
   --self:SetDebugging(true)
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_GUILD_UPDATE")
-	self:RegisterEvent("CHAT_MSG_ADDON")
-	self:GuildRosterNow()
+  self:RegisterEvent("CHAT_MSG_ADDON")
+  self:GuildRosterNow()
 end
 
 function mod:LoadConfig()
   local lines = {string.split("\n", GetGuildInfoText() or "")}
-	local in_block = false
-	self:ResetDB("profile")
-	for _,line in pairs(lines) do
-		if line == "-EPGP-" then
-			in_block = not in_block
-		elseif in_block then
-		  -- Get options and alts
-		  -- Format is:
-		  --   @DECAY_P:<number>    // for decay percent (defaults to 10)
-		  --   @MIN_EP:<number>     // for min eps until member can need items (defaults to 1000)
-		  --   @FC                  // for flat credentials (true if specified, false otherwise)
+  local in_block = false
+  self:ResetDB("profile")
+  for _,line in pairs(lines) do
+    if line == "-EPGP-" then
+      in_block = not in_block
+    elseif in_block then
+      -- Get options and alts
+      -- Format is:
+      --   @DECAY_P:<number>    // for decay percent (defaults to 10)
+      --   @MIN_EP:<number>     // for min eps until member can need items (defaults to 1000)
+      --   @FC                  // for flat credentials (true if specified, false otherwise)
 
-		  -- Decay percent
-			local dp = line:match("@DECAY_P:(%d+)")
-			if dp then
-			  dp = tonumber(dp)
-			  if dp and dp >= 0 and dp <= 100 then self.db.profile.decay_percent = dp
-			  else self:Print("Decay Percent should be a number between 0 and 100") end
+      -- Decay percent
+      local dp = line:match("@DECAY_P:(%d+)")
+      if dp then
+        dp = tonumber(dp)
+        if dp and dp >= 0 and dp <= 100 then self.db.profile.decay_percent = dp
+        else self:Print("Decay Percent should be a number between 0 and 100") end
       end
 
-		  -- Min EPs
-			local mep = tonumber(line:match("@MIN_EP:(%d+)"))
+      -- Min EPs
+      local mep = tonumber(line:match("@MIN_EP:(%d+)"))
       if mep then
-  		  if mep and mep >= 0 then self.db.profile.min_eps = mep
-  		  else self:Print("Min EPs should be a positive number") end
+        if mep and mep >= 0 then self.db.profile.min_eps = mep
+        else self:Print("Min EPs should be a positive number") end
       end
 
-		  -- Flat Credentials
-		  local fc = line:match("@FC")
-		  if fc then self.db.profile.flat_credentials = true end
+      -- Flat Credentials
+      local fc = line:match("@FC")
+      if fc then self.db.profile.flat_credentials = true end
 
-		  -- Read in Outsiders
-		  for outsider, dummy in line:gmatch("(%a+):(%a+)") do
-		    self.db.profile.outsiders[outsider] = dummy
-		    self.db.profile.dummies[dummy] = outsider
-		  end
-		end
-	end
+      -- Read in Outsiders
+      for outsider, dummy in line:gmatch("(%a+):(%a+)") do
+        self.db.profile.outsiders[outsider] = dummy
+        self.db.profile.dummies[dummy] = outsider
+      end
+    end
+  end
 end
 
 local function GetMemberData(obj, name)
@@ -121,9 +121,9 @@ function mod:SetMemberEPGP(name, ep, tep, gp, tgp)
 end
 
 local function ParseNote(note)
-	if note == "" then return 0, 0, 0, 0 end
-	local ep, tep, gp, tgp = string.match(note, "^(%d+)|(%d+)|(%d+)|(%d+)$")
-	return tonumber(ep), tonumber(tep), tonumber(gp), tonumber(tgp)
+  if note == "" then return 0, 0, 0, 0 end
+  local ep, tep, gp, tgp = string.match(note, "^(%d+)|(%d+)|(%d+)|(%d+)$")
+  return tonumber(ep), tonumber(tep), tonumber(gp), tonumber(tgp)
 end
 
 function mod:LoadRoster()
@@ -154,7 +154,7 @@ function mod:LoadRoster()
 end
 
 local function EncodeNote(ep, tep, gp, tgp)
-	return string.format("%d|%d|%d|%d", ep, tep, gp, tgp)
+  return string.format("%d|%d|%d|%d", ep, tep, gp, tgp)
 end
 
 function mod:SaveRoster()
@@ -170,8 +170,8 @@ function mod:SaveRoster()
       end
     end
   end
-	self:Debug("Notes changed - sending update to guild")
-	SendAddonMessage("EPGP", "UPDATE", "GUILD")
+  self:Debug("Notes changed - sending update to guild")
+  SendAddonMessage("EPGP", "UPDATE", "GUILD")
 end
 
 function mod:GuildRosterNow()
@@ -184,14 +184,14 @@ end
 function mod:GuildRoster()
   if not IsInGuild() then return end
 
-	local time = GetTime()
-	if not self.last_guild_roster_time or time - self.last_guild_roster_time > 10 then
-		self:GuildRosterNow()
-	else
-		local delay = 10 + self.last_guild_roster_time - time
-		self:Debug("Delaying GuildRoster() for %f secs", delay)
-		self:ScheduleEvent("DELAYED_GUILD_ROSTER_UPDATE", mod.GuildRoster, delay, self)
-	end
+  local time = GetTime()
+  if not self.last_guild_roster_time or time - self.last_guild_roster_time > 10 then
+    self:GuildRosterNow()
+  else
+    local delay = 10 + self.last_guild_roster_time - time
+    self:Debug("Delaying GuildRoster() for %f secs", delay)
+    self:ScheduleEvent("DELAYED_GUILD_ROSTER_UPDATE", mod.GuildRoster, delay, self)
+  end
 end
 
 function mod:PLAYER_GUILD_UPDATE()
@@ -202,21 +202,21 @@ function mod:GUILD_ROSTER_UPDATE(local_update)
   local guild_name = GetGuildInfo("player")
   if guild_name ~= self:GetProfile() then self:SetProfile(guild_name) end
 
-	if local_update then
-	  self:GuildRosterNow()
-		return
-	end
+  if local_update then
+    self:GuildRosterNow()
+    return
+  end
   self:Debug("Reloading roster and config from game")
-	self:LoadConfig()
-	local member_change = self:LoadRoster()
-	self:TriggerEvent("EPGP_CACHE_UPDATE", member_change)
+  self:LoadConfig()
+  local member_change = self:LoadRoster()
+  self:TriggerEvent("EPGP_CACHE_UPDATE", member_change)
 end
 
 function mod:CHAT_MSG_ADDON(prefix, msg, type, sender)
-	if prefix == "EPGP" then
+  if prefix == "EPGP" then
     self:Debug("Processing CHAT_MSG_ADDON(%s,%s,%s,%s)", prefix, msg, type, sender)
-  	if sender == UnitName("player") then return end
-  	if msg == "UPDATE" then self:GuildRoster() end
+    if sender == UnitName("player") then return end
+    if msg == "UPDATE" then self:GuildRoster() end
   end
 end
 
@@ -321,19 +321,19 @@ end
 function mod:UpgradeFromVersion1(scale)
   local factor = 1 - self.db.profile.decay_percent * 0.01
   for i = 1, GetNumGuildMembers(true) do
-  	local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-  	local ept, gpt = ParseNoteVersion1(note), ParseNoteVersion1(officernote)
-  	assert(#ept == #gpt, "EP and GP tables are not of the same size")
-  	local tep, tgp = 0, 0
-  	for i = #ept,1,-1 do
-  		tep = tep + ept[i]*scale
-  		tep = math.floor(tep * factor)
-  		tgp = tgp + gpt[i]*scale
-  		tgp = math.floor(tgp * factor)
-  	end
-  	self:Debug("%s EP/GP: %d/%d", name, tep, tgp)
-  	if not self:IsAlt(name) then
-  	  self:SetMemberEPGP(name, 0, tep, 0, tgp)
-  	end
+    local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
+    local ept, gpt = ParseNoteVersion1(note), ParseNoteVersion1(officernote)
+    assert(#ept == #gpt, "EP and GP tables are not of the same size")
+    local tep, tgp = 0, 0
+    for i = #ept,1,-1 do
+      tep = tep + ept[i]*scale
+      tep = math.floor(tep * factor)
+      tgp = tgp + gpt[i]*scale
+      tgp = math.floor(tgp * factor)
+    end
+    self:Debug("%s EP/GP: %d/%d", name, tep, tgp)
+    if not self:IsAlt(name) then
+      self:SetMemberEPGP(name, 0, tep, 0, tgp)
+    end
   end
 end

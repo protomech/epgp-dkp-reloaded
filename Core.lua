@@ -178,18 +178,18 @@ function EPGP:BuildOptions()
         order = 1001,
       },
       ["upgrade"] = {
-      	type = "text",
-      	name = "Upgrade EPGP",
-      	desc = "Upgrade EPGP to new format and scale them by <scale>.",
-      	usage = "<scale>",
-      	get = false,
-      	set = function(v) backend:UpgradeEPGP(tonumber(v)) end,
+        type = "text",
+        name = "Upgrade EPGP",
+        desc = "Upgrade EPGP to new format and scale them by <scale>.",
+        usage = "<scale>",
+        get = false,
+        set = function(v) backend:UpgradeEPGP(tonumber(v)) end,
         validate = function(v)
           local n = tonumber(v)
           return n and n > 0 and n <= 1000
         end,
-      	guiHidden = true,
-      	disabled = function() return not backend:CanChangeRules() end,
+        guiHidden = true,
+        disabled = function() return not backend:CanChangeRules() end,
       },
       ["backup"] = {
         type = "execute",
@@ -233,29 +233,29 @@ function EPGP:UpdateMemberOptions(member_change)
   local backend = self:GetModule("EPGP_Backend")
   local cache = self:GetModule("EPGP_Cache")
   if not member_change then return end
-	for i = 1, GetNumGuildMembers(true) do
-  	local name, _, _, _, class = GetGuildRosterInfo(i)
-  	local ep_group = self.options.args.ep
-  	local gp_group = self.options.args.gp
-  	if not ep_group.args[class] then
-  	  ep_group.args[class] = {
+  for i = 1, GetNumGuildMembers(true) do
+    local name, _, _, _, class = GetGuildRosterInfo(i)
+    local ep_group = self.options.args.ep
+    local gp_group = self.options.args.gp
+    if not ep_group.args[class] then
+      ep_group.args[class] = {
         type = "group",
         name = C:Colorize(BC:GetHexColor(class), class),
         desc = class .. " members",
         disabled = function() return not backend:CanChangeRules() end,
         args = {},
-  	  }
-  	end
-  	if not gp_group.args[class] then
-  	  gp_group.args[class] = {
+      }
+    end
+    if not gp_group.args[class] then
+      gp_group.args[class] = {
         type = "group",
         name = C:Colorize(BC:GetHexColor(class), class),
         desc = class .. " members",
         disabled = function() return not backend:CanLogRaids() end,
         args = {},
-  	  }
-  	end
-	  ep_group.args[class].args[name] = {
+      }
+    end
+    ep_group.args[class].args[name] = {
       type = "text",
       name = C:Colorize(BC:GetHexColor(class), name),
       desc = "Add EPs to " .. name .. ".",
@@ -266,8 +266,8 @@ function EPGP:UpdateMemberOptions(member_change)
         local n = tonumber(v)
         return n and n > -10000 and n <= 10000
       end,
-	  }
-	  gp_group.args[class].args[name] = {
+    }
+    gp_group.args[class].args[name] = {
       type = "text",
       name = C:Colorize(BC:GetHexColor(class), name),
       desc = "Add GPs to " .. name .. ".",
@@ -278,7 +278,7 @@ function EPGP:UpdateMemberOptions(member_change)
         local n = tonumber(v)
         return n and n > -10000 and n <= 10000
       end,
-	  }
-	end
+    }
+  end
   self:UpdateOptionDisplay()
 end

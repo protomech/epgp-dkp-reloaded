@@ -70,8 +70,8 @@ function mod:NewRaid()
 end
 
 function mod:AddEP2Member(name, points)
-	assert(type(name) == "string")
-	assert(type(points) == "number")
+  assert(type(name) == "string")
+  assert(type(points) == "number")
   local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
   self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
   self.cache:SaveRoster()
@@ -79,11 +79,11 @@ function mod:AddEP2Member(name, points)
 end
 
 function mod:AddEP2Raid(points)
-	assert(type(points) == "number")
-	assert(UnitInRaid("player"))
-	local members = {}
-	local leader_zone = GetRealZoneText()
-	for i = 1, GetNumRaidMembers() do
+  assert(type(points) == "number")
+  assert(UnitInRaid("player"))
+  local members = {}
+  local leader_zone = GetRealZoneText()
+  for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if zone == leader_zone then
       table.insert(members, name)
@@ -110,11 +110,11 @@ function mod:AddRecurringEP2Raid(points)
 end
 
 function mod:DistributeEP2Raid(total_points)
-	assert(type(total_points) == "number")
-	assert(UnitInRaid("player"))
+  assert(type(total_points) == "number")
+  assert(UnitInRaid("player"))
   local count = 0
-	local leader_zone = GetRealZoneText()
-	for i = 1, GetNumRaidMembers() do
+  local leader_zone = GetRealZoneText()
+  for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if zone == leader_zone then
       count = count + 1
@@ -143,11 +143,11 @@ function mod:EPGP_STOP_RECURRING_EP_AWARDS()
 end
 
 function mod:AddEPBonus2Raid(bonus)
-	assert(type(bonus) == "number" and bonus >= 0 and bonus <= 1)
-	assert(UnitInRaid("player"))
-	local members = {}
-	local leader_zone = GetRealZoneText()
-	for i = 1, GetNumRaidMembers() do
+  assert(type(bonus) == "number" and bonus >= 0 and bonus <= 1)
+  assert(UnitInRaid("player"))
+  local members = {}
+  local leader_zone = GetRealZoneText()
+  for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
     if zone == leader_zone then
       table.insert(members, name)
@@ -160,8 +160,8 @@ function mod:AddEPBonus2Raid(bonus)
 end
 
 function mod:AddGP2Member(name, points)
-	assert(type(name) == "string")
-	assert(type(points) == "number")
+  assert(type(name) == "string")
+  assert(type(points) == "number")
   local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
   self.cache:SetMemberEPGP(name, ep, tep, gp+points, tgp)
   self.cache:SaveRoster()
@@ -171,8 +171,8 @@ end
 function mod:UpgradeEPGP(scale)
   assert(type(scale) == "number" and scale > 0, "Scaling factor should be a positive number")
   self.cache:UpgradeFromVersion1(scale)
-	self.cache:SaveRoster()
-	self:Report("All EP/GP are upgraded.")
+  self.cache:SaveRoster()
+  self:Report("All EP/GP are upgraded.")
 end
 
 function mod:BackupNotes()
