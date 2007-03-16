@@ -45,7 +45,7 @@ function mod:LoadConfig()
 			  if dp and dp >= 0 and dp <= 100 then self.db.profile.decay_percent = dp
 			  else self:Print("Decay Percent should be a number between 0 and 100") end
       end
-      
+
 		  -- Min EPs
 			local mep = tonumber(line:match("@MIN_EP:(%d+)"))
       if mep then
@@ -56,7 +56,7 @@ function mod:LoadConfig()
 		  -- Flat Credentials
 		  local fc = line:match("@FC")
 		  if fc then self.db.profile.flat_credentials = true end
-		  
+
 		  -- Read in Outsiders
 		  for outsider, dummy in line:gmatch("(%a+):(%a+)") do
 		    self.db.profile.outsiders[outsider] = dummy
@@ -154,7 +154,7 @@ function mod:LoadRoster()
 end
 
 local function EncodeNote(ep, tep, gp, tgp)
-	return string.format("%d|%d|%d|%d", ep, tep, gp, tgp)	
+	return string.format("%d|%d|%d|%d", ep, tep, gp, tgp)
 end
 
 function mod:SaveRoster()
@@ -302,7 +302,7 @@ local function Decode(s)
     num = num * 64
     num = num + (STRING2NUM[ss] or 0)
   end
-  
+
   return num
 end
 
