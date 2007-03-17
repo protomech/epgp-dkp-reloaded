@@ -1,4 +1,4 @@
-local mod = EPGP:NewModule("EPGP_Backend", "AceDB-2.0", "AceEvent-2.0", "AceConsole-2.0")
+local mod = EPGP:NewModule("EPGP_Backend", "AceDB-2.0", "AceHook-2.1", "AceEvent-2.0", "AceConsole-2.0")
 
 mod:RegisterDB("EPGP_Backend_DB")
 mod:RegisterDefaults("profile", {
@@ -14,6 +14,7 @@ function mod:OnEnable()
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("EPGP_CACHE_UPDATE")
   self:RegisterEvent("EPGP_STOP_RECURRING_EP_AWARDS")
+  self:SecureHook("GiveMasterLoot")
 end
 
 function mod:RAID_ROSTER_UPDATE()
@@ -195,3 +196,63 @@ function mod:RestoreNotes()
   end
   self:Print("Restored Officer and Public notes.")
 end
+
+-------------------------------------------------------------------------------
+-- Master loot hook
+-------------------------------------------------------------------------------
+local member = nil
+local itemLink = nil
+function mod:GiveMasterLoot(slot, index)
+  member = GetMasterLootCandidate(index)
+  itemLink = GetLootSlotLink(slot)
+  local dialog = StaticPopup_Show("EPGP_GP_ASSIGN_FOR_LOOT", member, itemLink)
+end
+
+StaticPopupDialogs["EPGP_GP_ASSIGN_FOR_LOOT"] = {
+  text = "Add GP to %s for %s",
+  button1 = ACCEPT,
+  button2 = CANCEL,
+  timeout = 0,
+  OnShow = function()
+    local gp = GPUtils:GetGPValue(itemLink)
+    local editBox = getglobal(this:GetName().."EditBox")
+    if gp then
+      editBox:SetText(gp)
+		else
+      editBox:SetText("")
+		  editBox:Disable()
+    end
+    editBox:HighlightText()
+    editBox:SetFocus()
+  end,
+  OnAccept = function()
+    local editBox = getglobal(this:GetParent():GetName().."EditBox")
+    local gp = tonumber(editBox:GetText())
+    if gp then
+      mod:AddGP2Member(member, gp)
+    end
+  end,
+  EditBoxOnEnterPressed = function()
+    local editBox = getglobal(this:GetParent():GetName().."EditBox")
+    local gp = tonumber(editBox:GetText())
+    if gp and gp > -10000 and gp < 10000 then
+      mod:AddGP2Member(member, gp)
+      this:GetParent():Hide()
+    end
+  end,
+  EditBoxOnTextChanged = function()
+    local editBox = getglobal(this:GetParent():GetName().."EditBox")
+    local button1 = getglobal(this:GetParent():GetName().."Button1")
+    local gp = tonumber(editBox:GetText())
+    if gp and gp > -10000 and gp < 10000 then
+      button1:Enable()
+		else
+			button1:Disable()
+		end
+  end,
+  EditBoxOnEscapePressed = function()
+    this:GetParent():Hide()
+  end,
+  hideOnEscape = 1,
+  hasEditBox = 1,  
+}
