@@ -75,6 +75,39 @@ function mod:OnInitialize()
     whileDead = 1,
     hideOnEscape = 1,
   }
+  StaticPopupDialogs["EPGP_Standings_BBCode"] = {
+    text = "BBCode post of the current EPGP standings.",
+    hasEditBox = 1,
+    OnShow = function()
+      local name, class, ep, gp, pr = 'Name', 'Class', 'EP', 'GP', 'PR';
+      local text = "[code]\n"..
+      "+----------------+-------EPGP Standings----+----------+----------+\n"..
+      "|      Name      |     Class    |    EP    |    GP    |    PR    |\n"..
+      "+----------------+--------------+----------+----------+----------+\n"
+      local fmt_str_row = "| %-15s| %-13s|%9d |%9d |%9.2f |\n"
+      for k,v in pairs(self.standings) do
+        name, class, ep, gp, pr = unpack(v)
+        text = text..string.format(fmt_str_row, name, class, ep, gp, pr);
+      end
+      text = text..
+      "+----------------+--------------+----------+----------+----------+\n"..
+      "[/code]"
+      local editBox = getglobal(this:GetName().."EditBox")
+      editBox:SetText(text)
+      editBox:HighlightText()
+      editBox:SetFocus()
+    end,
+    EditBoxOnEnterPressed = function()
+      this:GetParent():Hide()
+    end,
+    EditBoxOnEscapePressed = function()
+      this:GetParent():Hide();
+    end,
+    timeout = 0,
+    exclusive = 1,
+    whileDead = 1,
+    hideOnEscape = 1,
+  }
 end
 
 function mod:OnEnable()
@@ -116,6 +149,11 @@ function mod:OnEnable()
           "text", "Export to HTML",
           "tooltipText", "Exports current standings window to an HTML table.",
           "func", function() StaticPopup_Show("EPGP_Standings_HTML") end
+        )
+        D:AddLine(
+          "text", "Export to Text",
+          "tooltipText", "Exports current standings window to a BBCode postable string.",
+          "func", function() StaticPopup_Show("EPGP_Standings_BBCode") end
         )
       end
     )
