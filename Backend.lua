@@ -50,7 +50,13 @@ function mod:ResetEPGP()
     self.cache:SetMemberEPGP(name, 0, 0, 0, 0)
   end
   self.cache:SaveRoster()
-  self:Report("All EP/GP are reset.")
+  -- Make officer notes readable by all ranks
+  for i = 1,GuildControlGetNumRanks() do
+    GuildControlSetRank(i)
+    GuildControlSetRankFlag(11, true)
+    GuildControlSaveRank(GuildControlGetRankName(i))
+  end
+  self:Report("All EP/GP are reset and officer notes are made readable by all.")
 end
 
 function mod:NewRaid()

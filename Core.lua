@@ -174,7 +174,7 @@ function EPGP:BuildOptions()
         guiHidden = true,
         disabled = function() return not backend:CanChangeRules() end,
         func = function() backend:ResetEPGP() end,
-        confirm = "Reset all EP and GP to 0?",
+        confirm = "Reset all EP and GP to 0 and make officer notes readable by all?",
         order = 1001,
       },
       ["upgrade"] = {
