@@ -134,11 +134,11 @@ end
 function mod:DistributeRecurringEP2Raid(total_points)
   assert(type(total_points) == "number")
   assert(UnitInRaid("player"))
-  if points == 0 then
+  if total_points == 0 then
     self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
   else
     self:ScheduleRepeatingEvent("RECURRING_EP", mod.DistributeEP2Raid, RECURRING_EP_PERIOD_SECS, self, total_points, true)
-    self:Report("Distributing %d EPs to raid every %dmin.", points, RECURRING_EP_PERIOD_SECS/60)
+    self:Report("Distributing %d EPs to raid every %dmin.", total_points, RECURRING_EP_PERIOD_SECS/60)
   end
 end
 
