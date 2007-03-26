@@ -85,14 +85,14 @@ function mod:AddEP2Member(name, points)
   self:Report("Added %d EPs to %s.", points, name)
 end
 
-function mod:AddEP2Raid(points)
+function mod:AddEP2Raid(points, ignore_zone)
   assert(type(points) == "number")
   assert(UnitInRaid("player"))
   local members = {}
   local leader_zone = GetRealZoneText()
   for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
-    if zone == leader_zone then
+    if ignore_zone or zone == leader_zone then
       table.insert(members, name)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep then -- If the member is not in the guild we get nil
@@ -111,19 +111,19 @@ function mod:AddRecurringEP2Raid(points)
   if points == 0 then
     self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
   else
-    self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2Raid, RECURRING_EP_PERIOD_SECS, self, points)
+    self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2Raid, RECURRING_EP_PERIOD_SECS, self, points, true)
     self:Report("Adding %d EPs to raid every %dmin.", points, RECURRING_EP_PERIOD_SECS/60)
   end
 end
 
-function mod:DistributeEP2Raid(total_points)
+function mod:DistributeEP2Raid(total_points, ignore_zone)
   assert(type(total_points) == "number")
   assert(UnitInRaid("player"))
   local count = 0
   local leader_zone = GetRealZoneText()
   for i = 1, GetNumRaidMembers() do
     local name, _, _, _, _, _, zone, _, _ = GetRaidRosterInfo(i)
-    if zone == leader_zone then
+    if ignore_zone or zone == leader_zone then
       count = count + 1
     end
   end
@@ -137,7 +137,7 @@ function mod:DistributeRecurringEP2Raid(total_points)
   if points == 0 then
     self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
   else
-    self:ScheduleRepeatingEvent("RECURRING_EP", mod.DistributeEP2Raid, RECURRING_EP_PERIOD_SECS, self, total_points)
+    self:ScheduleRepeatingEvent("RECURRING_EP", mod.DistributeEP2Raid, RECURRING_EP_PERIOD_SECS, self, total_points, true)
     self:Report("Distributing %d EPs to raid every %dmin.", points, RECURRING_EP_PERIOD_SECS/60)
   end
 end
