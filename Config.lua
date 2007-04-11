@@ -100,10 +100,12 @@ function mod:OnTooltipUpdate()
       end
     end
     local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(main)
-    cat:AddLine(
-      "text", C:Colorize(BC:GetHexColor(class), main),
-      "text2", alts_str
-      )
+    if main and class then
+      cat:AddLine(
+        "text", C:Colorize(BC:GetHexColor(class), main),
+        "text2", alts_str
+        )
+    end
   end
 
   local cat2 = T:AddCategory(
