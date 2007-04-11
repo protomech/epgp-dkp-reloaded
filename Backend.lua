@@ -29,7 +29,7 @@ function mod:EPGP_CACHE_UPDATE()
 end
 
 function mod:CanLogRaids()
-  return CanEditOfficerNote() and CanEditPublicNote()
+  return CanEditOfficerNote()
 end
 
 function mod:CanChangeRules()
