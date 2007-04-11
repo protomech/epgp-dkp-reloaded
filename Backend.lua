@@ -220,14 +220,9 @@ StaticPopupDialogs["EPGP_GP_ASSIGN_FOR_LOOT"] = {
   button2 = CANCEL,
   timeout = 0,
   OnShow = function()
-    local gp = GPUtils:GetGPValue(itemLink)
+    local gp = GPUtils:GetGPValue(itemLink) or ""
     local editBox = getglobal(this:GetName().."EditBox")
-    if gp then
-      editBox:SetText(gp)
-		else
-      editBox:SetText("")
-		  editBox:Disable()
-    end
+    editBox:SetText(gp)
     editBox:HighlightText()
     editBox:SetFocus()
   end,
