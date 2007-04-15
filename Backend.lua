@@ -39,6 +39,11 @@ function mod:Report(fmt, ...)
 end
 
 function mod:ResetEPGP()
+  -- First delete all officer notes
+  for i = 1, GetNumGuildMembers(true) do
+    GuildRosterSetOfficerNote(i, "")
+  end
+  -- Now set zero values
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
     self.cache:SetMemberEPGP(name, 0, 0, 0, 0)
