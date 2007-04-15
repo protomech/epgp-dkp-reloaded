@@ -1,16 +1,4 @@
-local mod = EPGP:NewModule("EPGP_Cache", "AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0")
-
-mod:RegisterDB("EPGP_Cache_DB")
-mod:RegisterDefaults("profile", {
-  alts = {},
-  outsiders = {},
-  dummies = {},
-  data = {},
-  info = {},
-  flat_credentials = false,
-  min_eps = 1000,
-  decay_percent = 10
-})
+local mod = EPGP:NewModule("EPGP_Cache", "AceEvent-2.0")
 
 function mod:OnInitialize()
   self.guild_member_count = 0
@@ -27,7 +15,10 @@ end
 function mod:LoadConfig()
   local lines = {string.split("\n", GetGuildInfoText() or "")}
   local in_block = false
-  self:ResetDB("profile")
+
+  local outsiders = {}
+  local dummies = {}
+  
   for _,line in pairs(lines) do
     if line == "-EPGP-" then
       in_block = not in_block
@@ -42,50 +33,52 @@ function mod:LoadConfig()
       local dp = line:match("@DECAY_P:(%d+)")
       if dp then
         dp = tonumber(dp)
-        if dp and dp >= 0 and dp <= 100 then self.db.profile.decay_percent = dp
-        else self:Print("Decay Percent should be a number between 0 and 100") end
+        if dp and dp >= 0 and dp <= 100 then EPGP.db.profile.decay_percent = dp
+        else EPGP:Print("Decay Percent should be a number between 0 and 100") end
       end
 
       -- Min EPs
       local mep = tonumber(line:match("@MIN_EP:(%d+)"))
       if mep then
-        if mep and mep >= 0 then self.db.profile.min_eps = mep
-        else self:Print("Min EPs should be a positive number") end
+        if mep and mep >= 0 then EPGP.db.profile.min_eps = mep
+        else EPGP:Print("Min EPs should be a positive number") end
       end
 
       -- Flat Credentials
       local fc = line:match("@FC")
-      if fc then self.db.profile.flat_credentials = true end
+      if fc then EPGP.db.profile.flat_credentials = true end
 
       -- Read in Outsiders
       for outsider, dummy in line:gmatch("(%a+):(%a+)") do
-        self.db.profile.outsiders[outsider] = dummy
-        self.db.profile.dummies[dummy] = outsider
+        outsiders[outsider] = dummy
+        dummies[dummy] = outsider
       end
     end
   end
+  EPGP.db.profile.outsiders = outsiders
+  EPGP.db.profile.dummies = dummies
 end
 
 local function GetMemberData(obj, name)
   if obj:IsOutsider(name) then
-    return obj.db.profile.data[obj.db.profile.outsiders[name]]
+    return EPGP.db.profile.data[EPGP.db.profile.outsiders[name]]
   elseif obj:IsAlt(name) then
-    return obj.db.profile.data[obj.db.profile.alts[name]]
+    return EPGP.db.profile.data[EPGP.db.profile.alts[name]]
   else
-    return obj.db.profile.data[name]
+    return EPGP.db.profile.data[name]
   end
 end
 
 function mod:IsAlt(name)
-  return not not self.db.profile.alts[name]
+  return not not EPGP.db.profile.alts[name]
 end
 
 function mod:IsOutsider(name)
-  return not not self.db.profile.outsiders[name]
+  return not not EPGP.db.profile.outsiders[name]
 end
 
 function mod:IsDummy(name)
-  return not not self.db.profile.dummies[name]
+  return not not EPGP.db.profile.dummies[name]
 end
 
 function mod:GetMemberEPGP(name)
@@ -102,9 +95,9 @@ end
 function mod:GetMemberInfo(name)
   local guild_name = name
   if self:IsOutsider(name) then
-    guild_name = self.db.profile.outsiders[name]
+    guild_name = EPGP.db.profile.outsiders[name]
   end
-  local t = self.db.profile.info[guild_name]
+  local t = EPGP.db.profile.info[guild_name]
   if t then return unpack(t) end
 end
 
@@ -143,13 +136,13 @@ function mod:LoadRoster()
     end
     info[name] = { rank, rankIndex, level, class, zone, note, officernote, online, status }
   end
-  self.db.profile.data = data
-  self.db.profile.info = info
-  self.db.profile.alts = alts
+  EPGP.db.profile.data = data
+  EPGP.db.profile.info = info
+  EPGP.db.profile.alts = alts
 
   local old_count = self.guild_member_count
   self.guild_member_count = GetNumGuildMembers(true)
-  self:Debug("old:%d new:%d", old_count, self.guild_member_count)
+  EPGP:Debug("old:%d new:%d", old_count, self.guild_member_count)
   return old_count ~= self.guild_member_count
 end
 
@@ -170,7 +163,7 @@ function mod:SaveRoster()
       end
     end
   end
-  self:Debug("Notes changed - sending update to guild")
+  EPGP:Debug("Notes changed - sending update to guild")
   SendAddonMessage("EPGP", "UPDATE", "GUILD")
 end
 
@@ -189,7 +182,7 @@ function mod:GuildRoster()
     self:GuildRosterNow()
   else
     local delay = 10 + self.last_guild_roster_time - time
-    self:Debug("Delaying GuildRoster() for %f secs", delay)
+    EPGP:Debug("Delaying GuildRoster() for %f secs", delay)
     self:ScheduleEvent("DELAYED_GUILD_ROSTER_UPDATE", mod.GuildRoster, delay, self)
   end
 end
@@ -200,13 +193,13 @@ end
 
 function mod:GUILD_ROSTER_UPDATE(local_update)
   local guild_name = GetGuildInfo("player")
-  if guild_name ~= self:GetProfile() then self:SetProfile(guild_name) end
+  if guild_name ~= EPGP:GetProfile() then EPGP:SetProfile(guild_name) end
 
   if local_update then
     self:GuildRosterNow()
     return
   end
-  self:Debug("Reloading roster and config from game")
+  EPGP:Debug("Reloading roster and config from game")
   self:LoadConfig()
   local member_change = self:LoadRoster()
   self:TriggerEvent("EPGP_CACHE_UPDATE", member_change)
@@ -214,7 +207,7 @@ end
 
 function mod:CHAT_MSG_ADDON(prefix, msg, type, sender)
   if prefix == "EPGP" then
-    self:Debug("Processing CHAT_MSG_ADDON(%s,%s,%s,%s)", prefix, msg, type, sender)
+    EPGP:Debug("Processing CHAT_MSG_ADDON(%s,%s,%s,%s)", prefix, msg, type, sender)
     if sender == UnitName("player") then return end
     if msg == "UPDATE" then self:GuildRoster() end
   end
@@ -319,7 +312,7 @@ local function ParseNoteVersion1(s)
 end
 
 function mod:UpgradeFromVersion1(scale)
-  local factor = 1 - self.db.profile.decay_percent * 0.01
+  local factor = 1 - EPGP.db.profile.decay_percent * 0.01
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
     local ept, gpt = ParseNoteVersion1(note), ParseNoteVersion1(officernote)
@@ -331,7 +324,7 @@ function mod:UpgradeFromVersion1(scale)
       tgp = tgp + gpt[i]*scale
       tgp = math.floor(tgp * factor)
     end
-    self:Debug("%s EP/GP: %d/%d", name, tep, tgp)
+    EPGP:Debug("%s EP/GP: %d/%d", name, tep, tgp)
     if not self:IsAlt(name) then
       self:SetMemberEPGP(name, 0, tep, 0, tgp)
     end

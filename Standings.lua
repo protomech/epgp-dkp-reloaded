@@ -1,13 +1,4 @@
-local mod = EPGP:NewModule("EPGP_Standings", "AceDB-2.0", "AceEvent-2.0")
-
-mod:RegisterDB("EPGP_Standings_DB")
-mod:RegisterDefaults("profile", {
-  data = { },
-  detached_data = { },
-  group_by_class = false,
-  show_alts = false,
-  raid_mode = true
-})
+local mod = EPGP:NewModule("EPGP_Standings", "AceEvent-2.0")
 
 local T = AceLibrary("Tablet-2.0")
 local D = AceLibrary("Dewdrop-2.0")
@@ -27,16 +18,16 @@ local function GuildIterator(obj, i)
     name = GetGuildRosterInfo(i)
     -- Handle dummies
     if obj.cache:IsDummy(name) then
-      name = obj.cache.db.profile.dummies[name]
+      name = EPGP.db.profile.dummies[name]
     end
     i = i+1
-  until obj.db.profile.show_alts or not obj.cache:IsAlt(name)
+  until EPGP.db.profile.show_alts or not obj.cache:IsAlt(name)
   if not name then return end
   return i, name
 end
 
 function mod:GetStandingsIterator()
-  if (self.db.profile.raid_mode and UnitInRaid("player")) then
+  if (EPGP.db.profile.raid_mode and UnitInRaid("player")) then
     return RaidIterator, self, 1
   else
     return GuildIterator, self, 1
@@ -120,8 +111,8 @@ function mod:OnEnable()
         T:SetHint("EP: Effort Points, GP: Gear Points, PR: Priority")
         self:OnTooltipUpdate()
       end,
-      "data", self.db.profile.data,
-      "detachedData", self.db.profile.detached_data,
+      "data", EPGP.db.profile.standings_data,
+      "detachedData", EPGP.db.profile.standings_detached_data,
       "showTitleWhenDetached", true,
       "showHintWhenDetached", true,
       "cantAttach", true,
@@ -129,21 +120,21 @@ function mod:OnEnable()
         D:AddLine(
           "text", "Group by class",
           "tooltipText", "Toggles grouping members by class.",
-          "checked", self.db.profile.group_by_class,
-          "func", function() self.db.profile.group_by_class = not self.db.profile.group_by_class; self:EPGP_CACHE_UPDATE() end
+          "checked", EPGP.db.profile.group_by_class,
+          "func", function() EPGP.db.profile.group_by_class = not EPGP.db.profile.group_by_class; self:EPGP_CACHE_UPDATE() end
         )
         D:AddLine(
           "text", "Show Alts",
           "tooltipText", "Toggles listing of Alts in standings.",
-          "checked", self.db.profile.show_alts or self.db.profile.raid_mode,
-          "disabled", self.db.profile.raid_mode,
-          "func", function() self.db.profile.show_alts = not self.db.profile.show_alts; self:EPGP_CACHE_UPDATE() end
+          "checked", EPGP.db.profile.show_alts or EPGP.db.profile.raid_mode,
+          "disabled", EPGP.db.profile.raid_mode,
+          "func", function() EPGP.db.profile.show_alts = not EPGP.db.profile.show_alts; self:EPGP_CACHE_UPDATE() end
         )
         D:AddLine(
           "text", "Raid Mode",
           "tooltipText", "Toggles listing only raid members (if in raid).",
-          "checked", self.db.profile.raid_mode,
-          "func", function() self.db.profile.raid_mode = not self.db.profile.raid_mode; self:EPGP_CACHE_UPDATE() end
+          "checked", EPGP.db.profile.raid_mode,
+          "func", function() EPGP.db.profile.raid_mode = not EPGP.db.profile.raid_mode; self:EPGP_CACHE_UPDATE() end
         )
         D:AddLine(
           "text", "Export to HTML",
@@ -173,7 +164,7 @@ function mod:EPGP_CACHE_UPDATE()
 end
 
 function mod:RAID_ROSTER_UPDATE()
-  if self.db.profile.raid_mode then
+  if EPGP.db.profile.raid_mode then
     T:Refresh("EPGP_Standings")
   end
 end
@@ -205,13 +196,13 @@ function mod:BuildStandingsTable()
   end
   -- Normal sorting function
   local function SortPR(a,b)
-    local a_low = a[3] < self.cache.db.profile.min_eps
-    local b_low = b[3] < self.cache.db.profile.min_eps
+    local a_low = a[3] < EPGP.db.profile.min_eps
+    local b_low = b[3] < EPGP.db.profile.min_eps
     if a_low and not b_low then return false
     elseif not a_low and b_low then return true
     else return a[5] > b[5] end
   end
-  if (self.db.profile.group_by_class) then
+  if (EPGP.db.profile.group_by_class) then
     table.sort(t, function(a,b)
       if (a[2] ~= b[2]) then return a[2] < b[2]
       else return SortPR(a, b) end
@@ -238,9 +229,9 @@ function mod:OnTooltipUpdate()
     local ep_str, gp_str, pr_str = string.format("%d", ep), string.format("%d", gp), string.format("%.4g", pr)
     cat:AddLine(
       "text", C:Colorize(BC:GetHexColor(class), name),
-      "text2", ep < self.cache.db.profile.min_eps and C:Colorize("7f7f7f", ep_str) or ep_str,
-      "text3", ep < self.cache.db.profile.min_eps and C:Colorize("7f7f7f", gp_str) or gp_str,
-      "text4", ep < self.cache.db.profile.min_eps and C:Colorize("7f7f00", pr_str) or pr_str
+      "text2", ep < EPGP.db.profile.min_eps and C:Colorize("7f7f7f", ep_str) or ep_str,
+      "text3", ep < EPGP.db.profile.min_eps and C:Colorize("7f7f7f", gp_str) or gp_str,
+      "text4", ep < EPGP.db.profile.min_eps and C:Colorize("7f7f00", pr_str) or pr_str
     )
   end
 end

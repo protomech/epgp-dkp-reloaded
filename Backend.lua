@@ -1,10 +1,4 @@
-local mod = EPGP:NewModule("EPGP_Backend", "AceDB-2.0", "AceHook-2.1", "AceEvent-2.0", "AceConsole-2.0")
-
-mod:RegisterDB("EPGP_Backend_DB")
-mod:RegisterDefaults("profile", {
-  report_channel = "GUILD",
-  backup_notes = {},
-})
+local mod = EPGP:NewModule("EPGP_Backend", "AceHook-2.1", "AceEvent-2.0")
 
 function mod:OnInitialize()
   self.cache = EPGP:GetModule("EPGP_Cache")
@@ -25,7 +19,7 @@ end
 
 function mod:EPGP_CACHE_UPDATE()
   local guild_name = GetGuildInfo("player")
-  if guild_name ~= self:GetProfile() then self:SetProfile(guild_name) end
+  if guild_name ~= EPGP:GetProfile() then EPGP:SetProfile(guild_name) end
 end
 
 function mod:CanLogRaids()
@@ -33,14 +27,14 @@ function mod:CanLogRaids()
 end
 
 function mod:CanChangeRules()
-  return IsGuildLeader() or (self:CanLogRaids() and self.cache.db.profile.flat_credentials)
+  return IsGuildLeader() or (self:CanLogRaids() and EPGP.db.profile.flat_credentials)
 end
 
 function mod:Report(fmt, ...)
-  if self.db.profile.report_channel ~= "NONE" then
+  if EPGP.db.profile.report_channel ~= "NONE" then
     -- FIXME: Chop-off message to 255 character chunks as necessary
     local msg = string.format(fmt, ...)
-    SendChatMessage("EPGP: " .. msg, self.db.profile.report_channel)
+    SendChatMessage("EPGP: " .. msg, EPGP.db.profile.report_channel)
   end
 end
 
@@ -60,7 +54,7 @@ function mod:ResetEPGP()
 end
 
 function mod:NewRaid()
-  local factor = 1 - self.cache.db.profile.decay_percent*0.01
+  local factor = 1 - EPGP.db.profile.decay_percent*0.01
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
     if not self.cache:IsAlt(name) then
@@ -185,22 +179,22 @@ end
 function mod:BackupNotes()
   for i = 1, GetNumGuildMembers(true) do
     local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
-    self.db.profile.backup_notes[name] = { note, officernote }
+    EPGP.db.profile.backup_notes[name] = { note, officernote }
   end
-  self:Print("Backed up Officer and Public notes.")
+  EPGP:Print("Backed up Officer and Public notes.")
 end
 
 function mod:RestoreNotes()
-  if not self.db.profile.backup_notes then return end
+  if not EPGP.db.profile.backup_notes then return end
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
-    local t = self.db.profile.backup_notes[name]
+    local t = EPGP.db.profile.backup_notes[name]
     if t then
       GuildRosterSetPublicNote(i, t[1])
       GuildRosterSetOfficerNote(i, t[2])
     end
   end
-  self:Print("Restored Officer and Public notes.")
+  EPGP:Print("Restored Officer and Public notes.")
 end
 
 -------------------------------------------------------------------------------

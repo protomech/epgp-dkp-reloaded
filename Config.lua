@@ -1,10 +1,5 @@
-local mod = EPGP:NewModule("EPGP_Config", "AceDB-2.0", "AceEvent-2.0")
+local mod = EPGP:NewModule("EPGP_Config", "AceEvent-2.0")
 
-mod:RegisterDB("EPGP_Config_DB")
-mod:RegisterDefaults("profile", {
-  data = { },
-  detached_data = { },
-})
 
 local T = AceLibrary("Tablet-2.0")
 local D = AceLibrary("Dewdrop-2.0")
@@ -24,8 +19,8 @@ function mod:OnEnable()
         T:SetTitle("EPGP Config")
         self:OnTooltipUpdate()
       end,
-      "data", self.db.profile.data,
-      "detachedData", self.db.profile.detached_data,
+      "data", EPGP.db.profile.config_data,
+      "detachedData", EPGP.db.profile.config_detached_data,
       "showTitleWhenDetached", true,
       "showHintWhenDetached", true,
       "cantAttach", true
@@ -48,7 +43,7 @@ end
 
 function mod:BuildAltsTable()
   local t = {}
-  for alt,main in pairs(self.cache.db.profile.alts) do
+  for alt,main in pairs(EPGP.db.profile.alts) do
     if not t[main] then
       t[main] = {}
     end
@@ -59,7 +54,7 @@ end
 
 function mod:BuildOutsidersTable()
   local t = {}
-  for outsider,dummy in pairs(self.cache.db.profile.outsiders) do
+  for outsider,dummy in pairs(EPGP.db.profile.outsiders) do
     t[outsider] = dummy
   end
   return t
@@ -125,6 +120,6 @@ function mod:OnTooltipUpdate()
       )
   end
   local info = T:AddCategory("columns", 2)
-  info:AddLine("text", C:Red("Min EPs"), "text2", C:Silver(self.cache.db.profile.min_eps))
-  info:AddLine("text", C:Red("Decay"), "text2", C:Silver(self.cache.db.profile.decay_percent.."%"))
+  info:AddLine("text", C:Red("Min EPs"), "text2", C:Silver(EPGP.db.profile.min_eps))
+  info:AddLine("text", C:Red("Decay"), "text2", C:Silver(EPGP.db.profile.decay_percent.."%"))
 end

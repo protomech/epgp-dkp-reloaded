@@ -9,8 +9,22 @@ Dewdrop = AceLibrary("Dewdrop-2.0")
 -------------------------------------------------------------------------------
 EPGP:RegisterDB("EPGP_Core_DB", "EPGP_Core_PerCharDB")
 EPGP:RegisterDefaults("profile", {
-  -- Default report channel
   report_channel = "GUILD",
+  alts = {},
+  outsiders = {},
+  dummies = {},
+  data = {},
+  info = {},
+  flat_credentials = false,
+  min_eps = 1000,
+  decay_percent = 10,
+  group_by_class = false,
+  show_alts = false,
+  raid_mode = true,
+  standings_data = {},
+  standings_detached_data = {},
+  config_data = {},
+  config_detached_data = {},
 })
 
 -------------------------------------------------------------------------------
@@ -150,20 +164,20 @@ function EPGP:BuildOptions()
         type = "execute",
         name = "New Raid",
         desc = "Create a new raid and decay all past EP and GP by"..
-               tostring(cache.db.profile.decay_percent).."%.",
+               tostring(EPGP.db.profile.decay_percent).."%.",
         disabled = function() return not backend:CanLogRaids() end,
         func =  function() backend:NewRaid() end,
         order = 4,
         confirm = "Create a new raid and decay all past EP and GP by "..
-                  tostring(cache.db.profile.decay_percent).."%%?",
+                  tostring(EPGP.db.profile.decay_percent).."%%?",
       },
       -- Static options
       ["channel"] = {
         type = "text",
         name = "Channel",
         desc = "Channel used by reporting functions.",
-        get = function() return backend.db.profile.report_channel end,
-        set = function(v) backend.db.profile.report_channel = v end,
+        get = function() return EPGP.db.profile.report_channel end,
+        set = function(v) EPGP.db.profile.report_channel = v end,
         validate = { "PARTY", "RAID", "GUILD", "OFFICER", "NONE" },
         order = 1000,
       },
