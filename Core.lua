@@ -25,6 +25,7 @@ EPGP:RegisterDefaults("profile", {
   standings_detached_data = {},
   config_data = {},
   config_detached_data = {},
+  backup_notes = {},
 })
 
 -------------------------------------------------------------------------------
