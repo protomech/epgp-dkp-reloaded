@@ -115,19 +115,6 @@ function EPGP:BuildOptions()
               return n and n >= 0 and n < 1000000
             end,
           },
-          ["distribute_recurring"] = {
-            type = "text",
-            name = "Distribute EPs to Raid every 15min",
-            desc = "Distribute EPs to raid members every 15min. Set to 0 to disable.",
-            get = false,
-            set = function(v) backend:DistributeRecurringEP2Raid(tonumber(v)) end,
-            usage = "<EP>",
-            disabled = function() return not (backend:CanLogRaids() and UnitInRaid("player")) end,
-            validate = function(v)
-              local n = tonumber(v)
-              return n and n >= 0 and n < 1000000
-            end,
-          },
           ["bonus"] = {
             type = "text",
             name = "Add bonus EP to Raid",
