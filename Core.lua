@@ -33,6 +33,12 @@ EPGP:RegisterDefaults("profile", {
 function EPGP:OnEnable()
   BINDING_HEADER_EPGP = "EPGP Options"
   BINDING_NAME_EPGP = "Toggle EPGP UI"
+  -- Set shift-E as the toggle button if it is not bound
+  if #GetBindingAction("J") == 0 then
+    SetBinding("J", "EPGP")
+    -- Save to character bindings
+    SaveBindings(2)
+  end
 
   self:RegisterChatCommand({ "/epgp" }, {
     type = "group",
