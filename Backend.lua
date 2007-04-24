@@ -299,7 +299,7 @@ function mod:AddEP2List(list_name, points, exclude_map)
   
   local members = {}
   for i,name in ITERATORS[list_name],self,1 do
-    if not exclude_map[name] then
+    if exclude_map and not exclude_map[name] then
       table.insert(members, name)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
@@ -319,7 +319,7 @@ function mod:RecurringEP2List(list_name, points)
   if points == 0 then
     self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
   else
-    self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2List, EPGP.db.profile.recurring_ep_period, self, list_name, points)
+    self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2List, EPGP.db.profile.recurring_ep_period, self, list_name, points, {})
     self:Report("Adding %d EPs to raid every %s.", points, SecondsToTime(EPGP.db.profile.recurring_ep_period))
   end
 end
@@ -334,7 +334,7 @@ function mod:DistributeEP2List(list_name, total_points, exclude_map)
   
   local count = 0
   for i,name in ITERATORS[list_name],self,1 do
-    if not exclude_map[name] then
+    if exclude_map and not exclude_map[name] then
       count = count + 1
     end
   end
@@ -359,7 +359,7 @@ function mod:BonusEP2List(list_name, bonus, exclude_map)
   
   local members = {}
   for i,name in ITERATORS[list_name],self,1 do
-    if not exclude_map[name] then
+    if exclude_map and not exclude_map[name] then
       table.insert(members, name)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
