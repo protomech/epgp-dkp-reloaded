@@ -31,6 +31,9 @@ EPGP:RegisterDefaults("profile", {
 })
 
 function EPGP:OnEnable()
+  BINDING_HEADER_EPGP = "EPGP Options"
+  BINDING_NAME_EPGP = "Toggle EPGP UI"
+
   self:RegisterChatCommand({ "/epgp" }, {
     type = "group",
     desc = "EPGP Options",
@@ -40,7 +43,7 @@ function EPGP:OnEnable()
         name = "Show UI",
         desc = "Shows the EPGP UI",
         disabled = function() return EPGPFrame:IsShown() end,
-        func =  function() EPGPFrame:Show() end,
+        func =  function() ShowUIPanel(EPGPFrame) end,
         order = 1,
       },
       ["newraid"] = {

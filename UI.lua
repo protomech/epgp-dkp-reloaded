@@ -1,6 +1,7 @@
 EPGP_UI = EPGP:NewModule("EPGP_UI", "AceEvent-2.0")
 
 function EPGP_UI:OnInitialize()
+  UIPanelWindows["EPGPFrame"] = { area = "left", pushable = 0, whileDead = 1, }
   self:RegisterEvent("EPGP_CACHE_UPDATE")
   StaticPopupDialogs["EPGP_TEXT_EXPORT"] = {
     text = "%s",
