@@ -17,29 +17,14 @@ local function RaidIterator(obj, i)
   return i+1, name
 end
 
-local function ZoneIterator(obj, i)
-  if not UnitInRaid("player") then return end
-  while true do
-    local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
-    i = i+1
-    EPGP:Print(name)
-    if not name then return end
-    if GetRealZoneText() == zone then break end
-  end
-  if not name then return end
-  return i, name
-end
-
 local ITERATORS = {
   ["GUILD"] = GuildIterator,
   ["RAID"] = RaidIterator,
-  ["ZONE"] = ZoneIterator,
 }
 
 local LISTING_IDS = {
   "GUILD",
   "RAID",
-  "ZONE",
 }
 function mod:GetListingIDs()
   return LISTING_IDS
@@ -121,6 +106,7 @@ function mod:OnInitialize()
     end,
     hideOnEscape = 1,
   }
+  self.popup_add_epgp_data = {}
   StaticPopupDialogs["EPGP_ADD_EPGP"] = {
     text = "Add %s to %s",
     button1 = ACCEPT,
@@ -132,17 +118,19 @@ function mod:OnInitialize()
       editBox:SetFocus()
     end,
     OnAccept = function()
+      local data = self.popup_add_epgp_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
       if number > 0 and number < 10000 then
-        mod.add_epgp_function(mod, mod.member, number)
+        data.add_epgp_function(mod, data.member, number)
       end
     end,
     EditBoxOnEnterPressed = function()
+      local data = self.popup_add_epgp_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
       if number > 0 and number < 10000 then
-        mod.add_epgp_function(mod, mod.member, number)
+        data.add_epgp_function(mod, data.member, number)
         this:GetParent():Hide()
       end
     end,
@@ -161,6 +149,21 @@ function mod:OnInitialize()
     end,
     hideOnEscape = 1,
     hasEditBox = 1,
+  }
+  self.popup_unzoned_members_data = {}
+  StaticPopupDialogs["EPGP_UNZONED_MEMBERS_POPUP"] = {
+    text = "Do you want to include members not in %s in the award? (%s)",
+    button1 = YES,
+    button2 = NO,
+    timeout = 0,
+    OnAccept = function()
+      local data = self.popup_unzoned_members_data
+      data.func(mod, data.list_name, data.points, {})
+    end,
+    OnCancel = function()
+      local data = self.popup_unzoned_members_data
+      data.func(mod, data.list_name, data.points, data.exclude_map)
+    end,
   }
 end
 
@@ -251,23 +254,58 @@ function mod:AddEP2Member(name, points)
     self.cache:SaveRoster()
     self:Report("Added %d EPs to %s.", points, name)
   else
-    mod.member = name
-    mod.add_epgp_function = mod.AddEP2Member
-    StaticPopup_Show("EPGP_ADD_EPGP", "EP", name)
+    self.popup_add_epgp_data.func = mod.AddEP2Member
+    self.popup_add_epgp_data.member = name
+    StaticPopup_Show("EPGP_ADD_EPGP", "EP", name, popup_add_epgp_data)
   end
 end
 
-function mod:AddEP2List(list_name, points)
+function mod:CheckUnzonedInRaid(func, list_name, points)
+  assert(UnitInRaid("Player"))
+  local t = {}
+  for i = 1, GetNumRaidMembers() do
+    local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
+    if zone ~= GetRealZoneText() then
+      table.insert(t, name)
+    end
+  end
+
+  if #t > 0 then
+    -- initialize the exclude map
+    local exclude_map = {}
+    for i,name in pairs(t) do
+      exclude_map[name] = true
+    end
+
+    self.popup_unzoned_members_data.func = func
+    self.popup_unzoned_members_data.points = points
+    self.popup_unzoned_members_data.list_name = list_name
+    self.popup_unzoned_members_data.exclude_map = exclude_map
+    
+    StaticPopup_Show("EPGP_UNZONED_MEMBERS_POPUP", GetRealZoneText(), table.concat(t, ", "))
+  else
+    func(mod, list_name, points, t) -- t is empty here
+  end
+end
+
+function mod:AddEP2List(list_name, points, exclude_map)
   assert(type(list_name) == "string" and ITERATORS[list_name])
   assert(type(points) == "number")
 
+  if list_name == "RAID" and not exclude_map then
+    mod:CheckUnzonedInRaid(mod.AddEP2List, list_name, points)
+    return
+  end
+  
   local members = {}
   for i,name in ITERATORS[list_name],self,1 do
-    table.insert(members, name)
-    local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-    if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
-      if not self.cache:IsAlt(name) then -- Don't add EP to alts, otherwise mains will get it multiple times
-        self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
+    if not exclude_map[name] then
+      table.insert(members, name)
+      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+      if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
+        if not self.cache:IsAlt(name) then -- Don't add EP to alts, otherwise mains will get it multiple times
+          self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
+        end
       end
     end
   end
@@ -286,14 +324,22 @@ function mod:RecurringEP2List(list_name, points)
   end
 end
 
-function mod:DistributeEP2List(list_name, total_points)
+function mod:DistributeEP2List(list_name, total_points, exclude_map)
   assert(type(total_points) == "number")
+
+  if list_name == "RAID" and not exclude_map then
+    mod:CheckUnzonedInRaid(mod.DistributeEP2List, list_name, total_points)
+    return
+  end
+  
   local count = 0
   for i,name in ITERATORS[list_name],self,1 do
-    count = count + 1
+    if not exclude_map[name] then
+      count = count + 1
+    end
   end
   local points = math.floor(total_points / count)
-  self:AddEP2List(list_name, points)
+  self:AddEP2List(list_name, points, exclude_table)
 end
 
 function mod:EPGP_STOP_RECURRING_EP_AWARDS()
@@ -303,15 +349,23 @@ function mod:EPGP_STOP_RECURRING_EP_AWARDS()
   end
 end
 
-function mod:BonusEP2List(list_name, bonus)
+function mod:BonusEP2List(list_name, bonus, exclude_map)
   assert(type(bonus) == "number" and bonus >= 0 and bonus <= 100)
+
+  if list_name == "RAID" and not exclude_map then
+    mod:CheckUnzonedInRaid(mod.BonusEP2List, list_name, bonus)
+    return
+  end
+  
   local members = {}
   for i,name in ITERATORS[list_name],self,1 do
-    table.insert(members, name)
-    local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-    if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
-      if not self.cache:IsAlt(name) then -- Don't add EP to alts, otherwise mains will get it multiple times
-        self.cache:SetMemberEPGP(name, ep*(1+bonus/100), tep, gp, tgp)
+    if not exclude_map[name] then
+      table.insert(members, name)
+      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+      if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
+        if not self.cache:IsAlt(name) then -- Don't add EP to alts, otherwise mains will get it multiple times
+          self.cache:SetMemberEPGP(name, ep*(1+bonus/100), tep, gp, tgp)
+        end
       end
     end
   end
@@ -327,8 +381,8 @@ function mod:AddGP2Member(name, points)
     self.cache:SaveRoster()
     self:Report("Added %d GPs to %s.", points, name)
   else
-    mod.member = name
-    mod.add_epgp_function = mod.AddGP2Member
+    self.popup_add_epgp_data.func = mod.AddGP2Member
+    self.popup_add_epgp_data.member = name
     StaticPopup_Show("EPGP_ADD_EPGP", "GP", name)
   end
 end
