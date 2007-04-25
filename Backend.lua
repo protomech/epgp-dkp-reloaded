@@ -121,7 +121,7 @@ function mod:OnInitialize()
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
       if number > -10000 and number < 10000 and number ~= 0 then
-        data.add_epgp_function(mod, data.member, number)
+        data.func(mod, data.member, number)
       end
     end,
     EditBoxOnEnterPressed = function()
@@ -129,7 +129,7 @@ function mod:OnInitialize()
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
       if number > -10000 and number < 10000 and number ~= 0 then
-        data.add_epgp_function(mod, data.member, number)
+        data.func(mod, data.member, number)
         this:GetParent():Hide()
       end
     end,
