@@ -95,19 +95,22 @@ function EPGP_UI:SetRestoreButtonStatus(button)
 end
 
 function EPGP_UI:SetEPButtonStatus(button)
-  if EPGP:GetModule("EPGP_Backend"):CanLogRaids() and
-     #button:GetParent():GetText() ~= 0 then
-      button:Enable()
-  else
+  button:Enable()
+  if not EPGP:GetModule("EPGP_Backend"):CanLogRaids() then
     button:Disable()
+    return
+  end
+
+  if button:GetParent():GetNumber() == 0 then
+    button:Disable()
+    return
+  end
+  
+  if EPGP.db.profile.current_listing == "RAID" and not UnitInRaid("player") then
+    button:Disable()
+    return
   end
 end
-
-local LISTNAMES = {
-  "GUILD",
-  "RAID",
-  "ZONE",
-}
 
 function EPGP_UI:EPGP_CACHE_UPDATE()
   if EPGPListingFrame:IsShown() then
@@ -205,22 +208,22 @@ function EPGP_UI:Export2Text()
 end
 
 function EPGP_UI:AddEP2List(points)
-  points = tonumber(points)
+  assert(type(points) == "number")
   EPGP:GetModule("EPGP_Backend"):AddEP2List(EPGP.db.profile.current_listing, points)
 end
 
 function EPGP_UI:DistributeEP2List(points)
-  points = tonumber(points)
+  assert(type(points) == "number")
   EPGP:GetModule("EPGP_Backend"):DistributeEP2List(EPGP.db.profile.current_listing, points)
 end
 
 function EPGP_UI:RecurringEP2List(points)
-  points = tonumber(points)
+  assert(type(points) == "number")
   EPGP:GetModule("EPGP_Backend"):RecurringEP2List(EPGP.db.profile.current_listing, points)
 end
 
 function EPGP_UI:BonusEP2List(percent)
-  percent = tonumber(percent)
+  assert(type(percent) == "number")
   EPGP:GetModule("EPGP_Backend"):BonusEP2List(EPGP.db.profile.current_listing, percent)
 end
 

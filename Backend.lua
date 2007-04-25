@@ -114,14 +114,13 @@ function mod:OnInitialize()
     timeout = 0,
     OnShow = function()
       local editBox = getglobal(this:GetName().."EditBox")
-			editBox:SetNumeric(true)
       editBox:SetFocus()
     end,
     OnAccept = function()
       local data = self.popup_add_epgp_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
-      if number > 0 and number < 10000 then
+      if number > -10000 and number < 10000 and number ~= 0 then
         data.add_epgp_function(mod, data.member, number)
       end
     end,
@@ -129,7 +128,7 @@ function mod:OnInitialize()
       local data = self.popup_add_epgp_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
-      if number > 0 and number < 10000 then
+      if number > -10000 and number < 10000 and number ~= 0 then
         data.add_epgp_function(mod, data.member, number)
         this:GetParent():Hide()
       end
@@ -138,7 +137,7 @@ function mod:OnInitialize()
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local button1 = getglobal(this:GetParent():GetName().."Button1")
       local number = editBox:GetNumber()
-      if number > 0 and number < 10000 then
+      if number > -10000 and number < 10000 and number ~= 0 then
         button1:Enable()
       else
         button1:Disable()
@@ -299,7 +298,7 @@ function mod:AddEP2List(list_name, points, exclude_map)
   
   local members = {}
   for i,name in ITERATORS[list_name],self,1 do
-    if exclude_map and not exclude_map[name] then
+    if not exclude_map or not exclude_map[name] then
       table.insert(members, name)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
@@ -334,7 +333,7 @@ function mod:DistributeEP2List(list_name, total_points, exclude_map)
   
   local count = 0
   for i,name in ITERATORS[list_name],self,1 do
-    if exclude_map and not exclude_map[name] then
+    if not exclude_map or not exclude_map[name] then
       count = count + 1
     end
   end
@@ -359,7 +358,7 @@ function mod:BonusEP2List(list_name, bonus, exclude_map)
   
   local members = {}
   for i,name in ITERATORS[list_name],self,1 do
-    if exclude_map and not exclude_map[name] then
+    if not exclude_map or not exclude_map[name] then
       table.insert(members, name)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
