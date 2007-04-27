@@ -52,15 +52,15 @@ function EPGP:OnEnable()
         func =  function() ShowUIPanel(EPGPFrame) end,
         order = 1,
       },
-      ["newraid"] = {
+      ["decay"] = {
         type = "execute",
-        name = "New Raid",
-        desc = "Create a new raid and decay all past EP and GP by"..
+        name = "Decay EP and GP",
+        desc = "Decay EP and GP by"..
                tostring(EPGP.db.profile.decay_percent).."%.",
         disabled = function() return not self:GetModule("EPGP_Backend"):CanLogRaids() end,
         func =  function() self:GetModule("EPGP_Backend"):NewRaid() end,
         order = 4,
-        confirm = "Create a new raid and decay all past EP and GP by "..
+        confirm = "Decay EP and GP by "..
                   tostring(EPGP.db.profile.decay_percent).."%%?",
       },
       ["reset"] = {

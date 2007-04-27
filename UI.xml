@@ -463,7 +463,7 @@
 	-->
 	<Frame name="ConfigPageTemplate" inherits="ATemplatesTabPage" virtual="true">
 		<Frames>
-			<Button name="$parentNewRaidButton" inherits="ATemplatesButton" text="New Raid">
+			<Button name="$parentDecayButton" inherits="ATemplatesButton" text="Decay">
 				<Size>
 					<AbsDimension x="48" y="32"/>
 				</Size>
@@ -476,7 +476,7 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						StaticPopup_Show("EPGP_NEW_RAID", EPGP.db.profile.decay_percent)
+						StaticPopup_Show("EPGP_DECAY_EPGP", EPGP.db.profile.decay_percent)
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -485,7 +485,7 @@
 					<AbsDimension x="20" y="20"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentNewRaidButton" relativePoint="BOTTOMLEFT"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentDecayButton" relativePoint="BOTTOMLEFT"/>
 				</Anchors>
 				<Scripts>
 					<OnLoad>

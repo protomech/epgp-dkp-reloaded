@@ -1,7 +1,7 @@
 EPGP_UI = EPGP:NewModule("EPGP_UI", "AceEvent-2.0")
 
 function EPGP_UI:OnInitialize()
-  UIPanelWindows["EPGPFrame"] = { area = "left", pushable = 0, whileDead = 1, }
+  UIPanelWindows["EPGPFrame"] = { area = "left", pushable = 1, whileDead = 1, }
   self:RegisterEvent("EPGP_CACHE_UPDATE")
   StaticPopupDialogs["EPGP_TEXT_EXPORT"] = {
     text = "%s",
@@ -271,7 +271,7 @@ function EPGP_UI.ListingDropDown_Initialize()
   info.func = function()
     EPGP:GetModule("EPGP_Backend"):AddEP2Member(ListingDropDown.member_name)
   end
-  info.text = "Add EP"
+  info.text = "Award EP"
   info.checked = nil
   UIDropDownMenu_AddButton(info)
 
@@ -279,7 +279,7 @@ function EPGP_UI.ListingDropDown_Initialize()
   info.func = function()
     EPGP:GetModule("EPGP_Backend"):AddGP2Member(ListingDropDown.member_name)
   end
-  info.text = "Add GP"
+  info.text = "Credit GP"
   info.checked = nil
   UIDropDownMenu_AddButton(info)
 end

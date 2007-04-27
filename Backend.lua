@@ -33,7 +33,7 @@ end
 function mod:OnInitialize()
   self.cache = EPGP:GetModule("EPGP_Cache")
   StaticPopupDialogs["EPGP_GP_ASSIGN_FOR_LOOT"] = {
-    text = "Add GP to %s for %s",
+    text = "Credit GP to %s for %s",
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -86,13 +86,13 @@ function mod:OnInitialize()
     end,
     hideOnEscape = 1,
   }
-  StaticPopupDialogs["EPGP_NEW_RAID"] = {
-    text = "Create a new raid and decay all past EP and GP by %d%%?",
+  StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
+    text = "Decay EP and GP by %d%%?",
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
     OnAccept = function()
-      mod:NewRaid()
+      mod:DecayEPGP()
     end,
     hideOnEscape = 1,
   }
@@ -108,7 +108,7 @@ function mod:OnInitialize()
   }
   self.popup_add_epgp_data = {}
   StaticPopupDialogs["EPGP_ADD_EPGP"] = {
-    text = "Add %s to %s",
+    text = "%s to %s",
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -228,7 +228,7 @@ function mod:ResetEPGP()
   self:Report("All EP/GP are reset and officer notes are made readable by all.")
 end
 
-function mod:NewRaid()
+function mod:DecayEPGP()
   local factor = 1 - EPGP.db.profile.decay_percent*0.01
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
@@ -242,7 +242,7 @@ function mod:NewRaid()
     end
   end
   self.cache:SaveRoster()
-  self:Report("Created new raid.")
+  self:Report("Applied a decay of %d%% to EP and GP.", EPGP.db.profile.decay_percent)
 end
 
 function mod:AddEP2Member(name, points)
@@ -251,11 +251,11 @@ function mod:AddEP2Member(name, points)
     local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
     self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
     self.cache:SaveRoster()
-    self:Report("Added %d EPs to %s.", points, name)
+    self:Report("Awarded %d EPs to %s.", points, name)
   else
     self.popup_add_epgp_data.func = mod.AddEP2Member
     self.popup_add_epgp_data.member = name
-    StaticPopup_Show("EPGP_ADD_EPGP", "EP", name, popup_add_epgp_data)
+    StaticPopup_Show("EPGP_ADD_EPGP", "Award EPs", name, popup_add_epgp_data)
   end
 end
 
@@ -309,7 +309,7 @@ function mod:AddEP2List(list_name, points, exclude_map)
     end
   end
   self.cache:SaveRoster()
-  self:Report("Added %d EPs to %s.", points, table.concat(members, ", "))
+  self:Report("Awarded %d EPs to %s.", points, table.concat(members, ", "))
 end
 
 function mod:RecurringEP2List(list_name, points)
@@ -319,7 +319,7 @@ function mod:RecurringEP2List(list_name, points)
     self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
   else
     self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2List, EPGP.db.profile.recurring_ep_period, self, list_name, points, {})
-    self:Report("Adding %d EPs to raid every %s.", points, SecondsToTime(EPGP.db.profile.recurring_ep_period))
+    self:Report("Awarding %d EPs to raid every %s.", points, SecondsToTime(EPGP.db.profile.recurring_ep_period))
   end
 end
 
@@ -369,7 +369,7 @@ function mod:BonusEP2List(list_name, bonus, exclude_map)
     end
   end
   self.cache:SaveRoster()
-  self:Report("Added %d%% EP bonus to %s.", bonus, table.concat(members, ", "))
+  self:Report("Awarded %d%% EP bonus to %s.", bonus, table.concat(members, ", "))
 end
 
 function mod:AddGP2Member(name, points)
@@ -378,11 +378,11 @@ function mod:AddGP2Member(name, points)
     local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
     self.cache:SetMemberEPGP(name, ep, tep, gp+points, tgp)
     self.cache:SaveRoster()
-    self:Report("Added %d GPs to %s.", points, name)
+    self:Report("Credited %d GPs to %s.", points, name)
   else
     self.popup_add_epgp_data.func = mod.AddGP2Member
     self.popup_add_epgp_data.member = name
-    StaticPopup_Show("EPGP_ADD_EPGP", "GP", name)
+    StaticPopup_Show("EPGP_ADD_EPGP", "Credit GPs", name)
   end
 end
 
