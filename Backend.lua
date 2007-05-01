@@ -74,6 +74,7 @@ function mod:OnInitialize()
       this:GetParent():Hide()
     end,
     hideOnEscape = 1,
+  	whileDead = 1,
     hasEditBox = 1,
   }
   StaticPopupDialogs["EPGP_RESET_EPGP"] = {
@@ -85,6 +86,7 @@ function mod:OnInitialize()
       mod:ResetEPGP()
     end,
     hideOnEscape = 1,
+  	whileDead = 1,
   }
   StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
     text = "Decay EP and GP by %d%%?",
@@ -95,6 +97,7 @@ function mod:OnInitialize()
       mod:DecayEPGP()
     end,
     hideOnEscape = 1,
+  	whileDead = 1,
   }
   StaticPopupDialogs["EPGP_RESTORE_NOTES"] = {
     text = "Restore public and officer notes from the last backup?",
@@ -105,6 +108,7 @@ function mod:OnInitialize()
       mod:RestoreNotes()
     end,
     hideOnEscape = 1,
+  	whileDead = 1,
   }
   self.popup_add_epgp_data = {}
   StaticPopupDialogs["EPGP_ADD_EPGP"] = {
@@ -148,6 +152,7 @@ function mod:OnInitialize()
     end,
     hideOnEscape = 1,
     hasEditBox = 1,
+  	whileDead = 1,
   }
   self.popup_unzoned_members_data = {}
   StaticPopupDialogs["EPGP_UNZONED_MEMBERS_POPUP"] = {
@@ -163,6 +168,7 @@ function mod:OnInitialize()
       local data = self.popup_unzoned_members_data
       data.func(mod, data.list_name, data.points, data.exclude_map)
     end,
+  	whileDead = 1,
   }
 end
 
@@ -302,7 +308,8 @@ function mod:AddEP2List(list_name, points, exclude_map)
       table.insert(members, name)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
-        if not self.cache:IsAlt(name) then -- Don't add EP to alts, otherwise mains will get it multiple times
+        -- Don't add EP to alts if they are not shown in the UI
+        if EPGP.db.profile.show_alts or not self.cache:IsAlt(name) then
           self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
         end
       end
@@ -362,7 +369,8 @@ function mod:BonusEP2List(list_name, bonus, exclude_map)
       table.insert(members, name)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
-        if not self.cache:IsAlt(name) then -- Don't add EP to alts, otherwise mains will get it multiple times
+        -- Don't add EP to alts if they are not shown in the UI
+        if EPGP.db.profile.show_alts or not self.cache:IsAlt(name) then
           self.cache:SetMemberEPGP(name, ep*(1+bonus/100), tep, gp, tgp)
         end
       end
