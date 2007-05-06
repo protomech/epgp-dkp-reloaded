@@ -309,7 +309,7 @@ function mod:AddEP2List(list_name, points, exclude_map)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
         -- Don't add EP to alts if they are not shown in the UI
-        if EPGP.db.profile.show_alts or not self.cache:IsAlt(name) then
+        if EPGP.db.profile[list_name].show_alts or not self.cache:IsAlt(name) then
           self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
         end
       end
@@ -370,7 +370,7 @@ function mod:BonusEP2List(list_name, bonus, exclude_map)
       local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
       if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
         -- Don't add EP to alts if they are not shown in the UI
-        if EPGP.db.profile.show_alts or not self.cache:IsAlt(name) then
+        if EPGP.db.profile[list_name].show_alts or not self.cache:IsAlt(name) then
           self.cache:SetMemberEPGP(name, ep*(1+bonus/100), tep, gp, tgp)
         end
       end
@@ -439,25 +439,31 @@ local COMPARATORS = {
 -- show_alts: boolean
 -- current_raid_only: boolean
 --
--- returns table of listings with each row: { name:string, ep:number, gp:number, pr:number }
-function mod:GetListing(list_name, sort_on, show_alts, current_raid_only, name_search)
+-- returns table of listings with each row: { name:string, class:string, ep:number, gp:number, pr:number }
+function mod:GetListing(list_name, sort_on, show_alts, current_raid_only, search_str)
   local t = {}
   local iterator = ITERATORS[list_name]
+	search_str = strlower(search_str)
   if not iterator then return t end
   if not self.cache then return t end
   for i,name in iterator,self,1 do
-    if (show_alts or not self.cache:IsAlt(name)) and
-       (not name_search or name_search == "Search" or string.find(strlower(name), strlower(name_search), 1, true)) then
-      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-      local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
-      if ep and tep and gp and tgp then
-        local EP,GP = tep + ep, tgp + gp
-        local PR = GP == 0 and EP or EP/GP
-        if current_raid_only then
-          EP,GP = ep, gp
-        end
-        table.insert(t, { name, class, EP, GP, PR })
-      end
+    if show_alts or not self.cache:IsAlt(name) then
+    	local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
+			if not search_str or
+			   search_str == "search" or
+			   search_str == strlower(class) or
+			   string.find(strlower(name), search_str, 1, true) then
+      	local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+	      local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
+	      if ep and tep and gp and tgp then
+	        local EP,GP = tep + ep, tgp + gp
+	        local PR = GP == 0 and EP or EP/GP
+	        if current_raid_only then
+	          EP,GP = ep, gp
+	        end
+	        table.insert(t, { name, class, EP, GP, PR })
+	      end
+			end
     end
   end
   local comparator = COMPARATORS[sort_on]
