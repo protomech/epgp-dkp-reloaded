@@ -192,7 +192,9 @@ end
 
 function mod:GUILD_ROSTER_UPDATE(local_update)
   local guild_name = GetGuildInfo("player")
-  if guild_name ~= EPGP:GetProfile() then EPGP:SetProfile(guild_name) end
+  if guild_name and guild_name ~= EPGP:GetProfile() then
+		EPGP:SetProfile(guild_name)
+	end
 
   if local_update then
     self:GuildRosterNow()
