@@ -183,8 +183,10 @@ function EPGP_UI:Export2HTML()
   for i,rowdata in pairs(t) do
     local name, class, EP, GP, PR = unpack(rowdata)
     text = text..string.format(
-      "<tr><td class=\"%s\">%s</td><td class=\"%s\">%s</td><td>%d</td><td>%d</td><td>%.4g</td></tr>",
-      class, name, class, class, EP, GP, PR)
+      "<tr class=\"%s\">"..
+      "<td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%.4g</td>"..
+      "</tr>",
+      class, name, class, EP, GP, PR)
   end
   text = text.."</table>"
   return text
