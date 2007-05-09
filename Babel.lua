@@ -64,18 +64,12 @@ for i,lang in pairs(languages) do
   print("Writing localizations to "..filename)
   if lang ~= "enUS" then
     file:write("if GetLocale() ~= \""..lang.."\" then return end\n")
-    file:write(varname.." = setmetatable({\n")
-  else
-    file:write(varname.." = {\n")
   end
+  file:write(varname.." = {\n")
 
   for k,v in pairs(lang_tables[lang]) do
     file:write("\t[\""..k.."\"] = \""..v.."\",\n")
   end
 
-  if lang ~= "enUS" then
-    file:write("}, {__index="..varname.."})\n")
-  else
-    file:write("}\n")
-  end
+  file:write("}\n")
 end
