@@ -7,8 +7,14 @@ EPGP:RegisterDB("EPGP_Core_DB", "EPGP_Core_PerCharDB")
 EPGP:RegisterDefaults("profile", {
   report_channel = "GUILD",
   current_listing = "GUILD",
-  current_raid_only = false,
-  show_alts = false,
+  RAID = {
+		show_alts = true,
+	  current_raid_only = false,
+	},
+	GUILD = {
+		show_alts = false,
+	  current_raid_only = false,
+	},
   gp_in_tooltips = true,
   master_loot_popup = true,
   alts = {},
@@ -20,12 +26,6 @@ EPGP:RegisterDefaults("profile", {
   min_eps = 1000,
   decay_percent = 10,
   group_by_class = false,
-  show_alts = false,
-  raid_mode = true,
-  standings_data = {},
-  standings_detached_data = {},
-  config_data = {},
-  config_detached_data = {},
   backup_notes = {},
   recurring_ep_period = 15,
 })

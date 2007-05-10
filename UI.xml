@@ -79,7 +79,7 @@
 	<Frame name="ListingPageTemplate" inherits="ATemplatesTabPage" virtual="true">
 		<Frames>
 			<Frame name="ListingDropDown" inherits="UIDropDownMenuTemplate"/>
-			<CheckButton name="$parentShowAltsCheckButton" inherits="UICheckButtonTemplate">
+			<CheckButton name="EPGPFrameShowAltsCheckButton" inherits="UICheckButtonTemplate">
 				<Size>
 					<AbsDimension x="20" y="20"/>
 				</Size>
@@ -95,20 +95,20 @@
 						getglobal(this:GetName().."Text"):SetText("Alts")
 					</OnLoad>
 					<OnShow>
-						this:SetChecked(EPGP.db.profile.show_alts)
+						this:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].show_alts)
 					</OnShow>
 					<OnClick>
-						EPGP.db.profile.show_alts = this:GetChecked() and true or false
+						EPGP.db.profile[EPGP.db.profile.current_listing].show_alts = this:GetChecked() and true or false
 						EPGP_UI:UpdateListing()
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="$parentShowCurrentRaid" inherits="UICheckButtonTemplate">
+			<CheckButton name="EPGPFrameShowCurrentRaidCheckButton" inherits="UICheckButtonTemplate">
 				<Size>
 					<AbsDimension x="20" y="20"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentShowAltsCheckButton" relativePoint="BOTTOMLEFT">
+					<Anchor point="TOPLEFT" relativeTo="EPGPFrameShowAltsCheckButton" relativePoint="BOTTOMLEFT">
 						<OffSet>
 							<AbsDimension x="0" y="5"/>
 						</OffSet>
@@ -119,10 +119,10 @@
 						getglobal(this:GetName().."Text"):SetText("Currrent raid")
 					</OnLoad>
 					<OnShow>
-						this:SetChecked(EPGP.db.profile.current_raid_only)
+						this:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only)
 					</OnShow>
 					<OnClick>
-						EPGP.db.profile.current_raid_only = this:GetChecked() and true or false
+						EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only = this:GetChecked() and true or false
 						EPGP_UI:UpdateListing()
 					</OnClick>
 				</Scripts>
