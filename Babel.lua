@@ -62,9 +62,7 @@ for i,lang in pairs(languages) do
   local file = io.open(filename, "w")
   assert(file, "Could not open "..filename.." for writing!")
   print("Writing localizations to "..filename)
-  if lang ~= "enUS" then
-    file:write("if GetLocale() ~= \""..lang.."\" then return end\n")
-  end
+  file:write("if GetLocale() ~= \""..lang.."\" then return end\n")
   file:write(varname.." = {\n")
 
   for k,v in pairs(lang_tables[lang]) do
