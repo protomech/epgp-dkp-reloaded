@@ -41,7 +41,7 @@ for i,lang in pairs(languages) do
   for i,str in pairs(strings) do
     lang_table[str] = str
   end
-  
+
   local filename = "Localization."..lang..".lua"
   local file = io.open(filename, "r")
   if file then

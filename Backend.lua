@@ -74,7 +74,7 @@ function mod:OnInitialize()
       this:GetParent():Hide()
     end,
     hideOnEscape = 1,
-  	whileDead = 1,
+    whileDead = 1,
     hasEditBox = 1,
   }
   StaticPopupDialogs["EPGP_RESET_EPGP"] = {
@@ -86,7 +86,7 @@ function mod:OnInitialize()
       mod:ResetEPGP()
     end,
     hideOnEscape = 1,
-  	whileDead = 1,
+    whileDead = 1,
   }
   StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
     text = "Decay EP and GP by %d%%?",
@@ -97,7 +97,7 @@ function mod:OnInitialize()
       mod:DecayEPGP()
     end,
     hideOnEscape = 1,
-  	whileDead = 1,
+    whileDead = 1,
   }
   StaticPopupDialogs["EPGP_RESTORE_NOTES"] = {
     text = "Restore public and officer notes from the last backup?",
@@ -108,7 +108,7 @@ function mod:OnInitialize()
       mod:RestoreNotes()
     end,
     hideOnEscape = 1,
-  	whileDead = 1,
+    whileDead = 1,
   }
   self.popup_add_epgp_data = {}
   StaticPopupDialogs["EPGP_ADD_EPGP"] = {
@@ -152,7 +152,7 @@ function mod:OnInitialize()
     end,
     hideOnEscape = 1,
     hasEditBox = 1,
-  	whileDead = 1,
+    whileDead = 1,
   }
   self.popup_unzoned_members_data = {}
   StaticPopupDialogs["EPGP_UNZONED_MEMBERS_POPUP"] = {
@@ -168,7 +168,7 @@ function mod:OnInitialize()
       local data = self.popup_unzoned_members_data
       data.func(mod, data.list_name, data.points, data.exclude_map)
     end,
-  	whileDead = 1,
+    whileDead = 1,
   }
 end
 
@@ -286,7 +286,7 @@ function mod:CheckUnzonedInRaid(func, list_name, points)
     self.popup_unzoned_members_data.points = points
     self.popup_unzoned_members_data.list_name = list_name
     self.popup_unzoned_members_data.exclude_map = exclude_map
-    
+
     StaticPopup_Show("EPGP_UNZONED_MEMBERS_POPUP", GetRealZoneText(), table.concat(t, ", "))
   else
     func(mod, list_name, points, t) -- t is empty here
@@ -301,7 +301,7 @@ function mod:AddEP2List(list_name, points, exclude_map)
     mod:CheckUnzonedInRaid(mod.AddEP2List, list_name, points)
     return
   end
-  
+
   local members = {}
   for i,name in ITERATORS[list_name],self,1 do
     if not exclude_map or not exclude_map[name] then
@@ -337,7 +337,7 @@ function mod:DistributeEP2List(list_name, total_points, exclude_map)
     mod:CheckUnzonedInRaid(mod.DistributeEP2List, list_name, total_points)
     return
   end
-  
+
   local count = 0
   for i,name in ITERATORS[list_name],self,1 do
     if not exclude_map or not exclude_map[name] then
@@ -362,7 +362,7 @@ function mod:BonusEP2List(list_name, bonus, exclude_map)
     mod:CheckUnzonedInRaid(mod.BonusEP2List, list_name, bonus)
     return
   end
-  
+
   local members = {}
   for i,name in ITERATORS[list_name],self,1 do
     if not exclude_map or not exclude_map[name] then
@@ -443,27 +443,27 @@ local COMPARATORS = {
 function mod:GetListing(list_name, sort_on, show_alts, current_raid_only, search_str)
   local t = {}
   local iterator = ITERATORS[list_name]
-	search_str = strlower(search_str)
+  search_str = strlower(search_str)
   if not iterator then return t end
   if not self.cache then return t end
   for i,name in iterator,self,1 do
     if show_alts or not self.cache:IsAlt(name) then
-    	local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
-			if not search_str or
-			   search_str == "search" or
-			   search_str == strlower(class) or
-			   string.find(strlower(name), search_str, 1, true) then
-      	local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-	      local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
-	      if ep and tep and gp and tgp then
-	        local EP,GP = tep + ep, tgp + gp
-	        local PR = GP == 0 and EP or EP/GP
-	        if current_raid_only then
-	          EP,GP = ep, gp
-	        end
-	        table.insert(t, { name, class, EP, GP, PR })
-	      end
-			end
+      local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
+      if not search_str or
+         search_str == "search" or
+         search_str == strlower(class) or
+         string.find(strlower(name), search_str, 1, true) then
+        local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+        local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
+        if ep and tep and gp and tgp then
+          local EP,GP = tep + ep, tgp + gp
+          local PR = GP == 0 and EP or EP/GP
+          if current_raid_only then
+            EP,GP = ep, gp
+          end
+          table.insert(t, { name, class, EP, GP, PR })
+        end
+      end
     end
   end
   local comparator = COMPARATORS[sort_on]

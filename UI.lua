@@ -43,46 +43,46 @@ function EPGP_UI:OnInitialize()
     whileDead = 1,
     hideOnEscape = 1,
   }
-	StaticPopupDialogs["EPGP_SET_RECURRING_PERIOD"] = {
-		text = "Enter new recurring EP period in seconds",
-		button1 = ACCEPT,
-		button2 = CANCEL,
-		timeout = 0,
-		OnShow = function()
-			local editBox = getglobal(this:GetName().."EditBox")
-			editBox:SetNumeric(true)
-			editBox:SetFocus()
-		end,
-		OnAccept = function()
-			local editBox = getglobal(this:GetParent():GetName().."EditBox")
-			local number = editBox:GetNumber()
-			if number > 0 then
-				EPGP.db.profile.recurring_ep_period = number
-			end
-		end,
-		EditBoxOnEnterPressed = function()
-			local editBox = getglobal(this:GetParent():GetName().."EditBox")
-			local number = editBox:GetNumber()
-			if number > 0 then
-				EPGP.db.profile.recurring_ep_period = number
-				this:GetParent():Hide()
-		  end
-		end,
-		EditBoxOnTextChanged = function()
-			local editBox = getglobal(this:GetParent():GetName().."EditBox")
-			local button1 = getglobal(this:GetParent():GetName().."Button1")
-			local number = editBox:GetNumber()
-			if number > 0 then
-				button1:Enable()
-			else
-				button1:Disable()
-			end
-		end,
-		EditBoxOnEscapePressed = function()
-			this:GetParent():Hide()
-		end,
-		hideOnEscape = 1,
-		hasEditBox = 1,
+  StaticPopupDialogs["EPGP_SET_RECURRING_PERIOD"] = {
+    text = "Enter new recurring EP period in seconds",
+    button1 = ACCEPT,
+    button2 = CANCEL,
+    timeout = 0,
+    OnShow = function()
+      local editBox = getglobal(this:GetName().."EditBox")
+      editBox:SetNumeric(true)
+      editBox:SetFocus()
+    end,
+    OnAccept = function()
+      local editBox = getglobal(this:GetParent():GetName().."EditBox")
+      local number = editBox:GetNumber()
+      if number > 0 then
+        EPGP.db.profile.recurring_ep_period = number
+      end
+    end,
+    EditBoxOnEnterPressed = function()
+      local editBox = getglobal(this:GetParent():GetName().."EditBox")
+      local number = editBox:GetNumber()
+      if number > 0 then
+        EPGP.db.profile.recurring_ep_period = number
+        this:GetParent():Hide()
+      end
+    end,
+    EditBoxOnTextChanged = function()
+      local editBox = getglobal(this:GetParent():GetName().."EditBox")
+      local button1 = getglobal(this:GetParent():GetName().."Button1")
+      local number = editBox:GetNumber()
+      if number > 0 then
+        button1:Enable()
+      else
+        button1:Disable()
+      end
+    end,
+    EditBoxOnEscapePressed = function()
+      this:GetParent():Hide()
+    end,
+    hideOnEscape = 1,
+    hasEditBox = 1,
   }
 end
 
@@ -105,7 +105,7 @@ function EPGP_UI:SetEPButtonStatus(button)
     button:Disable()
     return
   end
-  
+
   if EPGP.db.profile.current_listing == "RAID" and not UnitInRaid("player") then
     button:Disable()
     return
@@ -165,10 +165,10 @@ function EPGP_UI:UpdateListing()
 end
 
 function EPGP_UI:UpdateCheckButtons()
-	local show_alts_button = getglobal("EPGPFrameShowAltsCheckButton")
-	show_alts_button:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].show_alts)
-	local current_raid_button = getglobal("EPGPFrameShowCurrentRaidCheckButton")
-	current_raid_button:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only)
+  local show_alts_button = getglobal("EPGPFrameShowAltsCheckButton")
+  show_alts_button:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].show_alts)
+  local current_raid_button = getglobal("EPGPFrameShowCurrentRaidCheckButton")
+  current_raid_button:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only)
 end
 
 function EPGP_UI:GetListingForListingFrame()
@@ -258,7 +258,7 @@ function EPGP_UI.ListingList_Initialize()
     EPGP.db.profile.current_listing = this.value
     UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.current_listing)
     EPGP_UI:UpdateListing()
-		EPGP_UI:UpdateCheckButtons()
+    EPGP_UI:UpdateCheckButtons()
   end
 
   local options = EPGP:GetModule("EPGP_Backend"):GetListingIDs()
