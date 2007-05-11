@@ -56,11 +56,11 @@ function EPGP:OnEnable()
       ["decay"] = {
         type = "execute",
         name = L["Decay EP and GP"],
-        desc = string.format(L["Decay EP and GP by %d%%"], EPGP.db.profile.decay_percent)),
+        desc = string.format(L["Decay EP and GP by %d%%"], EPGP.db.profile.decay_percent),
         disabled = function() return not self:GetModule("EPGP_Backend"):CanLogRaids() end,
         func =  function() self:GetModule("EPGP_Backend"):NewRaid() end,
         order = 4,
-        confirm = string.format(L["Decay EP and GP by %d%%?"], EPGP.db.profile.decay_percent)),
+        confirm = string.format(L["Decay EP and GP by %d%%?"], EPGP.db.profile.decay_percent),
       },
       ["reset"] = {
         type = "execute",
