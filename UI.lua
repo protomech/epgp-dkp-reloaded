@@ -1,3 +1,16 @@
+local L = EPGPGlobalStrings
+
+EPGP_TEXT_BACKUP = L["Backup"]
+EPGP_TEXT_RESTORE = L["Restore"]
+EPGP_TEXT_STANDINGS = L["Standings"]
+EPGP_TEXT_ADD = L["Add"]
+EPGP_TEXT_DISTRIBUTE = L["Distribute"]
+EPGP_TEXT_RECURRING = L["Recurring"]
+EPGP_TEXT_BONUS = L["Bonus"]
+EPGP_TEXT_EXPORT_HTML = L["Export to HTML"]
+EPGP_TEXT_EXPORT_TEXT = L["Export to text"]
+EPGP_TEXT_DECAY = L["Decay"]
+
 EPGP_UI = EPGP:NewModule("EPGP_UI", "AceEvent-2.0")
 
 function EPGP_UI:OnInitialize()
@@ -44,7 +57,7 @@ function EPGP_UI:OnInitialize()
     hideOnEscape = 1,
   }
   StaticPopupDialogs["EPGP_SET_RECURRING_PERIOD"] = {
-    text = "Enter new recurring EP period in seconds",
+    text = L["Enter new recurring EP period in seconds"],
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -243,7 +256,7 @@ function EPGP_UI.ReportChannelList_Initialize()
     UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.report_channel)
   end
 
-  local options = { "None", "Guild", "Officer", "Raid", "Party" }
+  local options = { L["None"], L["Guild"], L["Officer"], L["Raid"], L["Party"] }
   for i,v in pairs(options) do
     info.text = v
     info.value = strupper(v)
@@ -281,7 +294,7 @@ function EPGP_UI.ListingDropDown_Initialize()
   info.func = function()
     EPGP:GetModule("EPGP_Backend"):AddEP2Member(ListingDropDown.member_name)
   end
-  info.text = "Award EP"
+  info.text = L["Award EP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
 
@@ -289,7 +302,7 @@ function EPGP_UI.ListingDropDown_Initialize()
   info.func = function()
     EPGP:GetModule("EPGP_Backend"):AddGP2Member(ListingDropDown.member_name)
   end
-  info.text = "Credit GP"
+  info.text = L["Credit GP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
 end

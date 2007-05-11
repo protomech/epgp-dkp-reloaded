@@ -1,3 +1,5 @@
+local L = EPGPGlobalStrings
+
 EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2.0", "AceEvent-2.0", "AceModuleCore-2.0")
 
 -------------------------------------------------------------------------------
@@ -31,8 +33,8 @@ EPGP:RegisterDefaults("profile", {
 })
 
 function EPGP:OnEnable()
-  BINDING_HEADER_EPGP = "EPGP Options"
-  BINDING_NAME_EPGP = "Toggle EPGP UI"
+  BINDING_HEADER_EPGP = L["EPGP Options"]
+  BINDING_NAME_EPGP = L["Toggle EPGP UI"]
   -- Set shift-E as the toggle button if it is not bound
   if #GetBindingAction("J") == 0 then
     SetBinding("J", "EPGP")
@@ -42,35 +44,35 @@ function EPGP:OnEnable()
 
   self:RegisterChatCommand({ "/epgp" }, {
     type = "group",
-    desc = "EPGP Options",
+    desc = L["EPGP Options"],
     args = {
       ["show"] = {
         type = "execute",
-        name = "Show UI",
-        desc = "Shows the EPGP UI",
+        name = L["Show UI"],
+        desc = L["Shows the EPGP UI"],
         disabled = function() return EPGPFrame:IsShown() end,
         func =  function() ShowUIPanel(EPGPFrame) end,
         order = 1,
       },
       ["decay"] = {
         type = "execute",
-        name = "Decay EP and GP",
-        desc = "Decay EP and GP by"..
+        name = L["Decay EP and GP"],
+        desc = L["Decay EP and GP by "]..
                tostring(EPGP.db.profile.decay_percent).."%.",
         disabled = function() return not self:GetModule("EPGP_Backend"):CanLogRaids() end,
         func =  function() self:GetModule("EPGP_Backend"):NewRaid() end,
         order = 4,
-        confirm = "Decay EP and GP by "..
+        confirm = L["Decay EP and GP by "]..
                   tostring(EPGP.db.profile.decay_percent).."%%?",
       },
       ["reset"] = {
         type = "execute",
-        name = "Reset EPGP",
-        desc = "Reset all EPGP data.",
+        name = L["Reset EPGP"],
+        desc = L["Reset all EPGP data."],
         guiHidden = true,
         disabled = function() return not self:GetModule("EPGP_Backend"):CanChangeRules() end,
         func = function() self:GetModule("EPGP_Backend"):ResetEPGP() end,
-        confirm = "Reset all EP and GP to 0 and make officer notes readable by all?",
+        confirm = L["Reset all EP and GP to 0 and make officer notes readable by all?"],
         order = 11,
       },
     },

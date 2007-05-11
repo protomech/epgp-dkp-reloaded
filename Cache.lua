@@ -1,3 +1,5 @@
+local L = EPGPGlobalStrings
+
 local mod = EPGP:NewModule("EPGP_Cache", "AceEvent-2.0")
 
 function mod:OnInitialize()
@@ -33,14 +35,14 @@ function mod:LoadConfig()
       if dp then
         dp = tonumber(dp)
         if dp and dp >= 0 and dp <= 100 then EPGP.db.profile.decay_percent = dp
-        else EPGP:Print("Decay Percent should be a number between 0 and 100") end
+        else EPGP:Print(L["Decay Percent should be a number between 0 and 100"]) end
       end
 
       -- Min EPs
       local mep = tonumber(line:match("@MIN_EP:(%d+)"))
       if mep then
         if mep and mep >= 0 then EPGP.db.profile.min_eps = mep
-        else EPGP:Print("Min EPs should be a positive number") end
+        else EPGP:Print(L["Min EPs should be a positive number"]) end
       end
 
       -- Flat Credentials

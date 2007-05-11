@@ -19,6 +19,14 @@ Libs\AceModuleCore-2.0\AceModuleCore-2.0.lua
 Libs\AceDB-2.0\AceDB-2.0.lua
 Libs\AceDebug-2.0\AceDebug-2.0.lua
 
+Localization.enUS.lua
+Localization.frFR.lua
+Localization.deDE.lua
+Localization.esES.lua
+Localization.koKR.lua
+Localization.zhCN.lua
+Localization.zhTW.lua
+
 Core.lua
 Cache.lua
 Backend.lua

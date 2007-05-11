@@ -1,3 +1,5 @@
+local L = EPGPGlobalStrings
+
 local mod = EPGP:NewModule("EPGP_Backend", "AceHook-2.1", "AceEvent-2.0")
 
 local function GuildIterator(obj, i)
@@ -33,7 +35,7 @@ end
 function mod:OnInitialize()
   self.cache = EPGP:GetModule("EPGP_Cache")
   StaticPopupDialogs["EPGP_GP_ASSIGN_FOR_LOOT"] = {
-    text = "Credit GP to %s for %s",
+    text = L["Credit GP to %s for %s"],
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -78,7 +80,7 @@ function mod:OnInitialize()
     hasEditBox = 1,
   }
   StaticPopupDialogs["EPGP_RESET_EPGP"] = {
-    text = "Reset all EP and GP to 0 and make officer notes readable by all?",
+    text = L["Reset all EP and GP to 0 and make officer notes readable by all?"],
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -89,7 +91,7 @@ function mod:OnInitialize()
     whileDead = 1,
   }
   StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
-    text = "Decay EP and GP by %d%%?",
+    text = L["Decay EP and GP by %d%%?"],
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -100,7 +102,7 @@ function mod:OnInitialize()
     whileDead = 1,
   }
   StaticPopupDialogs["EPGP_RESTORE_NOTES"] = {
-    text = "Restore public and officer notes from the last backup?",
+    text = L["Restore public and officer notes from the last backup?"],
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -112,7 +114,7 @@ function mod:OnInitialize()
   }
   self.popup_add_epgp_data = {}
   StaticPopupDialogs["EPGP_ADD_EPGP"] = {
-    text = "%s to %s",
+    text = L["%s to %s"],
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -156,7 +158,7 @@ function mod:OnInitialize()
   }
   self.popup_unzoned_members_data = {}
   StaticPopupDialogs["EPGP_UNZONED_MEMBERS_POPUP"] = {
-    text = "Do you want to include members not in %s in the award? (%s)",
+    text = L["Do you want to include members not in %s in the award? (%s)"],
     button1 = YES,
     button2 = NO,
     timeout = 0,
@@ -231,7 +233,7 @@ function mod:ResetEPGP()
     GuildControlSetRankFlag(11, true)
     GuildControlSaveRank(GuildControlGetRankName(i))
   end
-  self:Report("All EP/GP are reset and officer notes are made readable by all.")
+  self:Report(L["All EP/GP are reset and officer notes are made readable by all."])
 end
 
 function mod:DecayEPGP()
@@ -248,7 +250,7 @@ function mod:DecayEPGP()
     end
   end
   self.cache:SaveRoster()
-  self:Report("Applied a decay of %d%% to EP and GP.", EPGP.db.profile.decay_percent)
+  self:Report(L["Applied a decay of %d%% to EP and GP."], EPGP.db.profile.decay_percent)
 end
 
 function mod:AddEP2Member(name, points)
@@ -257,11 +259,11 @@ function mod:AddEP2Member(name, points)
     local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
     self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
     self.cache:SaveRoster()
-    self:Report("Awarded %d EPs to %s.", points, name)
+    self:Report(L["Awarded %d EPs to %s."], points, name)
   else
     self.popup_add_epgp_data.func = mod.AddEP2Member
     self.popup_add_epgp_data.member = name
-    StaticPopup_Show("EPGP_ADD_EPGP", "Award EPs", name, popup_add_epgp_data)
+    StaticPopup_Show("EPGP_ADD_EPGP", L["Award EP"], name, popup_add_epgp_data)
   end
 end
 
@@ -326,7 +328,7 @@ function mod:RecurringEP2List(list_name, points)
     self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
   else
     self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2List, EPGP.db.profile.recurring_ep_period, self, list_name, points, {})
-    self:Report("Awarding %d EPs to raid every %s.", points, SecondsToTime(EPGP.db.profile.recurring_ep_period))
+    self:Report(L["Awarding %d EPs to raid every %s."], points, SecondsToTime(EPGP.db.profile.recurring_ep_period))
   end
 end
 
@@ -351,7 +353,7 @@ end
 function mod:EPGP_STOP_RECURRING_EP_AWARDS()
   if self:IsEventScheduled("RECURRING_EP") then
     self:CancelScheduledEvent("RECURRING_EP")
-    self:Report("Recurring EP awards stopped.")
+    self:Report(L["Recurring EP awards stopped."])
   end
 end
 
@@ -377,7 +379,7 @@ function mod:BonusEP2List(list_name, bonus, exclude_map)
     end
   end
   self.cache:SaveRoster()
-  self:Report("Awarded %d%% EP bonus to %s.", bonus, table.concat(members, ", "))
+  self:Report(L["Awarded %d%% EP bonus to %s."], bonus, table.concat(members, ", "))
 end
 
 function mod:AddGP2Member(name, points)
@@ -386,11 +388,11 @@ function mod:AddGP2Member(name, points)
     local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
     self.cache:SetMemberEPGP(name, ep, tep, gp+points, tgp)
     self.cache:SaveRoster()
-    self:Report("Credited %d GPs to %s.", points, name)
+    self:Report(L["Credited %d GPs to %s."], points, name)
   else
     self.popup_add_epgp_data.func = mod.AddGP2Member
     self.popup_add_epgp_data.member = name
-    StaticPopup_Show("EPGP_ADD_EPGP", "Credit GPs", name)
+    StaticPopup_Show("EPGP_ADD_EPGP", L["Credit GP"], name)
   end
 end
 
@@ -399,7 +401,7 @@ function mod:BackupNotes()
     local name, _, _, _, _, _, note, officernote, _, _ = GetGuildRosterInfo(i)
     EPGP.db.profile.backup_notes[name] = { note, officernote }
   end
-  EPGP:Print("Backed up Officer and Public notes.")
+  EPGP:Print(L["Backed up Officer and Public notes."])
 end
 
 function mod:RestoreNotes()
@@ -412,7 +414,7 @@ function mod:RestoreNotes()
       GuildRosterSetOfficerNote(i, t[2])
     end
   end
-  EPGP:Print("Restored Officer and Public notes.")
+  EPGP:Print(L["Restored Officer and Public notes."])
 end
 
 -------------------------------------------------------------------------------
