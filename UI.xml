@@ -363,6 +363,7 @@
 				<Scripts>
 					<OnClick>
 						EPGP_UI.text = EPGP_UI:Export2HTML(this)
+						local L = EPGPGlobalStrings
 						StaticPopup_Show("EPGP_HTML_EXPORT", L["The current frame standings in HTML."])
 					</OnClick>
 				</Scripts>
@@ -377,6 +378,7 @@
 				<Scripts>
 					<OnClick>
 						EPGP_UI.text = EPGP_UI:Export2Text(this)
+						local L = EPGPGlobalStrings
 						StaticPopup_Show("EPGP_TEXT_EXPORT", L["The current frame standings in plain text."])
 					</OnClick>
 				</Scripts>
