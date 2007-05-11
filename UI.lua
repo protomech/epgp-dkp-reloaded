@@ -1,4 +1,5 @@
 local L = EPGPGlobalStrings
+local BC = AceLibrary("Babble-Class-2.2")
 
 EPGP_TEXT_BACKUP = L["Backup"]
 EPGP_TEXT_RESTORE = L["Restore"]
@@ -152,8 +153,7 @@ function EPGP_UI:UpdateListing()
     row.member_name = name
 
     getglobal(row:GetName().."Name"):SetText(name)
-    local color = RAID_CLASS_COLORS[strupper(class)]
-    getglobal(row:GetName().."Name"):SetTextColor(color.r, color.g, color.b)
+    getglobal(row:GetName().."Name"):SetTextColor(BC:GetColor(class))
     getglobal(row:GetName().."EP"):SetText(tostring(EP))
     getglobal(row:GetName().."EP"):SetAlpha(backend:IsBelowThreshold(EP) and 0.5 or 1.0)
     getglobal(row:GetName().."GP"):SetText(tostring(GP))
