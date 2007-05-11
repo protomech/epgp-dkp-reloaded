@@ -106,8 +106,7 @@
 			</CheckButton>
 			<Frame name="$parentListDropDown" inherits="UIDropDownMenuTemplate" id="1">
 				<Anchors>
-					<Anchor point="TOPRIGHT"
-						>
+					<Anchor point="TOPRIGHT">
 						<OffSet>
 							<AbsDimension x="-24" y="-40"/>
 						</OffSet>
