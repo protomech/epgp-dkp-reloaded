@@ -26,6 +26,10 @@ local languages = {
   "enUS",
   "frFR",
   "deDE",
+  "zhCN",
+  "zhTW",
+  "koKR",
+  "esES",
 }
 
 local lang_tables = {}
