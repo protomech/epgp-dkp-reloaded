@@ -92,7 +92,8 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						getglobal(this:GetName().."Text"):SetText("Alts")
+						local L = EPGPGlobalStrings
+						getglobal(this:GetName().."Text"):SetText(L["Alts"])
 					</OnLoad>
 					<OnShow>
 						this:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].show_alts)
@@ -116,7 +117,8 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						getglobal(this:GetName().."Text"):SetText("Currrent raid")
+						local L = EPGPGlobalStrings
+						getglobal(this:GetName().."Text"):SetText(L["Currrent raid"])
 					</OnLoad>
 					<OnShow>
 						this:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only)
