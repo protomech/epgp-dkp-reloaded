@@ -87,7 +87,7 @@ function mod:GetMemberEPGP(name)
   if not t then
     return
   elseif not t[1] then
-    return 0,0,0,0
+    return 0,0
   else
     return unpack(t)
   end
@@ -102,22 +102,23 @@ function mod:GetMemberInfo(name)
   if t then return unpack(t) end
 end
 
-function mod:SetMemberEPGP(name, ep, tep, gp, tgp)
-  assert(type(ep) == "number" and ep >= 0 and ep <= 99999)
-  assert(type(tep) == "number" and tep >= 0 and tep <= 999999999)
-  assert(type(gp) == "number" and gp >= 0 and gp <= 99999)
-  assert(type(tgp) == "number" and tgp >= 0 and tgp <= 999999999)
+function mod:SetMemberEPGP(name, ep, gp)
+  assert(type(ep) == "number" and ep >= 0 and ep <= 999999999999999)
+  assert(type(gp) == "number" and gp >= 0 and gp <= 999999999999999)
   local t = GetMemberData(self, name)
   t[1] = ep
-  t[2] = tep
-  t[3] = gp
-  t[4] = tgp
+  t[2] = gp
 end
 
 local function ParseNote(note)
-  if note == "" then return 0, 0, 0, 0 end
+  if note == "" then return 0, 0 end
   local ep, tep, gp, tgp = string.match(note, "^(%d+)|(%d+)|(%d+)|(%d+)$")
-  return tonumber(ep), tonumber(tep), tonumber(gp), tonumber(tgp)
+  if ep then
+    return tonumber(ep) + tonumber(tep), tonumber(gp) + tonumber(tgp)
+  end
+
+  ep, gp = string.match(note, "^(%d+)|(%d+)$")
+  return tonumber(ep), tonumber(gp)
 end
 
 function mod:LoadRoster()
@@ -132,8 +133,7 @@ function mod:LoadRoster()
       data[name] = nil
     -- This is a main and officernote stores EPGP
     else
-      local ep, tep, gp, tgp = ParseNote(officernote)
-      data[name] = { ep, tep, gp, tgp }
+      data[name] = { ParseNote(officernote) }
     end
     info[name] = { rank, rankIndex, level, class, zone, note, officernote, online, status }
   end
@@ -147,8 +147,8 @@ function mod:LoadRoster()
   return old_count ~= self.guild_member_count
 end
 
-local function EncodeNote(ep, tep, gp, tgp)
-  return string.format("%d|%d|%d|%d", ep, tep, gp, tgp)
+local function EncodeNote(ep, gp)
+  return string.format("%d|%d", ep, gp)
 end
 
 function mod:SaveRoster()

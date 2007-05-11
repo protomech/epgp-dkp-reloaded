@@ -11,11 +11,9 @@ EPGP:RegisterDefaults("profile", {
   current_listing = "GUILD",
   RAID = {
     show_alts = true,
-    current_raid_only = false,
   },
   GUILD = {
     show_alts = false,
-    current_raid_only = false,
   },
   gp_in_tooltips = true,
   master_loot_popup = true,

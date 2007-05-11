@@ -224,7 +224,7 @@ function mod:ResetEPGP()
   -- Now set zero values
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
-    self.cache:SetMemberEPGP(name, 0, 0, 0, 0)
+    self.cache:SetMemberEPGP(name, 0, 0)
   end
   self.cache:SaveRoster()
   -- Make officer notes readable by all ranks
@@ -241,12 +241,10 @@ function mod:DecayEPGP()
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
     if not self.cache:IsAlt(name) then
-      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-      tep = math.floor((ep+tep) * factor)
-      ep = 0
-      tgp = math.floor((gp+tgp) * factor)
-      gp = 0
-      self.cache:SetMemberEPGP(name, ep, tep, gp, tgp)
+      local ep, gp = self.cache:GetMemberEPGP(name)
+      ep = math.floor(ep * factor)
+      gp = math.floor(gp * factor)
+      self.cache:SetMemberEPGP(name, ep, gp)
     end
   end
   self.cache:SaveRoster()
@@ -256,8 +254,8 @@ end
 function mod:AddEP2Member(name, points)
   assert(type(name) == "string")
   if type(points) == "number" then
-    local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-    self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
+    local ep, gp = self.cache:GetMemberEPGP(name)
+    self.cache:SetMemberEPGP(name, ep+points, gp)
     self.cache:SaveRoster()
     self:Report(L["Awarded %d EPs to %s."], points, name)
   else
@@ -308,11 +306,11 @@ function mod:AddEP2List(list_name, points, exclude_map)
   for i,name in ITERATORS[list_name],self,1 do
     if not exclude_map or not exclude_map[name] then
       table.insert(members, name)
-      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-      if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
+      local ep, gp = self.cache:GetMemberEPGP(name)
+      if ep and gp then -- If the member is not in the guild we get nil
         -- Don't add EP to alts if they are not shown in the UI
         if EPGP.db.profile[list_name].show_alts or not self.cache:IsAlt(name) then
-          self.cache:SetMemberEPGP(name, ep+points, tep, gp, tgp)
+          self.cache:SetMemberEPGP(name, ep+points, gp)
         end
       end
     end
@@ -360,8 +358,8 @@ end
 function mod:AddGP2Member(name, points)
   if type(points) == "number" then
     assert(type(name) == "string")
-    local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-    self.cache:SetMemberEPGP(name, ep, tep, gp+points, tgp)
+    local ep, gp = self.cache:GetMemberEPGP(name)
+    self.cache:SetMemberEPGP(name, ep, gp+points)
     self.cache:SaveRoster()
     self:Report(L["Credited %d GPs to %s."], points, name)
   else
@@ -414,10 +412,10 @@ local COMPARATORS = {
 -- list_names: GUILD, RAID, ZONE
 -- sort_on: NAME, EP, GP, PR
 -- show_alts: boolean
--- current_raid_only: boolean
+-- search_str: string
 --
 -- returns table of listings with each row: { name:string, class:string, ep:number, gp:number, pr:number }
-function mod:GetListing(list_name, sort_on, show_alts, current_raid_only, search_str)
+function mod:GetListing(list_name, sort_on, show_alts, search_str)
   local t = {}
   local iterator = ITERATORS[list_name]
   search_str = strlower(search_str)
@@ -430,15 +428,11 @@ function mod:GetListing(list_name, sort_on, show_alts, current_raid_only, search
          search_str == "search" or
          search_str == strlower(class) or
          string.find(strlower(name), search_str, 1, true) then
-        local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
+        local ep, gp = self.cache:GetMemberEPGP(name)
         local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
-        if ep and tep and gp and tgp then
-          local EP,GP = tep + ep, tgp + gp
-          local PR = GP == 0 and EP or EP/GP
-          if current_raid_only then
-            EP,GP = ep, gp
-          end
-          table.insert(t, { name, class, EP, GP, PR })
+        if ep and gp then
+          local pr = gp == 0 and ep or ep/gp
+          table.insert(t, { name, class, ep, gp, pr })
         end
       end
     end

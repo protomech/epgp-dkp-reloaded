@@ -15,7 +15,6 @@ EPGPGlobalStrings = {
 	["Credit GP"] = "Credit GP",
 	["Credit GP to %s for %s"] = "Credit GP to %s for %s",
 	["Credited %d GPs to %s."] = "Credited %d GPs to %s.",
-	["Currrent raid"] = "Currrent raid",
 	["Decay"] = "Decay",
 	["Decay EP and GP"] = "Decay EP and GP",
 	["Decay EP and GP by "] = "Decay EP and GP by ",

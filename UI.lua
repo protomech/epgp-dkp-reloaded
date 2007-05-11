@@ -179,8 +179,6 @@ end
 function EPGP_UI:UpdateCheckButtons()
   local show_alts_button = getglobal("EPGPFrameShowAltsCheckButton")
   show_alts_button:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].show_alts)
-  local current_raid_button = getglobal("EPGPFrameShowCurrentRaidCheckButton")
-  current_raid_button:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only)
 end
 
 function EPGP_UI:GetListingForListingFrame()
@@ -188,7 +186,6 @@ function EPGP_UI:GetListingForListingFrame()
   local t = backend:GetListing(EPGP.db.profile.current_listing,
                                EPGP.db.profile.comparator_name,
                                EPGP.db.profile[EPGP.db.profile.current_listing].show_alts,
-                               EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only,
                                getglobal("EPGPListingSearchBox"):GetText())
   return t
 end

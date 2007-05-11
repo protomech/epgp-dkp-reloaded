@@ -104,31 +104,6 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="EPGPFrameShowCurrentRaidCheckButton" inherits="UICheckButtonTemplate">
-				<Size>
-					<AbsDimension x="20" y="20"/>
-				</Size>
-				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="EPGPFrameShowAltsCheckButton" relativePoint="BOTTOMLEFT">
-						<OffSet>
-							<AbsDimension x="0" y="5"/>
-						</OffSet>
-					</Anchor>
-				</Anchors>
-				<Scripts>
-					<OnLoad>
-						local L = EPGPGlobalStrings
-						getglobal(this:GetName().."Text"):SetText(L["Currrent raid"])
-					</OnLoad>
-					<OnShow>
-						this:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only)
-					</OnShow>
-					<OnClick>
-						EPGP.db.profile[EPGP.db.profile.current_listing].current_raid_only = this:GetChecked() and true or false
-						EPGP_UI:UpdateListing()
-					</OnClick>
-				</Scripts>
-			</CheckButton>
 			<Frame name="$parentListDropDown" inherits="UIDropDownMenuTemplate" id="1">
 				<Anchors>
 					<Anchor point="TOPRIGHT"
