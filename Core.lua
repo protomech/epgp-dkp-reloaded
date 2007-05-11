@@ -31,6 +31,7 @@ EPGP:RegisterDefaults("profile", {
 })
 
 function EPGP:OnEnable()
+  --EPGP:SetDebugging(true)
   BINDING_HEADER_EPGP = L["EPGP Options"]
   BINDING_NAME_EPGP = L["Toggle EPGP UI"]
   -- Set shift-E as the toggle button if it is not bound

@@ -148,7 +148,7 @@ function mod:LoadRoster()
 end
 
 local function EncodeNote(ep, gp)
-  return string.format("%d|%d", ep, gp)
+  return string.format("%d|%d|%d|%d", 0, ep, 0, gp)
 end
 
 function mod:SaveRoster()
