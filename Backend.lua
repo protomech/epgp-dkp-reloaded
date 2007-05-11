@@ -114,7 +114,7 @@ function mod:OnInitialize()
   }
   self.popup_add_epgp_data = {}
   StaticPopupDialogs["EPGP_ADD_EPGP"] = {
-    text = L["%s to %s"],
+    text = "%s",
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
@@ -261,7 +261,7 @@ function mod:AddEP2Member(name, points)
   else
     self.popup_add_epgp_data.func = mod.AddEP2Member
     self.popup_add_epgp_data.member = name
-    StaticPopup_Show("EPGP_ADD_EPGP", L["Award EP"], name, popup_add_epgp_data)
+    StaticPopup_Show("EPGP_ADD_EPGP", string.format(L["Award EP to %s"], name), popup_add_epgp_data)
   end
 end
 
@@ -365,7 +365,7 @@ function mod:AddGP2Member(name, points)
   else
     self.popup_add_epgp_data.func = mod.AddGP2Member
     self.popup_add_epgp_data.member = name
-    StaticPopup_Show("EPGP_ADD_EPGP", L["Credit GP"], name)
+    StaticPopup_Show("EPGP_ADD_EPGP", string.format(L["Credit GP to %s"], name))
   end
 end
 

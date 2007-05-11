@@ -1,15 +1,16 @@
 if GetLocale() ~= "zhCN" then return end
 EPGPGlobalStrings = {
-	["%s to %s"] = "%s to %s",
 	["Add"] = "Add",
 	["All EP/GP are reset and officer notes are made readable by all."] = "All EP/GP are reset and officer notes are made readable by all.",
 	["Applied a decay of %d%% to EP and GP."] = "Applied a decay of %d%% to EP and GP.",
 	["Award EP"] = "Award EP",
+	["Award EP to %s"] = "Award EP to %s",
 	["Awarded %d EPs to %s."] = "Awarded %d EPs to %s.",
 	["Awarding %d EPs to raid every %s."] = "Awarding %d EPs to raid every %s.",
 	["Backed up Officer and Public notes."] = "Backed up Officer and Public notes.",
 	["Backup"] = "Backup",
 	["Credit GP"] = "Credit GP",
+	["Credit GP to %s"] = "Credit GP to %s",
 	["Credit GP to %s for %s"] = "Credit GP to %s for %s",
 	["Credited %d GPs to %s."] = "Credited %d GPs to %s.",
 	["Decay"] = "Decay",
