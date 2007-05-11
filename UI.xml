@@ -86,14 +86,14 @@
 				<Anchors>
 					<Anchor point="CENTER" relativePoint="TOPLEFT">
 						<OffSet>
-							<AbsDimension x="80" y="-45"/>
+							<AbsDimension x="85" y="-55"/>
 						</OffSet>
 					</Anchor>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
 						local L = EPGPGlobalStrings
-						getglobal(this:GetName().."Text"):SetText(L["Alts"])
+						getglobal(this:GetName().."Text"):SetText(L["Show Alts"])
 					</OnLoad>
 					<OnShow>
 						this:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].show_alts)
