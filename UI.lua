@@ -247,10 +247,16 @@ function EPGP_UI.ReportChannelList_Initialize()
     UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.report_channel)
   end
 
-  local options = { L["None"], L["Guild"], L["Officer"], L["Raid"], L["Party"] }
-  for i,v in pairs(options) do
+  local options = {
+    ["NONE"] = NONE,
+    ["GUILD"] = CHAT_MSG_GUILD,
+    ["OFFICER"] = CHAT_MSG_OFFICER,
+    ["RAID"] = CHAT_MSG_RAID,
+    ["PARTY"] = CHAT_MSG_PARTY,
+  }
+  for k,v in pairs(options) do
     info.text = v
-    info.value = strupper(v)
+    info.value = k
     info.checked = nil
     UIDropDownMenu_AddButton(info)
   end
