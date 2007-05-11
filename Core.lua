@@ -56,18 +56,16 @@ function EPGP:OnEnable()
       ["decay"] = {
         type = "execute",
         name = L["Decay EP and GP"],
-        desc = L["Decay EP and GP by "]..
-               tostring(EPGP.db.profile.decay_percent).."%.",
+        desc = string.format(L["Decay EP and GP by %d%%"], EPGP.db.profile.decay_percent)),
         disabled = function() return not self:GetModule("EPGP_Backend"):CanLogRaids() end,
         func =  function() self:GetModule("EPGP_Backend"):NewRaid() end,
         order = 4,
-        confirm = L["Decay EP and GP by "]..
-                  tostring(EPGP.db.profile.decay_percent).."%%?",
+        confirm = string.format(L["Decay EP and GP by %d%%?"], EPGP.db.profile.decay_percent)),
       },
       ["reset"] = {
         type = "execute",
         name = L["Reset EPGP"],
-        desc = L["Reset all EPGP data."],
+        desc = L["Reset all EP and GP to 0 and make officer notes readable by all."],
         guiHidden = true,
         disabled = function() return not self:GetModule("EPGP_Backend"):CanChangeRules() end,
         func = function() self:GetModule("EPGP_Backend"):ResetEPGP() end,
