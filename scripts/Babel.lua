@@ -18,10 +18,23 @@ for i = 2,#arg do
   local text = file:read("*all")
 
   for match in string.gmatch(text, "L%[\"(.-)\"%]") do
-    table.insert(strings, match)
+    strings[match] = true
   end
 end
+
+do
+  local t = {}
+  for k,v in pairs(strings) do
+    table.insert(t, k)
+  end
+  strings = t
+end
 table.sort(strings)
+
+-- Now make it unique
+for i,w in pairs(strings) do
+  
+end
 
 local languages = {
   "enUS",
