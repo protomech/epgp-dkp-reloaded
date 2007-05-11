@@ -279,7 +279,6 @@
 						EPGP_UI:SetEPButtonStatus(getglobal(this:GetName().."AddButton"))
 						EPGP_UI:SetEPButtonStatus(getglobal(this:GetName().."DistributeButton"))
 						EPGP_UI:SetEPButtonStatus(getglobal(this:GetName().."RecurringButton"))
-						EPGP_UI:SetEPButtonStatus(getglobal(this:GetName().."BonusButton"))
 					</OnTextChanged>
 				</Scripts>
 				<Frames>
@@ -332,22 +331,6 @@
 							</OnShow>
 							<OnClick>
 								EPGP_UI:RecurringEP2List(this:GetParent():GetNumber())
-							</OnClick>
-						</Scripts>
-					</Button>
-					<Button name="$parentBonusButton" inherits="ATemplatesButton" text="EPGP_TEXT_BONUS">
-						<Size>
-							<AbsDimension x="48" y="32"/>
-						</Size>
-						<Anchors>
-							<Anchor point="TOPLEFT" relativeTo="$parentRecurringButton" relativePoint="TOPRIGHT" />
-						</Anchors>
-						<Scripts>
-							<OnShow>
-								EPGP_UI:SetEPButtonStatus(this)
-							</OnShow>
-							<OnClick>
-								EPGP_UI:BonusEP2List(this:GetParent():GetNumber())
 							</OnClick>
 						</Scripts>
 					</Button>

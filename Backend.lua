@@ -357,31 +357,6 @@ function mod:EPGP_STOP_RECURRING_EP_AWARDS()
   end
 end
 
-function mod:BonusEP2List(list_name, bonus, exclude_map)
-  assert(type(bonus) == "number" and bonus >= 0 and bonus <= 100)
-
-  if list_name == "RAID" and not exclude_map then
-    mod:CheckUnzonedInRaid(mod.BonusEP2List, list_name, bonus)
-    return
-  end
-
-  local members = {}
-  for i,name in ITERATORS[list_name],self,1 do
-    if not exclude_map or not exclude_map[name] then
-      table.insert(members, name)
-      local ep, tep, gp, tgp = self.cache:GetMemberEPGP(name)
-      if ep and tep and gp and tgp then -- If the member is not in the guild we get nil
-        -- Don't add EP to alts if they are not shown in the UI
-        if EPGP.db.profile[list_name].show_alts or not self.cache:IsAlt(name) then
-          self.cache:SetMemberEPGP(name, ep*(1+bonus/100), tep, gp, tgp)
-        end
-      end
-    end
-  end
-  self.cache:SaveRoster()
-  self:Report(L["Awarded %d%% EP bonus to %s."], bonus, table.concat(members, ", "))
-end
-
 function mod:AddGP2Member(name, points)
   if type(points) == "number" then
     assert(type(name) == "string")

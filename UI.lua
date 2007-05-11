@@ -7,7 +7,6 @@ EPGP_TEXT_STANDINGS = L["Standings"]
 EPGP_TEXT_ADD = L["Add"]
 EPGP_TEXT_DISTRIBUTE = L["Distribute"]
 EPGP_TEXT_RECURRING = L["Recurring"]
-EPGP_TEXT_BONUS = L["Bonus"]
 EPGP_TEXT_EXPORT_HTML = L["Export to HTML"]
 EPGP_TEXT_EXPORT_TEXT = L["Export to text"]
 EPGP_TEXT_DECAY = L["Decay"]
@@ -242,11 +241,6 @@ end
 function EPGP_UI:RecurringEP2List(points)
   assert(type(points) == "number")
   EPGP:GetModule("EPGP_Backend"):RecurringEP2List(EPGP.db.profile.current_listing, points)
-end
-
-function EPGP_UI:BonusEP2List(percent)
-  assert(type(percent) == "number")
-  EPGP:GetModule("EPGP_Backend"):BonusEP2List(EPGP.db.profile.current_listing, percent)
 end
 
 function EPGP_UI.ReportChannelList_Initialize()
