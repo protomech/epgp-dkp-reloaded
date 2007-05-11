@@ -178,13 +178,15 @@ end
 function mod:GuildRoster()
   if not IsInGuild() then return end
 
-  local time = GetTime()
-  if not self.last_guild_roster_time or time - self.last_guild_roster_time > 10 then
+  if not self.last_guild_roster_time then
     self:GuildRosterNow()
-  else
-    local delay = 10 + self.last_guild_roster_time - time
-    EPGP:Debug("Delaying GuildRoster() for %f secs", delay)
-    self:ScheduleEvent("DELAYED_GUILD_ROSTER_UPDATE", mod.GuildRoster, delay, self)
+  elseif not self:IsEventScheduled("DELAYED_GUILD_ROSTER_UPDATE") then
+    local elapsed = GetTime() - self.last_guild_roster_time
+    if elapsed > 10 then
+      self:GuildRosterNow()
+    else
+      self:ScheduleEvent("DELAYED_GUILD_ROSTER_UPDATE", mod.GuildRoster, 10 - elapsed, self)
+    end
   end
 end
 
