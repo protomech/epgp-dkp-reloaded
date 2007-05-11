@@ -21,6 +21,7 @@ for i = 2,#arg do
     table.insert(strings, match)
   end
 end
+table.sort(strings)
 
 local languages = {
   "enUS",
@@ -53,9 +54,7 @@ for i,lang in pairs(languages) do
     function GetLocale() return lang end
     loadfile(filename)()
     for k,v in pairs(_G[varname]) do
-      if lang_table[k] then
-        lang_table[k] = v
-      end
+      lang_table[k] = v
     end
   end
 end
@@ -69,8 +68,9 @@ for i,lang in pairs(languages) do
   file:write("if GetLocale() ~= \""..lang.."\" then return end\n")
   file:write(varname.." = {\n")
 
-  for k,v in pairs(lang_tables[lang]) do
-    file:write("\t[\""..k.."\"] = \""..v.."\",\n")
+  local lang_table = lang_tables[lang]
+  for i,w in pairs(strings) do
+    file:write("\t[\""..w.."\"] = \""..lang_table[w].."\",\n")
   end
 
   file:write("}\n")
