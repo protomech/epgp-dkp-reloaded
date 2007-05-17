@@ -18,6 +18,7 @@ Libs\AceConsole-2.0\AceConsole-2.0.lua
 Libs\AceModuleCore-2.0\AceModuleCore-2.0.lua
 Libs\AceDB-2.0\AceDB-2.0.lua
 Libs\AceDebug-2.0\AceDebug-2.0.lua
+Libs\AceLocale-2.2\AceLocale-2.2.lua
 Libs\Babble-Class-2.2\Babble-Class-2.2.lua
 
 Localization.enUS.lua
