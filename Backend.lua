@@ -112,8 +112,8 @@ function mod:OnInitialize()
     hideOnEscape = 1,
     whileDead = 1,
   }
-  self.popup_add_epgp_data = {}
-  StaticPopupDialogs["EPGP_ADD_EPGP"] = {
+  self.popup_modify_epgp_data = {}
+  StaticPopupDialogs["EPGP_MODIFY_EPGP"] = {
     text = "%s",
     button1 = ACCEPT,
     button2 = CANCEL,
@@ -123,27 +123,28 @@ function mod:OnInitialize()
       editBox:SetFocus()
     end,
     OnAccept = function()
-      local data = self.popup_add_epgp_data
+      local data = self.popup_modify_epgp_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
-      if number > -10000 and number < 10000 and number ~= 0 then
+      if not data.valid_func or data.valid_func(number) then
         data.func(mod, data.member, number)
       end
     end,
     EditBoxOnEnterPressed = function()
-      local data = self.popup_add_epgp_data
+      local data = self.popup_modify_epgp_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
-      if number > -10000 and number < 10000 and number ~= 0 then
+      if not data.valid_func or data.valid_func(number) then
         data.func(mod, data.member, number)
         this:GetParent():Hide()
       end
     end,
     EditBoxOnTextChanged = function()
+      local data = self.popup_modify_epgp_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local button1 = getglobal(this:GetParent():GetName().."Button1")
       local number = editBox:GetNumber()
-      if number > -10000 and number < 10000 and number ~= 0 then
+      if not data.valid_func or data.valid_func(number) then
         button1:Enable()
       else
         button1:Disable()
@@ -259,9 +260,25 @@ function mod:AddEP2Member(name, points)
     self.cache:SaveRoster()
     self:Report(L["Awarded %d EPs to %s."], points, name)
   else
-    self.popup_add_epgp_data.func = mod.AddEP2Member
-    self.popup_add_epgp_data.member = name
-    StaticPopup_Show("EPGP_ADD_EPGP", string.format(L["Award EP to %s"], name), popup_add_epgp_data)
+    self.popup_modify_epgp_data.func = mod.AddEP2Member
+    self.popup_modify_epgp_data.member = name
+    self.popup_modify_epgp_data.valid_func = function(n) return n > -10000 and n < 10000 and n ~= 0 end    
+    StaticPopup_Show("EPGP_MODIFY_EPGP", string.format(L["Award EP to %s"], name), popup_modify_epgp_data)
+  end
+end
+
+function mod:SetEPMember(name, points)
+  assert(type(name) == "string")
+  if type(points) == "number" then
+    local ep, gp = self.cache:GetMemberEPGP(name)
+    self.cache:SetMemberEPGP(name, points, gp)
+    self.cache:SaveRoster()
+    self:Report(L["Set EPs for %s to %d."], name, points)
+  else
+    self.popup_modify_epgp_data.func = mod.SetEPMember
+    self.popup_modify_epgp_data.member = name
+    self.popup_modify_epgp_data.valid_func = function(n) return n > 0 and n < 10000000 end    
+    StaticPopup_Show("EPGP_MODIFY_EPGP", string.format(L["Set EP for %s"], name), popup_modify_epgp_data)
   end
 end
 
@@ -363,9 +380,25 @@ function mod:AddGP2Member(name, points)
     self.cache:SaveRoster()
     self:Report(L["Credited %d GPs to %s."], points, name)
   else
-    self.popup_add_epgp_data.func = mod.AddGP2Member
-    self.popup_add_epgp_data.member = name
-    StaticPopup_Show("EPGP_ADD_EPGP", string.format(L["Credit GP to %s"], name))
+    self.popup_modify_epgp_data.func = mod.AddGP2Member
+    self.popup_modify_epgp_data.member = name
+    self.popup_modify_epgp_data.valid_func = function(n) return n > -10000 and n < 10000 and n ~= 0 end    
+    StaticPopup_Show("EPGP_MODIFY_EPGP", string.format(L["Credit GP to %s"], name))
+  end
+end
+
+function mod:SetGPMember(name, points)
+  assert(type(name) == "string")
+  if type(points) == "number" then
+    local ep, gp = self.cache:GetMemberEPGP(name)
+    self.cache:SetMemberEPGP(name, ep, points)
+    self.cache:SaveRoster()
+    self:Report(L["Set GPs for %s to %d."], name, points)
+  else
+    self.popup_modify_epgp_data.func = mod.SetGPMember
+    self.popup_modify_epgp_data.member = name
+    self.popup_modify_epgp_data.valid_func = function(n) return n > 0 and n < 10000000 end    
+    StaticPopup_Show("EPGP_MODIFY_EPGP", string.format(L["Set GP for %s"], name), popup_modify_epgp_data)
   end
 end
 

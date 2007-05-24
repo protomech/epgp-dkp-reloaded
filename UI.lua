@@ -302,6 +302,22 @@ function EPGP_UI.ListingDropDown_Initialize()
   info.text = L["Credit GP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
+
+  info = UIDropDownMenu_CreateInfo()
+  info.func = function()
+    EPGP:GetModule("EPGP_Backend"):SetEPMember(ListingDropDown.member_name)
+  end
+  info.text = L["Set EP"]
+  info.checked = nil
+  UIDropDownMenu_AddButton(info)
+
+  info = UIDropDownMenu_CreateInfo()
+  info.func = function()
+    EPGP:GetModule("EPGP_Backend"):SetGPMember(ListingDropDown.member_name)
+  end
+  info.text = L["Set GP"]
+  info.checked = nil
+  UIDropDownMenu_AddButton(info)
 end
 
 function EPGP_UI.ListingDropDown(name)
