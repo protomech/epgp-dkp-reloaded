@@ -33,6 +33,7 @@ Core.lua
 Cache.lua
 Backend.lua
 GPTooltip.lua
+OfficerNoteWarning.lua
 
 ATemplates.xml
 UI.xml

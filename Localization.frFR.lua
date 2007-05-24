@@ -21,6 +21,7 @@ EPGPGlobalStrings = {
 	["Distribute"] = "Distribuer",
 	["Do you want to include members not in %s in the award? (%s)"] = "Voulez vous inclure les membres qui ne sont pas dans %s? (%s)",
 	["EPGP Options"] = "Options EPGP",
+	["EPGP is using Officer Notes for data storage. Do you really want to edit the Officer Note by hand?"] = "EPGP is using Officer Notes for data storage. Do you really want to edit the Officer Note by hand?",
 	["Enter new recurring EP period in seconds"] = "Entrez une nouvelle période pour les EP récurrents en secondes",
 	["Export to HTML"] = "Exporter en HTML",
 	["Export to text"] = "Exporter en texte",
