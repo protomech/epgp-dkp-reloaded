@@ -53,7 +53,7 @@
 				this:RegisterForClicks("RightButtonUp")
 			</OnLoad>
 			<OnClick>
-				if arg1 == "RightButton" then
+				if arg1 == "RightButton" and EPGP:GetModule("EPGP_Backend"):CanLogRaids() then
 					EPGP_UI.ListingDropDown(this.member_name)
 				end
 				PlaySound("igMainMenuOptionCheckBoxOn")
