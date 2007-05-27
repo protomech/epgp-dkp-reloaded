@@ -2,6 +2,13 @@ local L = EPGPGlobalStrings
 
 local mod = EPGP:NewModule("EPGP_Backend", "AceEvent-2.0")
 
+local function OnStaticPopupHide()
+	if ChatFrameEditBox:IsShown() then
+		ChatFrameEditBox:SetFocus()
+	end
+	getglobal(this:GetName().."EditBox"):SetText("")
+end
+
 local function GuildIterator(obj, i)
   local name = GetGuildRosterInfo(i)
   -- Handle dummies
@@ -77,6 +84,7 @@ function mod:OnInitialize()
       local editBox = getglobal(this:GetName().."EditBox")
       editBox:SetFocus()
     end,
+    OnHide = OnStaticPopupHide,
     OnAccept = function()
       local data = self.popup_modify_epgp_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")

@@ -13,19 +13,26 @@ EPGP_TEXT_DECAY = L["Decay"]
 
 EPGP_UI = EPGP:NewModule("EPGP_UI", "AceEvent-2.0")
 
+local function OnStaticPopupHide()
+	if ChatFrameEditBox:IsShown() then
+		ChatFrameEditBox:SetFocus()
+	end
+	getglobal(this:GetName().."EditBox"):SetText("")
+end
+
 function EPGP_UI:OnInitialize()
   UIPanelWindows["EPGPFrame"] = { area = "left", pushable = 1, whileDead = 1, }
   self:RegisterEvent("EPGP_CACHE_UPDATE")
   StaticPopupDialogs["EPGP_TEXT_EXPORT"] = {
-    text = "%s",
+    text = L["The current frame standings in plain text."],
     hasEditBox = 1,
     OnShow = function()
       local editBox = getglobal(this:GetName().."EditBox")
-      editBox:SetText(EPGP_UI.text)
-      EPGP_UI.text = nil
+      editBox:SetText(EPGP_UI:Export2Text())
       editBox:HighlightText()
       editBox:SetFocus()
     end,
+    OnHide = OnStaticPopupHide,
     EditBoxOnEnterPressed = function()
       this:GetParent():Hide()
       end,
@@ -37,15 +44,15 @@ function EPGP_UI:OnInitialize()
     hideOnEscape = 1,
   }
   StaticPopupDialogs["EPGP_HTML_EXPORT"] = {
-    text = "%s",
+    text = L["The current frame standings in HTML."],
     hasEditBox = 1,
     OnShow = function()
       local editBox = getglobal(this:GetName().."EditBox")
-      editBox:SetText(EPGP_UI.text)
-      EPGP_UI.text = nil
+      editBox:SetText(EPGP_UI:Export2HTML())
       editBox:HighlightText()
       editBox:SetFocus()
     end,
+    OnHide = OnStaticPopupHide,
     EditBoxOnEnterPressed = function()
       this:GetParent():Hide()
       end,
@@ -63,9 +70,9 @@ function EPGP_UI:OnInitialize()
     timeout = 0,
     OnShow = function()
       local editBox = getglobal(this:GetName().."EditBox")
-      editBox:SetNumeric(true)
       editBox:SetFocus()
     end,
+    OnHide = OnStaticPopupHide,
     OnAccept = function()
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
@@ -128,6 +135,7 @@ end
 function EPGP_UI:EPGP_CACHE_UPDATE()
   if EPGPListingFrame:IsShown() then
     self:UpdateListing()
+    self:UpdateCheckButtons()
   end
 end
 
