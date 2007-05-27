@@ -1,6 +1,6 @@
 local L = EPGPGlobalStrings
 
-local mod = EPGP:NewModule("EPGP_Backend", "AceHook-2.1", "AceEvent-2.0")
+local mod = EPGP:NewModule("EPGP_Backend", "AceEvent-2.0")
 
 local function GuildIterator(obj, i)
   local name = GetGuildRosterInfo(i)
@@ -34,51 +34,6 @@ end
 
 function mod:OnInitialize()
   self.cache = EPGP:GetModule("EPGP_Cache")
-  StaticPopupDialogs["EPGP_GP_ASSIGN_FOR_LOOT"] = {
-    text = L["Credit GP to %s for %s"],
-    button1 = ACCEPT,
-    button2 = CANCEL,
-    timeout = 0,
-    OnShow = function()
-      local gp = EPGP:GetModule("EPGP_GPTooltip"):GetGPValue(mod.itemLink) or ""
-      local editBox = getglobal(this:GetName().."EditBox")
-      editBox:SetNumeric(true)
-      editBox:SetText(gp)
-      editBox:HighlightText()
-      editBox:SetFocus()
-    end,
-    OnAccept = function()
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local gp = editBox:GetNumber()
-      if gp > 0 and gp < 10000 then
-        mod:AddGP2Member(mod.member, gp)
-      end
-    end,
-    EditBoxOnEnterPressed = function()
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local gp = editBox:GetNumber()
-      if gp > 0 and gp < 10000 then
-        mod:AddGP2Member(member, gp)
-        this:GetParent():Hide()
-      end
-    end,
-    EditBoxOnTextChanged = function()
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local button1 = getglobal(this:GetParent():GetName().."Button1")
-      local gp = editBox:GetNumber()
-      if gp > 0 and gp < 10000 then
-        button1:Enable()
-      else
-        button1:Disable()
-      end
-    end,
-    EditBoxOnEscapePressed = function()
-      this:GetParent():Hide()
-    end,
-    hideOnEscape = 1,
-    whileDead = 1,
-    hasEditBox = 1,
-  }
   StaticPopupDialogs["EPGP_RESET_EPGP"] = {
     text = L["Reset all EP and GP to 0 and make officer notes readable by all?"],
     button1 = ACCEPT,
@@ -179,15 +134,6 @@ function mod:OnEnable()
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("EPGP_CACHE_UPDATE")
   self:RegisterEvent("EPGP_STOP_RECURRING_EP_AWARDS")
-  self:SecureHook("GiveMasterLoot")
-end
-
-function mod:GiveMasterLoot(slot, index)
-  if EPGP.db.profile.master_loot_popup then
-    mod.member = GetMasterLootCandidate(index)
-    mod.itemLink = GetLootSlotLink(slot)
-    StaticPopup_Show("EPGP_GP_ASSIGN_FOR_LOOT", mod.member, mod.itemLink)
-  end
 end
 
 function mod:RAID_ROSTER_UPDATE()
