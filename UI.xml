@@ -351,12 +351,21 @@
 				</Anchors>
 				<Scripts>
 					<OnLoad>
-						getglobal(this:GetName().."Button"):SetScript("OnClick", function()
-							local id, time_left = EPGP:IsEventScheduled("RECURRING_EP")
-							if id then
+						local L = EPGPGlobalStrings
+						local button = getglobal(this:GetName().."Button")
+						button:SetScript("OnClick", function()
+							if EPGP:IsEventScheduled("RECURRING_EP") then
 								EPGP:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
 							else
 								StaticPopup_Show("EPGP_SET_RECURRING_PERIOD")
+							end
+						end)
+						button:SetScript("OnEnter", function()
+							GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+							if EPGP:IsEventScheduled("RECURRING_EP") then
+								GameTooltip:SetText(L["Click to stop recurring award."], 1, 1, 1)
+							else
+								GameTooltip:SetText(L["Click to set recurring award period."], 1, 1, 1)
 							end
 						end)
 					</OnLoad>
