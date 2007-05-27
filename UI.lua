@@ -10,6 +10,8 @@ EPGP_TEXT_RECURRING = L["Recurring"]
 EPGP_TEXT_EXPORT_HTML = L["Export to HTML"]
 EPGP_TEXT_EXPORT_TEXT = L["Export to text"]
 EPGP_TEXT_DECAY = L["Decay"]
+EPGP_TEXT_REPORT_CHANNEL = L["Report Channel"]
+EPGP_TEXT_MASTER_LOOT_QUALITY_THRESHOLD = L["Master Loot Quality Threshold"]
 
 EPGP_UI = EPGP:NewModule("EPGP_UI", "AceEvent-2.0")
 
@@ -326,6 +328,21 @@ function EPGP_UI.ListingDropDown_Initialize()
   info.text = L["Set GP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
+end
+
+function EPGP_UI.MasterLootQualityThreshold_Initialize()
+  local info = UIDropDownMenu_CreateInfo()
+  info.func = function()
+    EPGP.db.profile.master_loot_popup_quality_threshold = this.value
+    UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.master_loot_popup_quality_threshold)
+  end
+  
+  for i=2,#ITEM_QUALITY_COLORS do
+    info.text = getglobal("ITEM_QUALITY"..i.."_DESC")
+    info.value = i
+    info.checked = nil
+    UIDropDownMenu_AddButton(info)
+  end
 end
 
 function EPGP_UI.ListingDropDown(name)

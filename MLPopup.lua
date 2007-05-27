@@ -67,7 +67,10 @@ function mod:OnEnable()
 end
 
 function mod:GiveMasterLoot(slot, index)
-  if EPGP.db.profile.master_loot_popup then
+  mod.member = GetMasterLootCandidate(index)
+  mod.itemLink = GetLootSlotLink(slot)
+  local name, link, rarity, level, minlevel, type, subtype, count, equipLoc = GetItemInfo(mod.itemLink)
+  if EPGP.db.profile.master_loot_popup and rarity >= EPGP.db.profile.master_loot_popup_quality_threshold then
     mod.member = GetMasterLootCandidate(index)
     mod.itemLink = GetLootSlotLink(slot)
     StaticPopup_Show("EPGP_GP_ASSIGN_FOR_LOOT", mod.member, mod.itemLink)

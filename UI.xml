@@ -467,12 +467,48 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
+			<Frame name="$parentMasterLootPopupQualityThreshold" inherits="UIDropDownMenuTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parentMasterLootPopupCheckButton" relativePoint="BOTTOMLEFT">
+						<OffSet>
+							<AbsDimension x="-16" y="-16"/>
+						</OffSet>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						UIDropDownMenu_SetWidth(100, this)
+						UIDropDownMenu_JustifyText("LEFT", this)
+					</OnLoad>
+					<OnShow>
+						UIDropDownMenu_Initialize(this, EPGP_UI.MasterLootQualityThreshold_Initialize)
+						UIDropDownMenu_SetSelectedValue(this, EPGP.db.profile.master_loot_popup_quality_threshold)
+					</OnShow>
+				</Scripts>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentReportChannelLabel" inherits="GameFontNormalSmall" text="EPGP_TEXT_MASTER_LOOT_QUALITY_THRESHOLD">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT">
+									<OffSet>
+										<AbsDimension x="20" y="0"/>
+									</OffSet>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
 			<CheckButton name="$parentGPInTooltipsCheckButton" inherits="UICheckButtonTemplate">
 				<Size>
 					<AbsDimension x="20" y="20"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentMasterLootPopupCheckButton" relativePoint="BOTTOMLEFT"/>
+					<Anchor point="TOPLEFT" relativeTo="$parentMasterLootPopupQualityThreshold" relativePoint="BOTTOMLEFT">
+						<OffSet>
+							<AbsDimension x="16" y="0"/>
+						</OffSet>
+					</Anchor>
 				</Anchors>
 				<Scripts>
 					<OnLoad>
@@ -507,7 +543,7 @@
 				</Scripts>
 				<Layers>
 					<Layer level="ARTWORK">
-						<FontString name="$parentReportChannelLabel" inherits="GameFontNormalSmall" text="Report Channel">
+						<FontString name="$parentReportChannelLabel" inherits="GameFontNormalSmall" text="EPGP_TEXT_REPORT_CHANNEL">
 							<Anchors>
 								<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT">
 									<OffSet>
