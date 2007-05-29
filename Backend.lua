@@ -297,7 +297,7 @@ function mod:RecurringEP2List(list_name, points)
     self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
   else
     self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2List, EPGP.db.profile.recurring_ep_period, self, list_name, points, {})
-    self:Report(L["Awarding %d EPs to raid every %s."], points, SecondsToTime(EPGP.db.profile.recurring_ep_period))
+    self:Report(L["Awarding %d EPs/%s to %s."], points, SecondsToTime(EPGP.db.profile.recurring_ep_period), getglobal(list_name))
   end
 end
 
