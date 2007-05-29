@@ -368,6 +368,9 @@
 								GameTooltip:SetText(L["Click to set recurring award period."], 1, 1, 1)
 							end
 						end)
+						button:SetScript("OnLeave", function()
+							GameTooltip:Hide()
+						end)
 					</OnLoad>
 					<OnUpdate>
 						this:SetMinMaxValues(0, EPGP.db.profile.recurring_ep_period)
