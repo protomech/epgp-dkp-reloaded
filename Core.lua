@@ -31,17 +31,7 @@ EPGP:RegisterDefaults("profile", {
   recurring_ep_period = 15 * 60,
 })
 
-function EPGP:OnEnable()
-  --EPGP:SetDebugging(true)
-  BINDING_HEADER_EPGP = L["EPGP Options"]
-  BINDING_NAME_EPGP = L["Toggle EPGP UI"]
-  -- Set shift-E as the toggle button if it is not bound
-  if #GetBindingAction("J") == 0 then
-    SetBinding("J", "EPGP")
-    -- Save to character bindings
-    SaveBindings(2)
-  end
-
+function EPGP:OnInitialize()
   self:RegisterChatCommand({ "/epgp" }, {
     type = "group",
     desc = L["EPGP Options"],
@@ -76,4 +66,16 @@ function EPGP:OnEnable()
     },
   },
   "EPGP")
+end
+
+function EPGP:OnEnable()
+  --EPGP:SetDebugging(true)
+  BINDING_HEADER_EPGP = L["EPGP Options"]
+  BINDING_NAME_EPGP = L["Toggle EPGP UI"]
+  -- Set shift-E as the toggle button if it is not bound
+  if #GetBindingAction("J") == 0 then
+    SetBinding("J", "EPGP")
+    -- Save to character bindings
+    SaveBindings(2)
+  end
 end
