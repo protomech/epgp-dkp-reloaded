@@ -24,7 +24,6 @@ end
 
 function EPGP_UI:OnInitialize()
   UIPanelWindows["EPGPFrame"] = { area = "left", pushable = 1, whileDead = 1, }
-  self:RegisterEvent("EPGP_CACHE_UPDATE")
   StaticPopupDialogs["EPGP_TEXT_EXPORT"] = {
     text = L["The current frame standings in plain text."],
     hasEditBox = 1,
@@ -108,6 +107,11 @@ function EPGP_UI:OnInitialize()
   }
 end
 
+function EPGP_UI:OnEnable()
+  self:RegisterEvent("EPGP_CACHE_UPDATE")
+  self:RegisterEvent("RAID_ROSTER_UPDATE")
+end
+
 function EPGP_UI:SetRestoreButtonStatus(button)
   if EPGP:GetModule("EPGP_Backend"):CanLogRaids() then
     button:Enable()
@@ -139,6 +143,21 @@ function EPGP_UI:EPGP_CACHE_UPDATE()
     self:UpdateListing()
     self:UpdateCheckButtons()
   end
+end
+
+function EPGP_UI:RAID_ROSTER_UPDATE()
+  if self.player_in_raid ~= UnitInRaid("player") then
+    if UnitInRaid("player") then
+      EPGP.db.profile.current_listing = "RAID"
+    else
+      EPGP.db.profile.current_listing = "GUILD"
+    end
+    EPGPFramePage1ListDropDown:Hide()
+    EPGPFramePage1ListDropDown:Show()
+    EPGP_UI:UpdateListing()
+    EPGP_UI:UpdateCheckButtons()
+  end
+  self.player_in_raid = UnitInRaid("player")
 end
 
 function EPGP_UI:UpdateListing()
