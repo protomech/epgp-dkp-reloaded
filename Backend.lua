@@ -316,7 +316,7 @@ function mod:DistributeEP2List(list_name, total_points, exclude_map)
     end
   end
   local points = math.floor(total_points / count)
-  self:AddEP2List(list_name, points, exclude_table)
+  self:AddEP2List(list_name, points, exclude_map)
 end
 
 function mod:EPGP_STOP_RECURRING_EP_AWARDS()
@@ -413,7 +413,7 @@ function mod:GetListing(list_name, sort_on, show_alts, search_str)
       local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
       if not search_str or
          search_str == "search" or
-         search_str == strlower(class) or
+         (class and search_str == strlower(class)) or
          string.find(strlower(name), search_str, 1, true) then
         local ep, gp = self.cache:GetMemberEPGP(name)
         local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
