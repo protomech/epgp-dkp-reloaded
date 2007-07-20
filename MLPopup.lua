@@ -39,7 +39,7 @@ function mod:OnInitialize()
       local gp = editBox:GetNumber()
       editBox:SetText("")
       if gp > 0 and gp < 10000 then
-        backend:AddGP2Member(member, gp)
+        backend:AddGP2Member(mod.member, gp)
         this:GetParent():Hide()
       end
     end,
