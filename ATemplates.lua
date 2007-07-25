@@ -9,8 +9,3 @@ function ATemplates_SetTab(parent, id)
     end
   end
 end
-
-function ATemplates_SetColumnWidth(column, width)
-  column:SetWidth(width)
-  getglobal(column:GetName().."Middle"):SetWidth(width - 9)
-end

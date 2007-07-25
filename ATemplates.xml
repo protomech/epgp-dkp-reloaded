@@ -18,9 +18,6 @@
 
 	<!-- A column header template -->
 	<Button name="ATemplatesColumnHeaderTemplate" virtual="true">
-		<Size>
-			<AbsDimension x="10" y="24"/>
-		</Size>
 		<Layers>
 			<Layer level="BACKGROUND">
 				<Texture name="$parentLeft" file="Interface\FriendsFrame\WhoFrame-ColumnTabs">
@@ -30,29 +27,30 @@
 					<Anchors>
 						<Anchor point="TOPLEFT"/>
 					</Anchors>
-					<TexCoords left="0" right="0.078125" top="0" bottom="0.75"/>
-				</Texture>
-				<Texture name="$parentMiddle" file="Interface\FriendsFrame\WhoFrame-ColumnTabs">
-					<Size>
-						<AbsDimension x="53" y="24"/>
-					</Size>
-					<Anchors>
-						<Anchor point="LEFT" relativeTo="$parentLeft" relativePoint="RIGHT"/>
-					</Anchors>
-					<TexCoords left="0.078125" right="0.90625" top="0" bottom="0.75"/>
+					<TexCoords left="0" right="0.078125" top="0" bottom="0.59375"/>
 				</Texture>
 				<Texture name="$parentRight" file="Interface\FriendsFrame\WhoFrame-ColumnTabs">
 					<Size>
 						<AbsDimension x="4" y="24"/>
 					</Size>
 					<Anchors>
-						<Anchor point="LEFT" relativeTo="$parentMiddle" relativePoint="RIGHT"/>
+						<Anchor point="TOPRIGHT"/>
 					</Anchors>
-					<TexCoords left="0.90625" right="0.96875" top="0" bottom="0.75"/>
+					<TexCoords left="0.90625" right="0.96875" top="0" bottom="0.59375"/>
+				</Texture>
+				<Texture name="$parentMiddle" file="Interface\FriendsFrame\WhoFrame-ColumnTabs">
+					<Size>
+						<AbsDimension x="10" y="24"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentLeft" relativePoint="RIGHT"/>
+						<Anchor point="RIGHT" relativeTo="$parentRight" relativePoint="LEFT"/>
+					</Anchors>
+					<TexCoords left="0.078125" right="0.90625" top="0" bottom="0.59375"/>
 				</Texture>
 			</Layer>
 		</Layers>
-		<ButtonText>
+		<ButtonText name="$parentText">
 			<Anchors>
 				<Anchor point="LEFT">
 					<Offset>
@@ -62,16 +60,19 @@
 			</Anchors>
 		</ButtonText>
 		<NormalFont inherits="GameFontHighlightSmall"/>
-		<HighlightTexture name="$parentHighlightTexture" file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
+		<HighlightTexture file="Interface\PaperDollInfoFrame\UI-Character-Tab-Highlight" alphaMode="ADD">
+			<Size>
+				<AbsDimension x="5" y="33"/>
+			</Size>
 			<Anchors>
-				<Anchor point="TOPLEFT" relativeTo="$parentLeft">
+				<Anchor point="LEFT">
 					<Offset>
-						<AbsDimension x="-2" y="5"/>
+						<AbsDimension x="0" y="-2"/>
 					</Offset>
 				</Anchor>
-				<Anchor point="BOTTOMRIGHT" relativeTo="$parentRight">
+				<Anchor point="RIGHT">
 					<Offset>
-						<AbsDimension x="2" y="-7"/>
+						<AbsDimension x="0" y="-2"/>
 					</Offset>
 				</Anchor>
 			</Anchors>

@@ -139,10 +139,8 @@ function EPGP_UI:SetEPButtonStatus(button)
 end
 
 function EPGP_UI:EPGP_CACHE_UPDATE()
-  if EPGPListingFrame:IsShown() then
-    self:UpdateListing()
-    self:UpdateCheckButtons()
-  end
+  EPGP_UI.UpdateListing()
+  self:UpdateCheckButtons()
 end
 
 function EPGP_UI:RAID_ROSTER_UPDATE()
@@ -154,59 +152,56 @@ function EPGP_UI:RAID_ROSTER_UPDATE()
     end
     EPGPFramePage1ListDropDown:Hide()
     EPGPFramePage1ListDropDown:Show()
-    EPGP_UI:UpdateListing()
+    EPGP_UI.UpdateListing()
     EPGP_UI:UpdateCheckButtons()
   end
   self.player_in_raid = UnitInRaid("player")
 end
 
-function EPGP_UI:UpdateListing()
+function EPGP_UI.UpdateListing()
+  if not EPGPFrame:IsShown() then return end
+
+  local frame = getglobal("EPGPScrollFrame")
   local backend = EPGP:GetModule("EPGP_Backend")
-  local frame = getglobal("EPGPListingFrame")
-  local t = self:GetListingForListingFrame()
+  local t = EPGP_UI:GetListingForListingFrame()
+  EPGP:Print("repaint")
+  local scrollbar_shown = FauxScrollFrame_Update(EPGPScrollFrame, #t, 15, 16)--, "EPGPListingEntry", 298, 330)
+  if (scrollbar_shown) then
+    EPGPListingNameColumnHeader:SetWidth(111)
+  else
+    EPGPListingNameColumnHeader:SetWidth(131)
+  end
 
-  local last_idx = 0
-  local frame_height = 0
-  for i,rowdata in pairs(t) do
-    local name, class, EP, GP, PR = unpack(rowdata)
-    row = getglobal(frame:GetName().."Row"..i)
-    if not row then
-      row = CreateFrame("Button", frame:GetName().."Row"..i, frame, "EPGPListingRowTemplate")
-      if i == 1 then
-        row:SetPoint("TOPLEFT")
+  for i=1,15 do
+    local j = i + FauxScrollFrame_GetOffset(EPGPScrollFrame)
+    local row = getglobal("EPGPListingEntry"..i)
+    if j <= #t then
+      local name, class, EP, GP, PR = unpack(t[j])
+      row.member_name = name
+      getglobal(row:GetName().."Name"):SetText(name)
+      getglobal(row:GetName().."Name"):SetTextColor(BC:GetColor(class))
+      if scrollbar_shown then
+        getglobal(row:GetName().."Name"):SetWidth(92)
       else
-        row:SetPoint("TOPLEFT", getglobal(frame:GetName().."Row"..last_idx), "BOTTOMLEFT")
+        getglobal(row:GetName().."Name"):SetWidth(112)
       end
+      getglobal(row:GetName().."EP"):SetText(tostring(EP))
+      getglobal(row:GetName().."EP"):SetAlpha(backend:IsBelowThreshold(EP) and 0.5 or 1.0)
+      getglobal(row:GetName().."GP"):SetText(tostring(GP))
+      getglobal(row:GetName().."GP"):SetAlpha(backend:IsBelowThreshold(EP) and 0.5 or 1.0)
+      getglobal(row:GetName().."PR"):SetText(string.format("%.4g", PR))
+      getglobal(row:GetName().."PR"):SetAlpha(backend:IsBelowThreshold(EP) and 0.5 or 1.0)
+      row:Show()
+    else
+      row:Hide()
     end
-    row.member_name = name
-
-    getglobal(row:GetName().."Name"):SetText(name)
-    getglobal(row:GetName().."Name"):SetTextColor(BC:GetColor(class))
-    getglobal(row:GetName().."EP"):SetText(tostring(EP))
-    getglobal(row:GetName().."EP"):SetAlpha(backend:IsBelowThreshold(EP) and 0.5 or 1.0)
-    getglobal(row:GetName().."GP"):SetText(tostring(GP))
-    getglobal(row:GetName().."GP"):SetAlpha(backend:IsBelowThreshold(EP) and 0.5 or 1.0)
-    getglobal(row:GetName().."PR"):SetText(string.format("%.4g", PR))
-    getglobal(row:GetName().."PR"):SetAlpha(backend:IsBelowThreshold(EP) and 0.5 or 1.0)
-    last_idx = i
-    frame_height = frame_height + row:GetHeight()
-    row:Show()
   end
-
-  -- Hide remaining rows
-  while true do
-    last_idx = last_idx + 1
-    local row = getglobal(frame:GetName().."Row"..last_idx)
-    if not row then break end
-    row:Hide()
-  end
-
-  frame:SetHeight(frame_height)
-  frame:GetParent():UpdateScrollChildRect()
 end
 
 function EPGP_UI:UpdateCheckButtons()
   local show_alts_button = getglobal("EPGPFrameShowAltsCheckButton")
+  if not EPGPFrame:IsShown() then return end
+
   show_alts_button:SetChecked(EPGP.db.profile[EPGP.db.profile.current_listing].show_alts)
 end
 
@@ -296,7 +291,7 @@ function EPGP_UI.ListingList_Initialize()
   info.func = function()
     EPGP.db.profile.current_listing = this.value
     UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.current_listing)
-    EPGP_UI:UpdateListing()
+    EPGP_UI.UpdateListing()
     EPGP_UI:UpdateCheckButtons()
   end
 

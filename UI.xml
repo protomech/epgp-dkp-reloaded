@@ -100,7 +100,7 @@
 					</OnShow>
 					<OnClick>
 						EPGP.db.profile[EPGP.db.profile.current_listing].show_alts = this:GetChecked() and true or false
-						EPGP_UI:UpdateListing()
+						EPGP_UI.UpdateListing()
 					</OnClick>
 				</Scripts>
 			</CheckButton>
@@ -145,72 +145,72 @@
 						this:SetText("Search")
 					</OnEditFocusLost>
 					<OnTextChanged>
-						EPGP_UI:UpdateListing()
+						EPGP_UI.UpdateListing()
 					</OnTextChanged>
 				</Scripts>
 			</EditBox>
 			<!-- Table headers -->
-			<Button name="$parentNameColumnHeader" inherits="ATemplatesColumnHeaderTemplate" text="NAME">
+			<Button name="EPGPListingNameColumnHeader" inherits="ATemplatesColumnHeaderTemplate" text="NAME">
+				<Size>
+					<AbsDimension x="111" y="24"/>
+				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<OffSet>
-							<AbsDimension x="20" y="-70"/>
+							<AbsDimension x="19" y="-70"/>
 						</OffSet>
 					</Anchor>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						ATemplates_SetColumnWidth(this, 106)
-					</OnLoad>
 					<OnClick>
 						EPGP.db.profile.comparator_name = "NAME"
-						EPGP_UI:UpdateListing()
+						EPGP_UI.UpdateListing()
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentEPColumnHeader" inherits="ATemplatesColumnHeaderTemplate" text="EP">
+			<Button name="EPGPListingEPColumnHeader" inherits="ATemplatesColumnHeaderTemplate" text="EP">
+				<Size>
+					<AbsDimension x="64" y="24"/>
+				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentNameColumnHeader" relativePoint="TOPRIGHT"/>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingNameColumnHeader" relativePoint="TOPRIGHT"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						ATemplates_SetColumnWidth(this, 64)
-					</OnLoad>
 					<OnClick>
 						EPGP.db.profile.comparator_name = "EP"
-						EPGP_UI:UpdateListing()
+						EPGP_UI.UpdateListing()
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentGPColumnHeader" inherits="ATemplatesColumnHeaderTemplate" text="GP">
+			<Button name="EPGPListingGPColumnHeader" inherits="ATemplatesColumnHeaderTemplate" text="GP">
+				<Size>
+					<AbsDimension x="64" y="24"/>
+				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentEPColumnHeader" relativePoint="TOPRIGHT"/>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEPColumnHeader" relativePoint="TOPRIGHT"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						ATemplates_SetColumnWidth(this, 64)
-					</OnLoad>
 					<OnClick>
 						EPGP.db.profile.comparator_name = "GP"
-						EPGP_UI:UpdateListing()
+						EPGP_UI.UpdateListing()
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentPRColumnHeader" inherits="ATemplatesColumnHeaderTemplate" text="PR">
+			<Button name="EPGPListingPRColumnHeader" inherits="ATemplatesColumnHeaderTemplate" text="PR">
+				<Size>
+					<AbsDimension x="64" y="24"/>
+				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentGPColumnHeader" relativePoint="TOPRIGHT"/>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingGPColumnHeader" relativePoint="TOPRIGHT"/>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
-						ATemplates_SetColumnWidth(this, 64)
-					</OnLoad>
 					<OnClick>
 						EPGP.db.profile.comparator_name = "PR"
-						EPGP_UI:UpdateListing()
+						EPGP_UI.UpdateListing()
 					</OnClick>
 				</Scripts>
 			</Button>
-			<ScrollFrame name="$parentTableScrollFrame" inherits="UIPanelScrollFrameTemplate2">
+			<ScrollFrame name="EPGPScrollFrame" inherits="FauxScrollFrameTemplate">
 				<Size>
 					<AbsDimension x="296" y="256"/>
 				</Size>
@@ -222,23 +222,90 @@
 						</OffSet>
 					</Anchor>
 				</Anchors>
-				<OnLoad>
-					getglobal(this:GetName().."Top"):SetHeight(100)
-					getglobal(this:GetName().."Bottom"):SetHeight(100)
-				</OnLoad>
-				<ScrollChild>
-					<Frame name="EPGPListingFrame">
-						<Scripts>
-							<OnLoad>
-								this:SetWidth(this:GetParent():GetWidth())
-							</OnLoad>
-							<OnShow>
-								EPGP_UI:UpdateListing()
-							</OnShow>
-						</Scripts>
-					</Frame>
-				</ScrollChild>
+				<Scripts>
+					<OnVerticalScroll>
+						FauxScrollFrame_OnVerticalScroll(16, EPGP_UI.UpdateListing)
+					</OnVerticalScroll>
+					<OnShow>
+						EPGP_UI.UpdateListing()
+					</OnShow>
+				</Scripts>
 			</ScrollFrame>
+			<Button name="EPGPListingEntry1" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingNameColumnHeader" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry2" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry1" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry3" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry2" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry4" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry3" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry5" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry4" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry6" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry5" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry7" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry6" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry8" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry7" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry9" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry8" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry10" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry9" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry11" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry10" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry12" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry11" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry13" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry12" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry14" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry13" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
+			<Button name="EPGPListingEntry15" inherits="EPGPListingRowTemplate"> 
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="EPGPListingEntry14" relativePoint="BOTTOMLEFT"/>
+				</Anchors>
+			</Button>
 			<EditBox name="$parentInputBox" inherits="InputBoxTemplate" autoFocus="false">
 				<Size>
 					<AbsDimension x="48" y="32"/>
@@ -265,7 +332,7 @@
 						<Anchors>
 							<Anchor point="TOPLEFT" relativePoint="BOTTOMLEFT">
 								<OffSet>
-									<AbsDimension x="-20" y="0"/>
+									<AbsDimension x="-20" y="5"/>
 								</OffSet>
 							</Anchor>
 						</Anchors>
@@ -317,7 +384,11 @@
 					<AbsDimension x="48" y="32"/>
 				</Size>
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parentInputBoxAddButton" relativePoint="BOTTOMLEFT" />
+					<Anchor point="TOPLEFT" relativeTo="$parentInputBoxAddButton" relativePoint="BOTTOMLEFT" >
+						<OffSet>
+							<AbsDimension x="0" y="5"/>
+						</OffSet>
+					</Anchor>
 				</Anchors>
 				<Scripts>
 					<OnClick>
@@ -396,7 +467,7 @@
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<OffSet>
-								<AbsDimension x="15" y="-328"/>
+								<AbsDimension x="15" y="-334"/>
 							</OffSet>
 						</Anchor>
 					</Anchors>
