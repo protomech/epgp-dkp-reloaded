@@ -172,7 +172,7 @@
 						<Anchor point="BOTTOMRIGHT"/>
 					</Anchors>
 				</Texture>
-				<FontString name="$parentTitleText" inherits="GameFontNormal" text="EPGP">
+				<FontString name="$parentTitleText" inherits="GameFontNormal" text="">
 					<Anchors>
 						<Anchor point="CENTER">
 							<Offset>

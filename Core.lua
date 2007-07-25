@@ -32,6 +32,7 @@ EPGP:RegisterDefaults("profile", {
 })
 
 function EPGP:OnInitialize()
+  EPGPFrameTitleText:SetText(GetAddOnMetadata("epgp", "Title").." "..GetAddOnMetadata("epgp", "Version"))
   self:RegisterChatCommand({ "/epgp" }, {
     type = "group",
     desc = L["EPGP Options"],
