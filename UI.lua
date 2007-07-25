@@ -164,7 +164,7 @@ function EPGP_UI.UpdateListing()
   local frame = getglobal("EPGPScrollFrame")
   local backend = EPGP:GetModule("EPGP_Backend")
   local t = EPGP_UI:GetListingForListingFrame()
-  EPGP:Print("repaint")
+
   local scrollbar_shown = FauxScrollFrame_Update(EPGPScrollFrame, #t, 15, 16)--, "EPGPListingEntry", 298, 330)
   if (scrollbar_shown) then
     EPGPListingNameColumnHeader:SetWidth(111)
