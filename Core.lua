@@ -26,7 +26,6 @@ EPGP:RegisterDefaults("profile", {
   flat_credentials = false,
   min_eps = 1000,
   decay_percent = 10,
-  group_by_class = false,
   backup_notes = {},
   recurring_ep_period = 15 * 60,
 })
