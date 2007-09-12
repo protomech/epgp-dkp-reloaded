@@ -34,9 +34,76 @@ local ILVL_TO_IVALUE = {
   [4] = function(ilvl) return (ilvl - 1.3) / 1.3 end,     -- Purple
 }
 
+--Used to display GP values directly on tier tokens
+local CUSTOM_ITEM_DATA = {
+  -- Tier 4
+  ["29753"] = { 4, 120, "INVTYPE_CHEST" },
+  ["29754"] = { 4, 120, "INVTYPE_CHEST" },
+  ["29755"] = { 4, 120, "INVTYPE_CHEST" },
+  ["29756"] = { 4, 120, "INVTYPE_HAND" },
+  ["29757"] = { 4, 120, "INVTYPE_HAND" },
+  ["29758"] = { 4, 120, "INVTYPE_HAND" },
+  ["29759"] = { 4, 120, "INVTYPE_HEAD" },
+  ["29760"] = { 4, 120, "INVTYPE_HEAD" },
+  ["29761"] = { 4, 120, "INVTYPE_HEAD" },
+  ["29762"] = { 4, 120, "INVTYPE_SHOULDER" },
+  ["29763"] = { 4, 120, "INVTYPE_SHOULDER" },
+  ["29764"] = { 4, 120, "INVTYPE_SHOULDER" },
+  ["29765"] = { 4, 120, "INVTYPE_LEGS" },
+  ["29766"] = { 4, 120, "INVTYPE_LEGS" },
+  ["29767"] = { 4, 120, "INVTYPE_LEGS" },
+
+  -- Tier 5
+  ["30236"] = { 4, 133, "INVTYPE_CHEST" },
+  ["30237"] = { 4, 133, "INVTYPE_CHEST" },
+  ["30238"] = { 4, 133, "INVTYPE_CHEST" },
+  ["30239"] = { 4, 133, "INVTYPE_HAND" },
+  ["30240"] = { 4, 133, "INVTYPE_HAND" },
+  ["30241"] = { 4, 133, "INVTYPE_HAND" },
+  ["30242"] = { 4, 133, "INVTYPE_HEAD" },
+  ["30243"] = { 4, 133, "INVTYPE_HEAD" },
+  ["30244"] = { 4, 133, "INVTYPE_HEAD" },
+  ["30245"] = { 4, 133, "INVTYPE_LEGS" },
+  ["30246"] = { 4, 133, "INVTYPE_LEGS" },
+  ["30247"] = { 4, 133, "INVTYPE_LEGS" },
+  ["30248"] = { 4, 133, "INVTYPE_SHOULDER" },
+  ["30249"] = { 4, 133, "INVTYPE_SHOULDER" },
+  ["30250"] = { 4, 133, "INVTYPE_SHOULDER" },
+
+  -- Tier 6
+  ["31089"] = { 4, 146, "INVTYPE_CHEST" },
+  ["31090"] = { 4, 146, "INVTYPE_CHEST" },
+  ["31091"] = { 4, 146, "INVTYPE_CHEST" },
+  ["31092"] = { 4, 146, "INVTYPE_HAND" },
+  ["31093"] = { 4, 146, "INVTYPE_HAND" },
+  ["31094"] = { 4, 146, "INVTYPE_HAND" },
+  ["31095"] = { 4, 146, "INVTYPE_HEAD" },
+  ["31096"] = { 4, 146, "INVTYPE_HEAD" },
+  ["31097"] = { 4, 146, "INVTYPE_HEAD" },
+  ["31098"] = { 4, 146, "INVTYPE_LEGS" },
+  ["31099"] = { 4, 146, "INVTYPE_LEGS" },
+  ["31000"] = { 4, 146, "INVTYPE_LEGS" },
+  ["31001"] = { 4, 146, "INVTYPE_SHOULDER" },
+  ["31102"] = { 4, 146, "INVTYPE_SHOULDER" },
+  ["31003"] = { 4, 146, "INVTYPE_SHOULDER" },
+
+  -- Magtheridon's Head
+  ["32385"] = { 4, 125, "INVTYPE_FINGER" },
+
+  -- Kael'thas' Sphere
+  ["32405"] = { 4, 138, "INVTYPE_NECK" },
+}
+
 function mod:GetGPValue(itemLink)
   if not itemLink then return end
-  local name, link, rarity, level, minlevel, type, subtype, count, equipLoc = GetItemInfo(itemLink)
+  local _, _, rarity, level, _, _, _, _, equipLoc = GetItemInfo(itemLink)
+
+  -- Get the item ID to check against known token IDs
+  local _, _, itemID = string.find(itemLink, "^|c%x+|Hitem:([^:]+):.+|h%[.+%]")
+  -- Check to see if there is custom data for this item ID
+  if CUSTOM_ITEM_DATA[itemID] then
+    rarity, level, equipLoc = unpack(CUSTOM_ITEM_DATA[itemID])
+  end
   local islot_mod = EQUIPSLOT_VALUE[equipLoc]
   if not islot_mod then return end
   local ilvl2ivalue = ILVL_TO_IVALUE[rarity]
