@@ -4,6 +4,7 @@ if #arg < 2 then
   print("Usage: Babel.lua varname sourcefile ...\n"..
         "  varname - the variable name of the global table holding the translations\n"..
         "  sourcefile ... - the source files to scavenge for localized strings\n")
+  return
 end
 
 -- The first arg is the global variable to use for the global table
@@ -30,11 +31,6 @@ do
   strings = t
 end
 table.sort(strings)
-
--- Now make it unique
-for i,w in pairs(strings) do
-  
-end
 
 local languages = {
   "enUS",
