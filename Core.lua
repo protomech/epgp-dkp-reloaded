@@ -23,6 +23,7 @@ EPGP:RegisterDefaults("profile", {
   dummies = {},
   data = {},
   info = {},
+  base_gp = 0,
   flat_credentials = false,
   min_eps = 1000,
   decay_percent = 10,

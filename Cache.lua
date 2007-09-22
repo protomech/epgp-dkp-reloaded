@@ -44,7 +44,14 @@ function mod:LoadConfig()
         if mep and mep >= 0 then EPGP.db.profile.min_eps = mep
         else EPGP:Print(L["Min EPs should be a positive number"]) end
       end
-
+      
+      -- Base GP
+      local bgp = tonumber(line:match("@BASE_GP:(%d+)"))
+      if bgp then
+        if bgp and bgp >= 0 then EPGP.db.profile.base_gp = bgp
+        else EPGP:Print(L["Base GP should be a positive number"]) end
+      end
+      
       -- Flat Credentials
       local fc = line:match("@FC")
       if fc then EPGP.db.profile.flat_credentials = true end
@@ -86,8 +93,6 @@ function mod:GetMemberEPGP(name)
   local t = GetMemberData(self, name)
   if not t then
     return
-  elseif not t[1] then
-    return 0,0
   else
     return unpack(t)
   end
@@ -111,14 +116,15 @@ function mod:SetMemberEPGP(name, ep, gp)
 end
 
 local function ParseNote(note)
-  if note == "" then return 0, 0 end
+  if note == "" then return 0, EPGP.db.profile.base_gp end
   local ep, tep, gp, tgp = string.match(note, "^(%d+)|(%d+)|(%d+)|(%d+)$")
+  tgp = tgp + EPGP.db.profile.base_gp
   if ep then
     return tonumber(ep) + tonumber(tep), tonumber(gp) + tonumber(tgp)
   end
 
   ep, gp = string.match(note, "^(%d+)|(%d+)$")
-  return tonumber(ep), tonumber(gp)
+  return tonumber(ep), tonumber(gp) + EPGP.db.profile.base_gp
 end
 
 function mod:LoadRoster()
@@ -148,6 +154,8 @@ function mod:LoadRoster()
 end
 
 local function EncodeNote(ep, gp)
+  gp = gp - EPGP.db.profile.base_gp
+  if gp < 0 then gp = 0 end
   return string.format("%d|%d|%d|%d", 0, ep, 0, gp)
 end
 
