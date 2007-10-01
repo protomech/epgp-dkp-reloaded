@@ -184,7 +184,15 @@ end
 function mod:Report(fmt, ...)
   if EPGP.db.profile.report_channel ~= "NONE" then
     local msg = string.format(fmt, ...)
-    SendChatMessage(msg, EPGP.db.profile.report_channel)
+    local str = "EPGP:"
+    for _,s in pairs({strsplit(" ", msg)}) do
+      if #str + #s >= 255 then
+	      SendChatMessage(str, EPGP.db.profile.report_channel)
+	      str = "EPGP:"
+      end
+      str = str .. " " .. s
+    end
+    SendChatMessage(str, EPGP.db.profile.report_channel)
   end
 end
 
