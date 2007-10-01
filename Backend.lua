@@ -26,15 +26,33 @@ local function RaidIterator(obj, i)
   return i+1, name
 end
 
+local function GuildOnlineIterator(obj, i)
+  local name, online
+  repeat
+    name, _, _, _, _, _, _, _, online = GetGuildRosterInfo(i)
+    i = i + 1
+  until not name or online
+  -- Handle dummies
+  if obj.cache:IsDummy(name) then
+    name = EPGP.db.profile.dummies[name]
+  end
+
+  if not name then return end
+  return i, name
+end
+
 local ITERATORS = {
   ["GUILD"] = GuildIterator,
   ["RAID"] = RaidIterator,
+  ["GUILD_ONLINE_LABEL"] = GuildOnlineIterator,
 }
 
 local LISTING_IDS = {
   "GUILD",
   "RAID",
+  "GUILD_ONLINE_LABEL",
 }
+
 function mod:GetListingIDs()
   return LISTING_IDS
 end
@@ -165,9 +183,8 @@ end
 
 function mod:Report(fmt, ...)
   if EPGP.db.profile.report_channel ~= "NONE" then
-    -- FIXME: Chop-off message to 255 character chunks as necessary
     local msg = string.format(fmt, ...)
-    SendChatMessage("EPGP: " .. msg, EPGP.db.profile.report_channel)
+    SendChatMessage(msg, EPGP.db.profile.report_channel)
   end
 end
 

@@ -15,6 +15,9 @@ EPGP:RegisterDefaults("profile", {
   GUILD = {
     show_alts = false,
   },
+  GUILD_ONLINE_LABEL = {
+    show_alts = true,
+  },
   gp_in_tooltips = true,
   master_loot_popup = true,
   master_loot_popup_quality_threshold = 2, -- Rare and above
