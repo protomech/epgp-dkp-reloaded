@@ -129,7 +129,7 @@ local function ParseNote(note)
   end
 
   -- Nothing works just return 0|BaseGP
-  return 0, EPGP.db.profile.base_gp end
+  return 0, EPGP.db.profile.base_gp
 end
 
 function mod:LoadRoster()
