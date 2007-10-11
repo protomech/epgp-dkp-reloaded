@@ -118,9 +118,8 @@ end
 local function ParseNote(note)
   if note == "" then return 0, EPGP.db.profile.base_gp end
   local ep, tep, gp, tgp = string.match(note, "^(%d+)|(%d+)|(%d+)|(%d+)$")
-  tgp = tgp + EPGP.db.profile.base_gp
   if ep then
-    return tonumber(ep) + tonumber(tep), tonumber(gp) + tonumber(tgp)
+    return tonumber(ep) + tonumber(tep), tonumber(gp) + tonumber(tgp) + EPGP.db.profile.base_gp
   end
 
   ep, gp = string.match(note, "^(%d+)|(%d+)$")
