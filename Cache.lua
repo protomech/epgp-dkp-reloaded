@@ -116,14 +116,20 @@ function mod:SetMemberEPGP(name, ep, gp)
 end
 
 local function ParseNote(note)
-  if note == "" then return 0, EPGP.db.profile.base_gp end
+  -- Parse old format ep|tep|gp|tgp
   local ep, tep, gp, tgp = string.match(note, "^(%d+)|(%d+)|(%d+)|(%d+)$")
   if ep then
     return tonumber(ep) + tonumber(tep), tonumber(gp) + tonumber(tgp) + EPGP.db.profile.base_gp
   end
 
+  -- Parse new format ep|gp
   ep, gp = string.match(note, "^(%d+)|(%d+)$")
-  return tonumber(ep), tonumber(gp) + EPGP.db.profile.base_gp
+  if ep then
+    return tonumber(ep), tonumber(gp) + EPGP.db.profile.base_gp
+  end
+
+  -- Nothing works just return 0|BaseGP
+  return 0, EPGP.db.profile.base_gp end
 end
 
 function mod:LoadRoster()
