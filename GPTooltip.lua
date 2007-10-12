@@ -89,6 +89,7 @@ local CUSTOM_ITEM_DATA = {
 
   -- Magtheridon's Head
   ["32385"] = { 4, 125, "INVTYPE_FINGER" },
+  ["32386"] = { 4, 125, "INVTYPE_FINGER" },
 
   -- Kael'thas' Sphere
   ["32405"] = { 4, 138, "INVTYPE_NECK" },
