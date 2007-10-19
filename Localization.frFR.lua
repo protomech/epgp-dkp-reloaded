@@ -9,6 +9,7 @@ EPGPGlobalStrings = {
 	["Awarding %d EPs/%s to %s."] = "Awarding %d EPs/%s to %s.",
 	["Backed up Officer and Public notes."] = "Notes publiques et notes d'officier sauvegardées.",
 	["Backup"] = "Sauvegarder",
+	["Base GP should be a positive number"] = "Base GP should be a positive number",
 	["Click to set recurring award period."] = "Click to set recurring award period.",
 	["Click to stop recurring award."] = "Click to stop recurring award.",
 	["Credit GP"] = "Crediter GP",
