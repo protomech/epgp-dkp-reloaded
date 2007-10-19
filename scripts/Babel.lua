@@ -1,3 +1,5 @@
+#!/usr/bin/env lua5.1
+
 local strings = {}
 
 if #arg < 2 then
