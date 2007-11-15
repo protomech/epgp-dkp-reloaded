@@ -69,6 +69,16 @@ local CUSTOM_ITEM_DATA = {
   ["30248"] = { 4, 133, "INVTYPE_SHOULDER" },
   ["30249"] = { 4, 133, "INVTYPE_SHOULDER" },
   ["30250"] = { 4, 133, "INVTYPE_SHOULDER" },
+  
+  -- Tier 5 - BoE recipes - BoP crafts
+  ["30282"] = { 4, 128, "INVTYPE_BOOTS" },
+  ["30283"] = { 4, 128, "INVTYPE_BOOTS" },
+  ["30305"] = { 4, 128, "INVTYPE_BOOTS" },
+  ["30306"] = { 4, 128, "INVTYPE_BOOTS" },
+  ["30307"] = { 4, 128, "INVTYPE_BOOTS" },
+  ["30308"] = { 4, 128, "INVTYPE_BOOTS" },
+  ["30323"] = { 4, 128, "INVTYPE_BOOTS" },
+  ["30324"] = { 4, 128, "INVTYPE_BOOTS" },
 
   -- Tier 6
   ["31089"] = { 4, 146, "INVTYPE_CHEST" },
@@ -86,6 +96,16 @@ local CUSTOM_ITEM_DATA = {
   ["31001"] = { 4, 146, "INVTYPE_SHOULDER" },
   ["31102"] = { 4, 146, "INVTYPE_SHOULDER" },
   ["31003"] = { 4, 146, "INVTYPE_SHOULDER" },
+  
+  -- Tier 6 - BoE recipes - BoP crafts
+  ["32737"] = { 4, 141, "INVTYPE_SHOULDER" },
+  ["32739"] = { 4, 141, "INVTYPE_SHOULDER" },
+  ["32745"] = { 4, 141, "INVTYPE_SHOULDER" },
+  ["32747"] = { 4, 141, "INVTYPE_SHOULDER" },
+  ["32749"] = { 4, 141, "INVTYPE_SHOULDER" },
+  ["32751"] = { 4, 141, "INVTYPE_SHOULDER" },
+  ["32753"] = { 4, 141, "INVTYPE_SHOULDER" },
+  ["32755"] = { 4, 141, "INVTYPE_SHOULDER" },
 
   -- Magtheridon's Head
   ["32385"] = { 4, 125, "INVTYPE_FINGER" },
