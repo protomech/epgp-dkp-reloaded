@@ -186,7 +186,7 @@ function mod:Report(fmt, ...)
     local msg = string.format(fmt, ...)
     local str = "EPGP:"
     for _,s in pairs({strsplit(" ", msg)}) do
-      if #str + #s >= 255 then
+      if #str + #s >= 250 then
 	      SendChatMessage(str, EPGP.db.profile.report_channel)
 	      str = "EPGP:"
       end
