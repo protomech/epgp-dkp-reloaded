@@ -222,9 +222,11 @@ function mod:DecayEPGP()
     local name = GetGuildRosterInfo(i)
     if not self.cache:IsAlt(name) then
       local ep, gp = self.cache:GetMemberEPGP(name)
-      ep = math.floor(ep * factor)
-      gp = math.floor(gp * factor)
-      self.cache:SetMemberEPGP(name, ep, gp)
+      if ep then
+        ep = math.floor(ep * factor)
+        gp = math.floor(gp * factor)
+        self.cache:SetMemberEPGP(name, ep, gp)
+      end
     end
   end
   self.cache:SaveRoster()
