@@ -77,7 +77,5 @@ function EPGP:OnEnable()
   -- Set shift-E as the toggle button if it is not bound
   if #GetBindingAction("J") == 0 then
     SetBinding("J", "EPGP")
-    -- Save to character bindings
-    SaveBindings(2)
   end
 end
