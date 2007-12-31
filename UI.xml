@@ -139,10 +139,14 @@
 						this:SetText("Search")
 					</OnShow>
 					<OnEditFocusGained>
-						this:SetText("")
+					        if this:GetText() == "Search" then
+							this:SetText("")
+						end
 					</OnEditFocusGained>
 					<OnEditFocusLost>
-						this:SetText("Search")
+						if this:GetText() == "" then
+							this:SetText("Search")
+						end
 					</OnEditFocusLost>
 					<OnTextChanged>
 						EPGP_UI.UpdateListing()
