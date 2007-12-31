@@ -237,6 +237,9 @@ function mod:AddEP2Member(name, points)
   assert(type(name) == "string")
   if type(points) == "number" then
     local ep, gp = self.cache:GetMemberEPGP(name)
+    if ep + points < 0 then
+       points = 0 - ep
+    end
     self.cache:SetMemberEPGP(name, ep+points, gp)
     self.cache:SaveRoster()
     self:Report(L["Awarded %d EPs to %s."], points, name)
@@ -308,7 +311,7 @@ function mod:AddEP2List(list_name, points, exclude_map)
       if ep and gp then -- If the member is not in the guild we get nil
         -- Don't add EP to alts if they are not shown in the UI
         if EPGP.db.profile[list_name].show_alts or not self.cache:IsAlt(name) then
-          self.cache:SetMemberEPGP(name, ep+points, gp)
+          self.cache:SetMemberEPGP(name, math.max(ep+points, 0), gp)
         end
       end
     end
@@ -357,7 +360,7 @@ function mod:AddGP2Member(name, points)
   if type(points) == "number" then
     assert(type(name) == "string")
     local ep, gp = self.cache:GetMemberEPGP(name)
-    self.cache:SetMemberEPGP(name, ep, gp+points)
+    self.cache:SetMemberEPGP(name, ep, math.max(gp+points, 0))
     self.cache:SaveRoster()
     self:Report(L["Credited %d GPs to %s."], points, name)
   else
