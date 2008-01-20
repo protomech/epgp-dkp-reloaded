@@ -176,7 +176,7 @@ function mod:SaveRoster()
       if ep then
         local new_officernote = EncodeNote(ep, tep, gp, tgp)
         if new_officernote ~= officernote then
-          --GuildRosterSetOfficerNote(i, new_officernote)
+          GuildRosterSetOfficerNote(i, new_officernote)
         end
       end
     end
