@@ -328,6 +328,11 @@ end
 function mod:AddEP2Raid(reason, points)
   assert(type(reason) == "string")
 
+  if self:IsHooked("ChatFrame_MessageEventHandler") then
+    EPGP:Print("Please wait for current standby EPs to be awarded before the next award")
+    return
+  end
+
   if type(points) ~= "number" then
     self.popup_modify_epgp_data.func = mod.AddEP2Raid
     self.popup_modify_epgp_data.member = nil
@@ -349,8 +354,9 @@ function mod:AddEP2Raid(reason, points)
       end
     end
     self:Report(L["Awarded %d EP to raid (%s)."], points, reason)
-    self:Report(L["Whisper 'ep' or your main toon's name to receive EPs for %s"],
+    self:Report(L["Whisper 'ep' or your main toon's name to receive standby EPs for %s"],
                 reason)
+
     self:SecureHook("ChatFrame_MessageEventHandler", "AcceptEPWhisperHandler")
     self:ScheduleEvent("EPGP_ACCEPT_WHISPER_TIMEOUT",
                        self.AcceptWhisperHandlerTimeout, 60, self, reason)

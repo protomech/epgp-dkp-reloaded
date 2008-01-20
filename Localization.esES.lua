@@ -62,5 +62,5 @@ EPGPGlobalStrings = {
 	["The current frame standings in HTML."] = "Lista de prioridad de la ventana actual en formato HTML.",
 	["The current frame standings in plain text."] = "Lista de prioridad de la ventana actual en formato texto.",
 	["Toggle EPGP UI"] = "Activar/Desactivar el interfaz",
-	["Whisper 'ep' or your main toon's name to receive EPs for %s"] = "Whisper 'ep' or your main toon's name to receive EPs for %s",
+	["Whisper 'ep' or your main toon's name to receive standby EPs for %s"] = "Whisper 'ep' or your main toon's name to receive standby EPs for %s",
 }

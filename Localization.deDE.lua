@@ -62,5 +62,5 @@ EPGPGlobalStrings = {
 	["The current frame standings in HTML."] = "Die momentane Gesamtwertung in HTML.",
 	["The current frame standings in plain text."] = "Die momentane Gesamtwertung als Text.",
 	["Toggle EPGP UI"] = "EPGP UI An-/Ausschalten",
-	["Whisper 'ep' or your main toon's name to receive EPs for %s"] = "Whisper 'ep' or your main toon's name to receive EPs for %s",
+	["Whisper 'ep' or your main toon's name to receive standby EPs for %s"] = "Whisper 'ep' or your main toon's name to receive standby EPs for %s",
 }
