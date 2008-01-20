@@ -19,8 +19,11 @@ EPGP:RegisterDefaults("profile", {
     show_alts = true,
   },
   gp_in_tooltips = true,
-  master_loot_popup = true,
-  master_loot_popup_quality_threshold = 2, -- Rare and above
+  boss_tracking = true,
+  loot_tracking = true,
+  loot_tracking_quality_threshold = 4, -- Epic and above
+  loot_announce = true,
+  reason_award_cache = {},
   alts = {},
   outsiders = {},
   dummies = {},

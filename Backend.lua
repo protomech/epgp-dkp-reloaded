@@ -1,6 +1,6 @@
 local L = EPGPGlobalStrings
 
-local mod = EPGP:NewModule("EPGP_Backend", "AceEvent-2.0")
+local mod = EPGP:NewModule("EPGP_Backend", "AceEvent-2.0", "AceHook-2.1")
 
 local function OnStaticPopupHide()
 	if ChatFrameEditBox:IsShown() then
@@ -26,32 +26,26 @@ local function RaidIterator(obj, i)
   return i+1, name
 end
 
-local function GuildOnlineIterator(obj, i)
-  local name, online
-  repeat
-    name, _, _, _, _, _, _, _, online = GetGuildRosterInfo(i)
-    i = i + 1
-  until not name or online
-  -- Handle dummies
-  if obj.cache:IsDummy(name) then
-    name = EPGP.db.profile.dummies[name]
-  end
-
-  if not name then return end
-  return i, name
-end
-
 local ITERATORS = {
   ["GUILD"] = GuildIterator,
   ["RAID"] = RaidIterator,
-  ["GUILD_ONLINE_LABEL"] = GuildOnlineIterator,
 }
 
 local LISTING_IDS = {
   "GUILD",
   "RAID",
-  "GUILD_ONLINE_LABEL",
 }
+
+local function IsValidEPValue(value)
+  assert(type(value) == "number")
+  return value > -100000 and value < 100000 and value ~= 0
+end
+
+local function IsValidGPValue(value)
+  assert(type(value) == "number")
+  return value > -10000 and value < 10000 and value ~= 0
+end
+
 
 function mod:GetListingIDs()
   return LISTING_IDS
@@ -59,6 +53,8 @@ end
 
 function mod:OnInitialize()
   self.cache = EPGP:GetModule("EPGP_Cache")
+  self.gptooltip = EPGP:GetModule("EPGP_GPTooltip")
+
   StaticPopupDialogs["EPGP_RESET_EPGP"] = {
     text = L["Reset all EP and GP to 0 and make officer notes readable by all?"],
     button1 = ACCEPT,
@@ -99,7 +95,14 @@ function mod:OnInitialize()
     button2 = CANCEL,
     timeout = 0,
     OnShow = function()
+      local data = self.popup_modify_epgp_data
       local editBox = getglobal(this:GetName().."EditBox")
+      if self.gptooltip:GetGPValue(data.reason) then
+        editBox:SetText(self.gptooltip:GetGPValue(data.reason))
+      elseif EPGP.db.profile.reason_award_cache[data.reason] then
+        editBox:SetText(EPGP.db.profile.reason_award_cache[data.reason])
+      end
+      editBox:HighlightText()
       editBox:SetFocus()
     end,
     OnHide = OnStaticPopupHide,
@@ -108,7 +111,12 @@ function mod:OnInitialize()
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
       if not data.valid_func or data.valid_func(number) then
-        data.func(mod, data.member, number)
+        EPGP.db.profile.reason_award_cache[data.reason] = number
+        if data.member then
+          data.func(mod, data.member, data.reason, number)
+        else
+          data.func(mod, data.reason, number)
+        end
       end
     end,
     EditBoxOnEnterPressed = function()
@@ -116,7 +124,12 @@ function mod:OnInitialize()
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
       if not data.valid_func or data.valid_func(number) then
-        data.func(mod, data.member, number)
+        EPGP.db.profile.reason_award_cache[data.reason] = number
+        if data.member then
+          data.func(mod, data.member, data.reason, number)
+        else
+          data.func(mod, data.reason, number)
+        end
         this:GetParent():Hide()
       end
     end,
@@ -138,28 +151,14 @@ function mod:OnInitialize()
     hasEditBox = 1,
     whileDead = 1,
   }
-  self.popup_unzoned_members_data = {}
-  StaticPopupDialogs["EPGP_UNZONED_MEMBERS_POPUP"] = {
-    text = L["Do you want to include members not in %s in the award? (%s)"],
-    button1 = YES,
-    button2 = NO,
-    timeout = 0,
-    OnAccept = function()
-      local data = self.popup_unzoned_members_data
-      data.func(mod, data.list_name, data.points, {})
-    end,
-    OnCancel = function()
-      local data = self.popup_unzoned_members_data
-      data.func(mod, data.list_name, data.points, data.exclude_map)
-    end,
-    whileDead = 1,
-  }
 end
 
 function mod:OnEnable()
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("EPGP_CACHE_UPDATE")
   self:RegisterEvent("EPGP_STOP_RECURRING_EP_AWARDS")
+  self:RegisterEvent("EPGP_BOSS_KILLED")
+  self:RegisterEvent("EPGP_LOOT_RECEIVED")
 end
 
 function mod:RAID_ROSTER_UPDATE()
@@ -171,6 +170,16 @@ end
 function mod:EPGP_CACHE_UPDATE()
   local guild_name = GetGuildInfo("player")
   if guild_name ~= EPGP:GetProfile() then EPGP:SetProfile(guild_name) end
+end
+
+function mod:EPGP_BOSS_KILLED(boss)
+  if not self:CanLogRaids() then return end
+  self:AddEP2Raid(boss)
+end
+
+function mod:EPGP_LOOT_RECEIVED(player, itemLink, quantity)
+  if not self:CanLogRaids() then return end
+  mod:AddGP2Member(player, itemLink)
 end
 
 function mod:CanLogRaids()
@@ -233,8 +242,9 @@ function mod:DecayEPGP()
   self:Report(L["Applied a decay of %d%% to EP and GP."], EPGP.db.profile.decay_percent)
 end
 
-function mod:AddEP2Member(name, points)
+function mod:AddEP2Member(name, reason, points, silent)
   assert(type(name) == "string")
+  assert(type(reason) == "string")
   if type(points) == "number" then
     local ep, gp = self.cache:GetMemberEPGP(name)
     if ep + points < 0 then
@@ -242,111 +252,128 @@ function mod:AddEP2Member(name, points)
     end
     self.cache:SetMemberEPGP(name, ep+points, gp)
     self.cache:SaveRoster()
-    self:Report(L["Awarded %d EPs to %s."], points, name)
+    if not silent then
+      self:Report(L["Awarded %d EPs to %s (%s)."], points, name, reason)
+    end
   else
     self.popup_modify_epgp_data.func = mod.AddEP2Member
     self.popup_modify_epgp_data.member = name
-    self.popup_modify_epgp_data.valid_func = function(n) return n > -10000 and n < 10000 and n ~= 0 end    
-    StaticPopup_Show("EPGP_MODIFY_EPGP", string.format(L["Award EP to %s"], name), popup_modify_epgp_data)
+    self.popup_modify_epgp_data.reason = reason
+    self.popup_modify_epgp_data.valid_func = IsValidEPValue
+    StaticPopup_Show("EPGP_MODIFY_EPGP", L["Award EP to %s (%s)"]:format(name, reason), popup_modify_epgp_data)
   end
 end
 
-function mod:SetEPMember(name, points)
+function mod:SetEPMember(name, reason, points)
   assert(type(name) == "string")
   if type(points) == "number" then
     local ep, gp = self.cache:GetMemberEPGP(name)
     self.cache:SetMemberEPGP(name, points, gp)
     self.cache:SaveRoster()
-    self:Report(L["Set EPs for %s to %d."], name, points)
+    self:Report(L["Set EPs for %s to %d (%s)."], name, points)
   else
     self.popup_modify_epgp_data.func = mod.SetEPMember
     self.popup_modify_epgp_data.member = name
-    self.popup_modify_epgp_data.valid_func = function(n) return n > 0 and n < 10000000 end    
-    StaticPopup_Show("EPGP_MODIFY_EPGP", string.format(L["Set EP for %s"], name), popup_modify_epgp_data)
+    self.popup_modify_epgp_data.reason = reason
+    self.popup_modify_epgp_data.valid_func = IsValidEPValue
+    StaticPopup_Show("EPGP_MODIFY_EPGP", L["Set EP for %s (%s)"]:format(name, reason), popup_modify_epgp_data)
   end
 end
 
-function mod:CheckUnzonedInRaid(func, list_name, points)
-  assert(UnitInRaid("Player"))
-  local t = {}
-  for i = 1, GetNumRaidMembers() do
-    local name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML = GetRaidRosterInfo(i)
-    if zone ~= GetRealZoneText() then
-      table.insert(t, name)
-    end
-  end
-
-  if #t > 0 then
-    -- initialize the exclude map
-    local exclude_map = {}
-    for i,name in pairs(t) do
-      exclude_map[name] = true
-    end
-
-    self.popup_unzoned_members_data.func = func
-    self.popup_unzoned_members_data.points = points
-    self.popup_unzoned_members_data.list_name = list_name
-    self.popup_unzoned_members_data.exclude_map = exclude_map
-
-    StaticPopup_Show("EPGP_UNZONED_MEMBERS_POPUP", GetRealZoneText(), table.concat(t, ", "))
-  else
-    func(mod, list_name, points, t) -- t is empty here
-  end
-end
-
-function mod:AddEP2List(list_name, points, exclude_map)
-  assert(type(list_name) == "string" and ITERATORS[list_name])
-  assert(type(points) == "number")
-
-  if list_name == "RAID" and not exclude_map then
-    mod:CheckUnzonedInRaid(mod.AddEP2List, list_name, points)
-    return
-  end
-
-  local members = {}
-  for i,name in ITERATORS[list_name],self,1 do
-    if not exclude_map or not exclude_map[name] then
-      table.insert(members, name)
-      local ep, gp = self.cache:GetMemberEPGP(name)
-      if ep and gp then -- If the member is not in the guild we get nil
-        -- Don't add EP to alts if they are not shown in the UI
-        if EPGP.db.profile[list_name].show_alts or not self.cache:IsAlt(name) then
-          self.cache:SetMemberEPGP(name, math.max(ep+points, 0), gp)
+local award_ep
+local award_reason
+local award_whispers
+function mod:AcceptEPWhisperHandler(event, ...)
+  if not award_ep then return end
+  if event == "CHAT_MSG_WHISPER" and
+    type(arg1) == "string" and type(arg2) == "string" then
+    local sender = arg2
+    local text = arg1
+    local player
+    if not text:find("%s") then
+      if text == "ep" then
+        player = sender
+      else
+        player = text:sub(1,1):upper()..text:sub(2):lower()
+      end
+      if not self.cache:GetInGuildName(player) then
+        SendChatMessage(L["%s is not eligible for EP award (%s)"]:format(player, award_reason),
+                        "WHISPER", nil, sender)
+      else
+        local awarded = self.cache:GetInGuildName(player)
+        if not award_whispers[awarded] then
+          award_whispers[awarded] = true
+          self:AddEP2Member(player, award_reason, award_ep)
+          SendChatMessage(L["Awarded %d EPs to %s (%s)"]:format(award_ep, player, award_reason),
+                          "WHISPER", nil, sender)
+        else
+          SendChatMessage(L["%s was already awarded EP (%s)"]:format(player, award_reason),
+                          "WHISPER", nil, sender)
         end
       end
     end
   end
-  self.cache:SaveRoster()
-  self:Report("Awarded %d EPs to %s.", points, table.concat(members, ", "))
 end
 
-function mod:RecurringEP2List(list_name, points)
-  -- TODO: Need different event for each list
-  assert(type(points) == "number")
-  if points == 0 then
-    self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
+function mod:AcceptWhisperHandlerTimeout(reason)
+  if self:IsHooked("ChatFrame_MessageEventHandler") then
+    self:Unhook("ChatFrame_MessageEventHandler")
+  end
+  self:Report(L["No longer accepting whispers for %s"], reason)
+  award_ep = nil
+  award_reason = nil
+  award_whispers = nil
+end
+
+function mod:AddEP2Raid(reason, points)
+  assert(type(reason) == "string")
+
+  if type(points) ~= "number" then
+    self.popup_modify_epgp_data.func = mod.AddEP2Raid
+    self.popup_modify_epgp_data.member = nil
+    self.popup_modify_epgp_data.reason = reason
+    self.popup_modify_epgp_data.valid_func = IsValidEPValue
+    StaticPopup_Show("EPGP_MODIFY_EPGP", L["Award EP to Raid (%s)"]:format(reason), popup_modify_epgp_data)
   else
-    self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2List, EPGP.db.profile.recurring_ep_period, self, list_name, points, {})
-    self:Report(L["Awarding %d EPs/%s to %s."], points, SecondsToTime(EPGP.db.profile.recurring_ep_period), getglobal(list_name))
+    award_ep = points
+    award_reason = reason
+    award_whispers = {}
+    for i = 1, GetNumRaidMembers() do
+      local player = select(1, GetRaidRosterInfo(i))
+      if self.cache:GetMemberEPGP(player) then
+        local awarded = self.cache:GetInGuildName(player)
+        if not award_whispers[awarded] then
+          award_whispers[awarded] = true
+          self:AddEP2Member(player, reason, points, true)
+        end
+      end
+    end
+    self:Report(L["Awarded %d EP to raid (%s)."], points, reason)
+    self:Report(L["Whisper 'ep' or your main toon's name to receive EPs for %s"],
+                reason)
+    self:SecureHook("ChatFrame_MessageEventHandler", "AcceptEPWhisperHandler")
+    self:ScheduleEvent("EPGP_ACCEPT_WHISPER_TIMEOUT",
+                       self.AcceptWhisperHandlerTimeout, 60, self, reason)
   end
 end
 
-function mod:DistributeEP2List(list_name, total_points, exclude_map)
-  assert(type(total_points) == "number")
+function mod:RecurringEP2Raid(reason, points)
+  assert(type(reason) == "string")
 
-  if list_name == "RAID" and not exclude_map then
-    mod:CheckUnzonedInRaid(mod.DistributeEP2List, list_name, total_points)
-    return
-  end
-
-  local count = 0
-  for i,name in ITERATORS[list_name],self,1 do
-    if not exclude_map or not exclude_map[name] then
-      count = count + 1
+  if type(points) ~= "number" then
+    self.popup_modify_epgp_data.func = mod.RecurringEP2Raid
+    self.popup_modify_epgp_data.member = nil
+    self.popup_modify_epgp_data.reason = reason
+    self.popup_modify_epgp_data.valid_func = IsValidEPValue
+    StaticPopup_Show("EPGP_MODIFY_EPGP", L["Recurring EP to Raid (%s)"]:format(reason), popup_modify_epgp_data)
+  else
+    if points == 0 then
+      self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
+    else
+      self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2Raid, EPGP.db.profile.recurring_ep_period, self, reason, points)
+      self:Report(L["Awarding %d EPs/%s (%s)."], points, SecondsToTime(EPGP.db.profile.recurring_ep_period), reason)
     end
   end
-  local points = math.floor(total_points / count)
-  self:AddEP2List(list_name, points, exclude_map)
 end
 
 function mod:EPGP_STOP_RECURRING_EP_AWARDS()
@@ -356,18 +383,25 @@ function mod:EPGP_STOP_RECURRING_EP_AWARDS()
   end
 end
 
-function mod:AddGP2Member(name, points)
+function mod:AddGP2Member(name, reason, points)
+  assert(type(name) == "string")
+  assert(type(reason) == "string" or type(reason) == "number")
+
+  if GetItemInfo(reason) then
+    reason = select(2, GetItemInfo(reason))
+  end
+
   if type(points) == "number" then
-    assert(type(name) == "string")
     local ep, gp = self.cache:GetMemberEPGP(name)
     self.cache:SetMemberEPGP(name, ep, math.max(gp+points, 0))
     self.cache:SaveRoster()
-    self:Report(L["Credited %d GPs to %s."], points, name)
+    self:Report(L["Credited %d GPs to %s (%s)."], points, name, reason)
   else
     self.popup_modify_epgp_data.func = mod.AddGP2Member
     self.popup_modify_epgp_data.member = name
-    self.popup_modify_epgp_data.valid_func = function(n) return n > -10000 and n < 10000 and n ~= 0 end    
-    StaticPopup_Show("EPGP_MODIFY_EPGP", string.format(L["Credit GP to %s"], name))
+    self.popup_modify_epgp_data.reason = reason
+    self.popup_modify_epgp_data.valid_func = IsValidGPValue
+    StaticPopup_Show("EPGP_MODIFY_EPGP", L["Credit GP to %s (%s)"]:format(name, reason))
   end
 end
 
@@ -377,12 +411,13 @@ function mod:SetGPMember(name, points)
     local ep, gp = self.cache:GetMemberEPGP(name)
     self.cache:SetMemberEPGP(name, ep, points)
     self.cache:SaveRoster()
-    self:Report(L["Set GPs for %s to %d."], name, points)
+    self:Report(L["Set GPs for %s to %d (%s)."], name, points, reason)
   else
     self.popup_modify_epgp_data.func = mod.SetGPMember
     self.popup_modify_epgp_data.member = name
-    self.popup_modify_epgp_data.valid_func = function(n) return n > 0 and n < 10000000 end    
-    StaticPopup_Show("EPGP_MODIFY_EPGP", string.format(L["Set GP for %s"], name), popup_modify_epgp_data)
+    self.popup_modify_epgp_data.reason = reason
+    self.popup_modify_epgp_data.valid_func = IsValueGPValue
+    StaticPopup_Show("EPGP_MODIFY_EPGP", L["Set GP for %s (%s)"]:format(name, reason), popup_modify_epgp_data)
   end
 end
 
@@ -426,7 +461,7 @@ local COMPARATORS = {
   ["PR"] = function(a,b) if AreSameTier(a[3], b[3]) then return a[5] > b[5] else return mod:IsBelowThreshold(b[3]) end end,
 }
 
--- list_names: GUILD, RAID, ZONE
+-- list_names: GUILD, RAID
 -- sort_on: NAME, EP, GP, PR
 -- show_alts: boolean
 -- search_str: string

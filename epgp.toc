@@ -20,10 +20,11 @@ Localization.zhCN.lua
 Localization.zhTW.lua
 
 Core.lua
+Boss.lua
 Cache.lua
 Backend.lua
 GPTooltip.lua
-MLPopup.lua
+Loot.lua
 OfficerNoteWarning.lua
 
 ATemplates.xml

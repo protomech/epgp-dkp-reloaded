@@ -11,7 +11,7 @@ EPGP_TEXT_EXPORT_HTML = L["Export to HTML"]
 EPGP_TEXT_EXPORT_TEXT = L["Export to text"]
 EPGP_TEXT_DECAY = L["Decay"]
 EPGP_TEXT_REPORT_CHANNEL = L["Report Channel"]
-EPGP_TEXT_MASTER_LOOT_QUALITY_THRESHOLD = L["Master Loot Quality Threshold"]
+EPGP_TEXT_LOOT_QUALITY_THRESHOLD = L["Loot Tracking Quality Threshold"]
 
 EPGP_UI = EPGP:NewModule("EPGP_UI", "AceEvent-2.0")
 
@@ -23,6 +23,7 @@ local function OnStaticPopupHide()
 end
 
 function EPGP_UI:OnInitialize()
+  self.backend = EPGP:GetModule("EPGP_Backend")
   UIPanelWindows["EPGPFrame"] = { area = "left", pushable = 1, whileDead = 1, }
   StaticPopupDialogs["EPGP_TEXT_EXPORT"] = {
     text = L["The current frame standings in plain text."],
@@ -110,6 +111,16 @@ end
 function EPGP_UI:OnEnable()
   self:RegisterEvent("EPGP_CACHE_UPDATE")
   self:RegisterEvent("RAID_ROSTER_UPDATE")
+  self:RegisterEvent("EPGP_BOSS_KILLED")
+  self:RegisterEvent("EPGP_ENTER_INSTANCE")
+end
+
+function EPGP_UI:EPGP_BOSS_KILLED(boss)
+  EPGPEPInputBox:SetText(boss)
+end
+
+function EPGP_UI:EPGP_ENTER_INSTANCE(instance)
+  EPGPEPInputBox:SetText(instance)
 end
 
 function EPGP_UI:SetRestoreButtonStatus(button)
@@ -127,12 +138,12 @@ function EPGP_UI:SetEPButtonStatus(button)
     return
   end
 
-  if button:GetParent():GetNumber() == 0 then
+  if #button:GetParent():GetText() == 0 then
     button:Disable()
     return
   end
 
-  if EPGP.db.profile.current_listing == "RAID" and not UnitInRaid("player") then
+  if not UnitInRaid("player") and IsRaidLeader("player") and self.backend:CanLogRaids() then
     button:Disable()
     return
   end
@@ -249,16 +260,6 @@ function EPGP_UI:Export2Text()
   return text
 end
 
-function EPGP_UI:AddEP2List(points)
-  assert(type(points) == "number")
-  EPGP:GetModule("EPGP_Backend"):AddEP2List(EPGP.db.profile.current_listing, points)
-end
-
-function EPGP_UI:DistributeEP2List(points)
-  assert(type(points) == "number")
-  EPGP:GetModule("EPGP_Backend"):DistributeEP2List(EPGP.db.profile.current_listing, points)
-end
-
 function EPGP_UI:RecurringEP2List(points)
   assert(type(points) == "number")
   EPGP:GetModule("EPGP_Backend"):RecurringEP2List(EPGP.db.profile.current_listing, points)
@@ -313,7 +314,7 @@ function EPGP_UI.ListingDropDown_Initialize()
 
   info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP:GetModule("EPGP_Backend"):AddEP2Member(ListingDropDown.member_name)
+    EPGP:GetModule("EPGP_Backend"):AddEP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
   end
   info.text = L["Award EP"]
   info.checked = nil
@@ -321,7 +322,7 @@ function EPGP_UI.ListingDropDown_Initialize()
 
   info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP:GetModule("EPGP_Backend"):AddGP2Member(ListingDropDown.member_name)
+    EPGP:GetModule("EPGP_Backend"):AddGP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
   end
   info.text = L["Credit GP"]
   info.checked = nil
@@ -329,7 +330,7 @@ function EPGP_UI.ListingDropDown_Initialize()
 
   info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP:GetModule("EPGP_Backend"):SetEPMember(ListingDropDown.member_name)
+    EPGP:GetModule("EPGP_Backend"):SetEPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
   end
   info.text = L["Set EP"]
   info.checked = nil
@@ -337,18 +338,18 @@ function EPGP_UI.ListingDropDown_Initialize()
 
   info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP:GetModule("EPGP_Backend"):SetGPMember(ListingDropDown.member_name)
+    EPGP:GetModule("EPGP_Backend"):SetGPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
   end
   info.text = L["Set GP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
 end
 
-function EPGP_UI.MasterLootQualityThreshold_Initialize()
+function EPGP_UI.LootTrackingQualityThreshold_Initialize()
   local info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP.db.profile.master_loot_popup_quality_threshold = this.value
-    UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.master_loot_popup_quality_threshold)
+    EPGP.db.profile.loot_tracking_quality_threshold = this.value
+    UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.loot_tracking_quality_threshold)
   end
   
   for i=2,#ITEM_QUALITY_COLORS do

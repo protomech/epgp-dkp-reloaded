@@ -12,5 +12,7 @@
 <Script file="Libs\AceDebug-2.0\AceDebug-2.0.lua"/>
 <Script file="Libs\AceLocale-2.2\AceLocale-2.2.lua"/>
 <Script file="Libs\Babble-Class-2.2\Babble-Class-2.2.lua"/>
+<Script file="Libs\Babble-Boss-2.2\Babble-Boss-2.2.lua"/>
+<Script file="Libs\Deformat-2.0\Deformat-2.0.lua"/>
 
 </Ui>

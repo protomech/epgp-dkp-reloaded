@@ -68,12 +68,16 @@ function mod:LoadConfig()
 end
 
 local function GetMemberData(obj, name)
-  if obj:IsOutsider(name) then
-    return EPGP.db.profile.data[EPGP.db.profile.outsiders[name]]
-  elseif obj:IsAlt(name) then
-    return EPGP.db.profile.data[EPGP.db.profile.alts[name]]
+  return EPGP.db.profile.data[obj:GetInGuildName(name)]
+end
+
+function mod:GetInGuildName(name)
+  if self:IsOutsider(name) then
+    return EPGP.db.profile.outsiders[name]
+  elseif self:IsAlt(name) then
+    return EPGP.db.profile.alts[name]
   else
-    return EPGP.db.profile.data[name]
+    return name
   end
 end
 
@@ -172,7 +176,7 @@ function mod:SaveRoster()
       if ep then
         local new_officernote = EncodeNote(ep, tep, gp, tgp)
         if new_officernote ~= officernote then
-          GuildRosterSetOfficerNote(i, new_officernote)
+          --GuildRosterSetOfficerNote(i, new_officernote)
         end
       end
     end
