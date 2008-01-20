@@ -253,7 +253,7 @@ function mod:AddEP2Member(name, reason, points, silent)
     self.cache:SetMemberEPGP(name, ep+points, gp)
     self.cache:SaveRoster()
     if not silent then
-      self:Report(L["Awarded %d EPs to %s (%s)."], points, name, reason)
+      self:Report(L["Awarded %d EP to %s (%s)."], points, name, reason)
     end
   else
     self.popup_modify_epgp_data.func = mod.AddEP2Member
@@ -270,7 +270,7 @@ function mod:SetEPMember(name, reason, points)
     local ep, gp = self.cache:GetMemberEPGP(name)
     self.cache:SetMemberEPGP(name, points, gp)
     self.cache:SaveRoster()
-    self:Report(L["Set EPs for %s to %d (%s)."], name, points)
+    self:Report(L["Set EP for %s to %d (%s)."], name, points)
   else
     self.popup_modify_epgp_data.func = mod.SetEPMember
     self.popup_modify_epgp_data.member = name
@@ -304,7 +304,7 @@ function mod:AcceptEPWhisperHandler(event, ...)
         if not award_whispers[awarded] then
           award_whispers[awarded] = true
           self:AddEP2Member(player, award_reason, award_ep)
-          SendChatMessage(L["Awarded %d EPs to %s (%s)"]:format(award_ep, player, award_reason),
+          SendChatMessage(L["Awarded %d EP to %s (%s)"]:format(award_ep, player, award_reason),
                           "WHISPER", nil, sender)
         else
           SendChatMessage(L["%s was already awarded EP (%s)"]:format(player, award_reason),
@@ -329,7 +329,7 @@ function mod:AddEP2Raid(reason, points)
   assert(type(reason) == "string")
 
   if self:IsHooked("ChatFrame_MessageEventHandler") then
-    EPGP:Print("Please wait for current standby EPs to be awarded before the next award")
+    EPGP:Print("Please wait for current standby EP to be awarded before the next award")
     return
   end
 
@@ -354,7 +354,7 @@ function mod:AddEP2Raid(reason, points)
       end
     end
     self:Report(L["Awarded %d EP to raid (%s)."], points, reason)
-    self:Report(L["Whisper 'ep' or your main toon's name to receive standby EPs for %s"],
+    self:Report(L["Whisper 'ep' or your main toon's name to receive standby EP for %s"],
                 reason)
 
     self:SecureHook("ChatFrame_MessageEventHandler", "AcceptEPWhisperHandler")
@@ -377,7 +377,7 @@ function mod:RecurringEP2Raid(reason, points)
       self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
     else
       self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2Raid, EPGP.db.profile.recurring_ep_period, self, reason, points)
-      self:Report(L["Awarding %d EPs/%s (%s)."], points, SecondsToTime(EPGP.db.profile.recurring_ep_period), reason)
+      self:Report(L["Awarding %d EP/%s (%s)."], points, SecondsToTime(EPGP.db.profile.recurring_ep_period), reason)
     end
   end
 end
