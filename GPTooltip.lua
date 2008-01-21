@@ -140,7 +140,8 @@ function mod:OnTooltipSetItem(tooltip, ...)
   if EPGP.db.profile.gp_in_tooltips then
     local gp, ilvl, ivalue = self:GetGPValue(itemlink)
     if gp and gp > 0 then
-      tooltip:AddLine(string.format(L["GP: %d [ItemLevel=%d ItemValue=%d]"], gp, ilvl, ivalue),
+      tooltip:AddLine(
+        L["GP: %d [ItemLevel=%d ItemValue=%d]"]:format(gp, ilvl, ivalue),
         NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
     end
   end
