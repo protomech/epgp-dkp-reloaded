@@ -16,10 +16,10 @@ EPGP_TEXT_LOOT_QUALITY_THRESHOLD = L["Loot Tracking Quality Threshold"]
 EPGP_UI = EPGP:NewModule("EPGP_UI", "AceEvent-2.0")
 
 local function OnStaticPopupHide()
-	if ChatFrameEditBox:IsShown() then
-		ChatFrameEditBox:SetFocus()
-	end
-	getglobal(this:GetName().."EditBox"):SetText("")
+  if ChatFrameEditBox:IsShown() then
+    ChatFrameEditBox:SetFocus()
+  end
+  getglobal(this:GetName().."EditBox"):SetText("")
 end
 
 local backend = nil
@@ -30,18 +30,18 @@ function EPGP_UI:OnInitialize()
     text = L["The current frame standings in plain text."],
     hasEditBox = 1,
     OnShow = function()
-      local editBox = getglobal(this:GetName().."EditBox")
-      editBox:SetText(EPGP_UI:Export2Text())
-      editBox:HighlightText()
-      editBox:SetFocus()
-    end,
+               local editBox = getglobal(this:GetName().."EditBox")
+               editBox:SetText(EPGP_UI:Export2Text())
+               editBox:HighlightText()
+               editBox:SetFocus()
+             end,
     OnHide = OnStaticPopupHide,
     EditBoxOnEnterPressed = function()
-      this:GetParent():Hide()
-      end,
+                              this:GetParent():Hide()
+                            end,
     EditBoxOnEscapePressed = function()
-      this:GetParent():Hide();
-    end,
+                               this:GetParent():Hide();
+                             end,
     timeout = 0,
     whileDead = 1,
     hideOnEscape = 1,
@@ -50,18 +50,18 @@ function EPGP_UI:OnInitialize()
     text = L["The current frame standings in HTML."],
     hasEditBox = 1,
     OnShow = function()
-      local editBox = getglobal(this:GetName().."EditBox")
-      editBox:SetText(EPGP_UI:Export2HTML())
-      editBox:HighlightText()
-      editBox:SetFocus()
-    end,
+               local editBox = getglobal(this:GetName().."EditBox")
+               editBox:SetText(EPGP_UI:Export2HTML())
+               editBox:HighlightText()
+               editBox:SetFocus()
+             end,
     OnHide = OnStaticPopupHide,
     EditBoxOnEnterPressed = function()
-      this:GetParent():Hide()
-      end,
+                              this:GetParent():Hide()
+                            end,
     EditBoxOnEscapePressed = function()
-      this:GetParent():Hide();
-    end,
+                               this:GetParent():Hide();
+                             end,
     timeout = 0,
     whileDead = 1,
     hideOnEscape = 1,
@@ -71,39 +71,44 @@ function EPGP_UI:OnInitialize()
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
-    OnShow = function()
-      local editBox = getglobal(this:GetName().."EditBox")
-      editBox:SetFocus()
-    end,
+    OnShow =
+      function()
+        local editBox = getglobal(this:GetName().."EditBox")
+        editBox:SetFocus()
+      end,
     OnHide = OnStaticPopupHide,
-    OnAccept = function()
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local number = editBox:GetNumber()
-      if number > 0 then
-        EPGP.db.profile.recurring_ep_period = number
-      end
-    end,
-    EditBoxOnEnterPressed = function()
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local number = editBox:GetNumber()
-      if number > 0 then
-        EPGP.db.profile.recurring_ep_period = number
+    OnAccept =
+      function()
+        local editBox = getglobal(this:GetParent():GetName().."EditBox")
+        local number = editBox:GetNumber()
+        if number > 0 then
+          EPGP.db.profile.recurring_ep_period = number
+        end
+      end,
+    EditBoxOnEnterPressed =
+      function()
+        local editBox = getglobal(this:GetParent():GetName().."EditBox")
+        local number = editBox:GetNumber()
+        if number > 0 then
+          EPGP.db.profile.recurring_ep_period = number
+          this:GetParent():Hide()
+        end
+      end,
+    EditBoxOnTextChanged =
+      function()
+        local editBox = getglobal(this:GetParent():GetName().."EditBox")
+        local button1 = getglobal(this:GetParent():GetName().."Button1")
+        local number = editBox:GetNumber()
+        if number > 0 then
+          button1:Enable()
+        else
+          button1:Disable()
+        end
+      end,
+    EditBoxOnEscapePressed =
+      function()
         this:GetParent():Hide()
-      end
-    end,
-    EditBoxOnTextChanged = function()
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local button1 = getglobal(this:GetParent():GetName().."Button1")
-      local number = editBox:GetNumber()
-      if number > 0 then
-        button1:Enable()
-      else
-        button1:Disable()
-      end
-    end,
-    EditBoxOnEscapePressed = function()
-      this:GetParent():Hide()
-    end,
+      end,
     hideOnEscape = 1,
     hasEditBox = 1,
   }
@@ -217,10 +222,11 @@ function EPGP_UI:UpdateCheckButtons()
 end
 
 function EPGP_UI:GetListingForListingFrame()
-  local t = backend:GetListing(EPGP.db.profile.current_listing,
-                               EPGP.db.profile.comparator_name,
-                               EPGP.db.profile[EPGP.db.profile.current_listing].show_alts,
-                               getglobal("EPGPListingSearchBox"):GetText())
+  local t = backend:GetListing(
+    EPGP.db.profile.current_listing,
+    EPGP.db.profile.comparator_name,
+    EPGP.db.profile[EPGP.db.profile.current_listing].show_alts,
+    getglobal("EPGPListingSearchBox"):GetText())
   return t
 end
 
@@ -228,14 +234,14 @@ function EPGP_UI:Export2HTML()
   local t = self:GetListingForListingFrame()
 
   local text = "<table id=\"epgp-standings\">"..
-  "<caption>EPGP Standings</caption>"..
-  "<tr><th>Name</th><th>Class</th><th>EP</th><th>GP</th><th>PR</th></tr>"
+    "<caption>EPGP Standings</caption>"..
+    "<tr><th>Name</th><th>Class</th><th>EP</th><th>GP</th><th>PR</th></tr>"
   for i,rowdata in pairs(t) do
     local name, class, EP, GP, PR = unpack(rowdata)
     text = text..string.format(
       "<tr class=\"%s\">"..
-      "<td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%.4g</td>"..
-      "</tr>",
+        "<td>%s</td><td>%s</td><td>%d</td><td>%d</td><td>%.4g</td>"..
+        "</tr>",
       class, name, class, EP, GP, PR)
   end
   text = text.."</table>"
@@ -246,25 +252,26 @@ function EPGP_UI:Export2Text()
   local t = self:GetListingForListingFrame()
 
   local text =
-  "+----------------+-------EPGP Standings----+----------+----------+\n"..
-  "|      Name      |     Class    |    EP    |    GP    |    PR    |\n"..
-  "+----------------+--------------+----------+----------+----------+\n"
+    "+----------------+-------EPGP Standings----+----------+----------+\n"..
+    "|      Name      |     Class    |    EP    |    GP    |    PR    |\n"..
+    "+----------------+--------------+----------+----------+----------+\n"
   local fmt_str_row = "| %-15s| %-13s|%9d |%9d |%9.2f |\n"
   for i,rowdata in pairs(t) do
     local name, class, EP, GP, PR = unpack(rowdata)
     text = text..string.format(fmt_str_row, name, class, EP, GP, PR);
   end
   text = text..
-  "+----------------+--------------+----------+----------+----------+\n"
+    "+----------------+--------------+----------+----------+----------+\n"
   return text
 end
 
 function EPGP_UI.ReportChannelList_Initialize()
   local info = UIDropDownMenu_CreateInfo()
-  info.func = function()
-    EPGP.db.profile.report_channel = this.value
-    UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.report_channel)
-  end
+  info.func =
+    function()
+      EPGP.db.profile.report_channel = this.value
+      UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.report_channel)
+    end
 
   local options = {
     ["NONE"] = NONE,
@@ -283,12 +290,13 @@ end
 
 function EPGP_UI.ListingList_Initialize()
   local info = UIDropDownMenu_CreateInfo()
-  info.func = function()
-    EPGP.db.profile.current_listing = this.value
-    UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.current_listing)
-    EPGP_UI.UpdateListing()
-    EPGP_UI:UpdateCheckButtons()
-  end
+  info.func =
+    function()
+      EPGP.db.profile.current_listing = this.value
+      UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.current_listing)
+      EPGP_UI.UpdateListing()
+      EPGP_UI:UpdateCheckButtons()
+    end
 
   local options = backend:GetListingIDs()
   for i,v in pairs(options) do
@@ -307,33 +315,37 @@ function EPGP_UI.ListingDropDown_Initialize()
   UIDropDownMenu_AddButton(info)
 
   info = UIDropDownMenu_CreateInfo()
-  info.func = function()
-    backend:AddEP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
-  end
+  info.func =
+    function()
+      backend:AddEP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
+    end
   info.text = L["Award EP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
 
   info = UIDropDownMenu_CreateInfo()
-  info.func = function()
-    backend:AddGP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
-  end
+  info.func =
+    function()
+      backend:AddGP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
+    end
   info.text = L["Credit GP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
 
   info = UIDropDownMenu_CreateInfo()
-  info.func = function()
-    backend:SetEPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
-  end
+  info.func =
+    function()
+      backend:SetEPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
+    end
   info.text = L["Set EP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
 
   info = UIDropDownMenu_CreateInfo()
-  info.func = function()
-    backend:SetGPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
-  end
+  info.func =
+    function()
+      backend:SetGPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
+    end
   info.text = L["Set GP"]
   info.checked = nil
   UIDropDownMenu_AddButton(info)
@@ -341,10 +353,11 @@ end
 
 function EPGP_UI.LootTrackingQualityThreshold_Initialize()
   local info = UIDropDownMenu_CreateInfo()
-  info.func = function()
-    EPGP.db.profile.loot_tracking_quality_threshold = this.value
-    UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.loot_tracking_quality_threshold)
-  end
+  info.func =
+    function()
+      EPGP.db.profile.loot_tracking_quality_threshold = this.value
+      UIDropDownMenu_SetSelectedValue(getglobal(UIDROPDOWNMENU_OPEN_MENU), EPGP.db.profile.loot_tracking_quality_threshold)
+    end
   
   for i=2,#ITEM_QUALITY_COLORS do
     info.text = getglobal("ITEM_QUALITY"..i.."_DESC")
