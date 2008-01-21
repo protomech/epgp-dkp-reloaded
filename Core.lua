@@ -55,7 +55,7 @@ function EPGP:OnInitialize()
       ["decay"] = {
         type = "execute",
         name = L["Decay EP and GP"],
-        desc = string.format(L["Decay EP and GP by %d%%"], EPGP.db.profile.decay_percent),
+        desc = L["Decay EP and GP by %d%%"]:format(EPGP.db.profile.decay_percent),
         disabled = function() return not backend:CanLogRaids() end,
         func =  function() StaticPopup_Show("EPGP_DECAY_EPGP", EPGP.db.profile.decay_percent) end,
         order = 4,
