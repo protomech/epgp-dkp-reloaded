@@ -353,7 +353,7 @@ function mod:AddEP2Raid(reason, points)
       local player = select(1, GetRaidRosterInfo(i))
       if self.cache:GetMemberEPGP(player) then
         local awarded = self.cache:GetInGuildName(player)
-        if not awarded_members[awarded] then
+        if awarded and not awarded_members[awarded] then
           awarded_members[awarded] = true
           self:AddEP2Member(player, reason, points, true)
         end
