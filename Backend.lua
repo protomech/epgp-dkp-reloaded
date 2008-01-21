@@ -3,10 +3,10 @@ local L = EPGPGlobalStrings
 local mod = EPGP:NewModule("EPGP_Backend", "AceEvent-2.0", "AceHook-2.1")
 
 local function OnStaticPopupHide()
-	if ChatFrameEditBox:IsShown() then
-		ChatFrameEditBox:SetFocus()
-	end
-	getglobal(this:GetName().."EditBox"):SetText("")
+  if ChatFrameEditBox:IsShown() then
+    ChatFrameEditBox:SetFocus()
+  end
+  getglobal(this:GetName().."EditBox"):SetText("")
 end
 
 local function GuildIterator(obj, i)
@@ -62,8 +62,8 @@ function mod:OnInitialize()
     button2 = CANCEL,
     timeout = 0,
     OnAccept = function()
-      mod:ResetEPGP()
-    end,
+                 mod:ResetEPGP()
+               end,
     hideOnEscape = 1,
     whileDead = 1,
   }
@@ -73,8 +73,8 @@ function mod:OnInitialize()
     button2 = CANCEL,
     timeout = 0,
     OnAccept = function()
-      mod:DecayEPGP()
-    end,
+                 mod:DecayEPGP()
+               end,
     hideOnEscape = 1,
     whileDead = 1,
   }
@@ -84,8 +84,8 @@ function mod:OnInitialize()
     button2 = CANCEL,
     timeout = 0,
     OnAccept = function()
-      mod:RestoreNotes()
-    end,
+                 mod:RestoreNotes()
+               end,
     hideOnEscape = 1,
     whileDead = 1,
   }
@@ -97,58 +97,58 @@ function mod:OnInitialize()
     button2 = CANCEL,
     timeout = 0,
     OnShow = function()
-      local data = popup_data
-      local editBox = getglobal(this:GetName().."EditBox")
-      if gptooltip:GetGPValue(data.reason) then
-        editBox:SetText(gptooltip:GetGPValue(data.reason))
-      elseif EPGP.db.profile.reason_award_cache[data.reason] then
-        editBox:SetText(EPGP.db.profile.reason_award_cache[data.reason])
-      end
-      editBox:HighlightText()
-      editBox:SetFocus()
-    end,
+               local data = popup_data
+               local editBox = getglobal(this:GetName().."EditBox")
+               if gptooltip:GetGPValue(data.reason) then
+                 editBox:SetText(gptooltip:GetGPValue(data.reason))
+               elseif EPGP.db.profile.reason_award_cache[data.reason] then
+                 editBox:SetText(EPGP.db.profile.reason_award_cache[data.reason])
+               end
+               editBox:HighlightText()
+               editBox:SetFocus()
+             end,
     OnHide = OnStaticPopupHide,
     OnAccept = function()
-      local data = popup_data
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local number = editBox:GetNumber()
-      if not data.valid_func or data.valid_func(number) then
-        EPGP.db.profile.reason_award_cache[data.reason] = number
-        if data.member then
-          data.func(mod, data.member, data.reason, number)
-        else
-          data.func(mod, data.reason, number)
-        end
-      end
-    end,
+                 local data = popup_data
+                 local editBox = getglobal(this:GetParent():GetName().."EditBox")
+                 local number = editBox:GetNumber()
+                 if not data.valid_func or data.valid_func(number) then
+                   EPGP.db.profile.reason_award_cache[data.reason] = number
+                   if data.member then
+                     data.func(mod, data.member, data.reason, number)
+                   else
+                     data.func(mod, data.reason, number)
+                   end
+                 end
+               end,
     EditBoxOnEnterPressed = function()
-      local data = popup_data
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local number = editBox:GetNumber()
-      if not data.valid_func or data.valid_func(number) then
-        EPGP.db.profile.reason_award_cache[data.reason] = number
-        if data.member then
-          data.func(mod, data.member, data.reason, number)
-        else
-          data.func(mod, data.reason, number)
-        end
-        this:GetParent():Hide()
-      end
-    end,
+                              local data = popup_data
+                              local editBox = getglobal(this:GetParent():GetName().."EditBox")
+                              local number = editBox:GetNumber()
+                              if not data.valid_func or data.valid_func(number) then
+                                EPGP.db.profile.reason_award_cache[data.reason] = number
+                                if data.member then
+                                  data.func(mod, data.member, data.reason, number)
+                                else
+                                  data.func(mod, data.reason, number)
+                                end
+                                this:GetParent():Hide()
+                              end
+                            end,
     EditBoxOnTextChanged = function()
-      local data = popup_data
-      local editBox = getglobal(this:GetParent():GetName().."EditBox")
-      local button1 = getglobal(this:GetParent():GetName().."Button1")
-      local number = editBox:GetNumber()
-      if not data.valid_func or data.valid_func(number) then
-        button1:Enable()
-      else
-        button1:Disable()
-      end
-    end,
+                             local data = popup_data
+                             local editBox = getglobal(this:GetParent():GetName().."EditBox")
+                             local button1 = getglobal(this:GetParent():GetName().."Button1")
+                             local number = editBox:GetNumber()
+                             if not data.valid_func or data.valid_func(number) then
+                               button1:Enable()
+                             else
+                               button1:Disable()
+                             end
+                           end,
     EditBoxOnEscapePressed = function()
-      this:GetParent():Hide()
-    end,
+                               this:GetParent():Hide()
+                             end,
     hideOnEscape = 1,
     hasEditBox = 1,
     whileDead = 1,
@@ -198,8 +198,8 @@ function mod:Report(fmt, ...)
     local str = "EPGP:"
     for _,s in pairs({strsplit(" ", msg)}) do
       if #str + #s >= 250 then
-	      SendChatMessage(str, EPGP.db.profile.report_channel)
-	      str = "EPGP:"
+        SendChatMessage(str, EPGP.db.profile.report_channel)
+        str = "EPGP:"
       end
       str = str .. " " .. s
     end
@@ -250,7 +250,7 @@ function mod:AddEP2Member(name, reason, points, silent)
   if type(points) == "number" then
     local ep, gp = cache:GetMemberEPGP(name)
     if ep + points < 0 then
-       points = 0 - ep
+      points = 0 - ep
     end
     cache:SetMemberEPGP(name, ep+points, gp)
     cache:SaveRoster()
@@ -465,7 +465,7 @@ end
 
 local function AreSameTier(n1, n2)
   return (mod:IsBelowThreshold(n1) and mod:IsBelowThreshold(n2)) or
-         (not mod:IsBelowThreshold(n1) and not mod:IsBelowThreshold(n2))
+  (not mod:IsBelowThreshold(n1) and not mod:IsBelowThreshold(n2))
 end
 
 local COMPARATORS = {
@@ -495,7 +495,7 @@ function mod:GetListing(list_name, sort_on, show_alts, search_str)
          (class and search_str == strlower(class)) or
          string.find(strlower(name), search_str, 1, true) then
         local ep, gp = cache:GetMemberEPGP(name)
-        local rank, rankIndex, level, class, zone, note, officernote, online, status = cache:GetMemberInfo(name)
+        local class = select(4, cache:GetMemberInfo(name))
         if ep and gp then
           local pr = gp == 0 and ep or ep/gp
           table.insert(t, { name, class, ep, gp, pr })
