@@ -282,7 +282,7 @@ end
 
 local award_ep
 local award_reason
-local award_whispers
+local awarded_members
 function mod:AcceptEPWhisperHandler(event, ...)
   if not award_ep then return end
   if event == "CHAT_MSG_WHISPER" and
@@ -301,9 +301,9 @@ function mod:AcceptEPWhisperHandler(event, ...)
                         "WHISPER", nil, sender)
       else
         local awarded = self.cache:GetInGuildName(player)
-        if not award_whispers[awarded] then
-          award_whispers[awarded] = true
-          self:AddEP2Member(player, award_reason, award_ep)
+        if not awarded_members[awarded] then
+          awarded_members[awarded] = true
+          self:AddEP2Member(player, award_reason, award_ep, true)
           SendChatMessage(L["Awarded %d EP to %s (%s)"]:format(award_ep, player, award_reason),
                           "WHISPER", nil, sender)
         else
@@ -315,14 +315,20 @@ function mod:AcceptEPWhisperHandler(event, ...)
   end
 end
 
-function mod:AcceptWhisperHandlerTimeout(reason)
+function mod:AcceptWhisperHandlerTimeout(reason, points)
   if self:IsHooked("ChatFrame_MessageEventHandler") then
     self:Unhook("ChatFrame_MessageEventHandler")
   end
   self:Report(L["No longer accepting whispers for %s"], reason)
+  local award_list = {}
+  for name,_ in pairs(awarded_members) do
+    table.insert(award_list, name)
+  end
+  self:Report(L["Awarded %d EP to %s (%s)"],
+              points, table.concat(award_list, ", "), reason)
   award_ep = nil
   award_reason = nil
-  award_whispers = nil
+  awarded_members = nil
 end
 
 function mod:AddEP2Raid(reason, points)
@@ -342,13 +348,13 @@ function mod:AddEP2Raid(reason, points)
   else
     award_ep = points
     award_reason = reason
-    award_whispers = {}
+    awarded_members = {}
     for i = 1, GetNumRaidMembers() do
       local player = select(1, GetRaidRosterInfo(i))
       if self.cache:GetMemberEPGP(player) then
         local awarded = self.cache:GetInGuildName(player)
-        if not award_whispers[awarded] then
-          award_whispers[awarded] = true
+        if not awarded_members[awarded] then
+          awarded_members[awarded] = true
           self:AddEP2Member(player, reason, points, true)
         end
       end
@@ -359,7 +365,7 @@ function mod:AddEP2Raid(reason, points)
 
     self:SecureHook("ChatFrame_MessageEventHandler", "AcceptEPWhisperHandler")
     self:ScheduleEvent("EPGP_ACCEPT_WHISPER_TIMEOUT",
-                       self.AcceptWhisperHandlerTimeout, 60, self, reason)
+                       self.AcceptWhisperHandlerTimeout, 60, self, reason, points)
   end
 end
 
