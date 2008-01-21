@@ -7,35 +7,35 @@ EPGP = AceLibrary("AceAddon-2.0"):new("AceConsole-2.0", "AceDB-2.0", "AceDebug-2
 -------------------------------------------------------------------------------
 EPGP:RegisterDB("EPGP_Core_DB", "EPGP_Core_PerCharDB")
 EPGP:RegisterDefaults("profile", {
-  report_channel = "GUILD",
-  current_listing = "GUILD",
-  RAID = {
-    show_alts = true,
-  },
-  GUILD = {
-    show_alts = false,
-  },
-  GUILD_ONLINE_LABEL = {
-    show_alts = true,
-  },
-  gp_in_tooltips = true,
-  boss_tracking = true,
-  loot_tracking = true,
-  loot_tracking_quality_threshold = 4, -- Epic and above
-  loot_announce = true,
-  reason_award_cache = {},
-  alts = {},
-  outsiders = {},
-  dummies = {},
-  data = {},
-  info = {},
-  base_gp = 0,
-  flat_credentials = false,
-  min_eps = 1000,
-  decay_percent = 10,
-  backup_notes = {},
-  recurring_ep_period = 15 * 60,
-})
+                        report_channel = "GUILD",
+                        current_listing = "GUILD",
+                        RAID = {
+                          show_alts = true,
+                        },
+                        GUILD = {
+                          show_alts = false,
+                        },
+                        GUILD_ONLINE_LABEL = {
+                          show_alts = true,
+                        },
+                        gp_in_tooltips = true,
+                        boss_tracking = true,
+                        loot_tracking = true,
+                        loot_tracking_quality_threshold = 4, -- Epic and above
+                        loot_announce = true,
+                        reason_award_cache = {},
+                        alts = {},
+                        outsiders = {},
+                        dummies = {},
+                        data = {},
+                        info = {},
+                        base_gp = 0,
+                        flat_credentials = false,
+                        min_eps = 1000,
+                        decay_percent = 10,
+                        backup_notes = {},
+                        recurring_ep_period = 15 * 60,
+                      })
 
 function EPGP:OnInitialize()
   local backend = self:GetModule("EPGP_Backend")
