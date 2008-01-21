@@ -38,6 +38,7 @@ EPGP:RegisterDefaults("profile", {
 })
 
 function EPGP:OnInitialize()
+  local backend = self:GetModule("EPGP_Backend")
   EPGPFrameTitleText:SetText(GetAddOnMetadata("epgp", "Title").." "..GetAddOnMetadata("epgp", "Version"))
   self:RegisterChatCommand({ "/epgp" }, {
     type = "group",
@@ -55,7 +56,7 @@ function EPGP:OnInitialize()
         type = "execute",
         name = L["Decay EP and GP"],
         desc = string.format(L["Decay EP and GP by %d%%"], EPGP.db.profile.decay_percent),
-        disabled = function() return not self:GetModule("EPGP_Backend"):CanLogRaids() end,
+        disabled = function() return not backend:CanLogRaids() end,
         func =  function() StaticPopup_Show("EPGP_DECAY_EPGP", EPGP.db.profile.decay_percent) end,
         order = 4,
       },
@@ -64,7 +65,7 @@ function EPGP:OnInitialize()
         name = L["Reset EPGP"],
         desc = L["Reset all EP and GP to 0 and make officer notes readable by all."],
         guiHidden = true,
-        disabled = function() return not self:GetModule("EPGP_Backend"):CanChangeRules() end,
+        disabled = function() return not backend:CanChangeRules() end,
         func = function() StaticPopup_Show("EPGP_RESET_EPGP") end,
         order = 11,
       },

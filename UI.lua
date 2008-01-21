@@ -22,8 +22,9 @@ local function OnStaticPopupHide()
 	getglobal(this:GetName().."EditBox"):SetText("")
 end
 
+local backend = nil
 function EPGP_UI:OnInitialize()
-  self.backend = EPGP:GetModule("EPGP_Backend")
+  backend = EPGP:GetModule("EPGP_Backend")
   UIPanelWindows["EPGPFrame"] = { area = "left", pushable = 1, whileDead = 1, }
   StaticPopupDialogs["EPGP_TEXT_EXPORT"] = {
     text = L["The current frame standings in plain text."],
@@ -133,7 +134,7 @@ end
 
 function EPGP_UI:SetEPButtonStatus(button)
   button:Enable()
-  if not EPGP:GetModule("EPGP_Backend"):CanLogRaids() then
+  if not backend:CanLogRaids() then
     button:Disable()
     return
   end
@@ -143,7 +144,7 @@ function EPGP_UI:SetEPButtonStatus(button)
     return
   end
 
-  if not UnitInRaid("player") and IsRaidLeader("player") and self.backend:CanLogRaids() then
+  if not UnitInRaid("player") and IsRaidLeader("player") and backend:CanLogRaids() then
     button:Disable()
     return
   end
@@ -173,7 +174,6 @@ function EPGP_UI.UpdateListing()
   if not EPGPFrame:IsShown() then return end
 
   local frame = getglobal("EPGPScrollFrame")
-  local backend = EPGP:GetModule("EPGP_Backend")
   local t = EPGP_UI:GetListingForListingFrame()
 
   local scrollbar_shown = FauxScrollFrame_Update(EPGPScrollFrame, #t, 15, 16)--, "EPGPListingEntry", 298, 330)
@@ -217,7 +217,6 @@ function EPGP_UI:UpdateCheckButtons()
 end
 
 function EPGP_UI:GetListingForListingFrame()
-  local backend = EPGP:GetModule("EPGP_Backend")
   local t = backend:GetListing(EPGP.db.profile.current_listing,
                                EPGP.db.profile.comparator_name,
                                EPGP.db.profile[EPGP.db.profile.current_listing].show_alts,
@@ -260,11 +259,6 @@ function EPGP_UI:Export2Text()
   return text
 end
 
-function EPGP_UI:RecurringEP2List(points)
-  assert(type(points) == "number")
-  EPGP:GetModule("EPGP_Backend"):RecurringEP2List(EPGP.db.profile.current_listing, points)
-end
-
 function EPGP_UI.ReportChannelList_Initialize()
   local info = UIDropDownMenu_CreateInfo()
   info.func = function()
@@ -296,7 +290,7 @@ function EPGP_UI.ListingList_Initialize()
     EPGP_UI:UpdateCheckButtons()
   end
 
-  local options = EPGP:GetModule("EPGP_Backend"):GetListingIDs()
+  local options = backend:GetListingIDs()
   for i,v in pairs(options) do
     info.text = getglobal(v)
     info.value = strupper(v)
@@ -314,7 +308,7 @@ function EPGP_UI.ListingDropDown_Initialize()
 
   info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP:GetModule("EPGP_Backend"):AddEP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
+    backend:AddEP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
   end
   info.text = L["Award EP"]
   info.checked = nil
@@ -322,7 +316,7 @@ function EPGP_UI.ListingDropDown_Initialize()
 
   info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP:GetModule("EPGP_Backend"):AddGP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
+    backend:AddGP2Member(ListingDropDown.member_name, EPGPEPInputBox:GetText())
   end
   info.text = L["Credit GP"]
   info.checked = nil
@@ -330,7 +324,7 @@ function EPGP_UI.ListingDropDown_Initialize()
 
   info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP:GetModule("EPGP_Backend"):SetEPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
+    backend:SetEPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
   end
   info.text = L["Set EP"]
   info.checked = nil
@@ -338,7 +332,7 @@ function EPGP_UI.ListingDropDown_Initialize()
 
   info = UIDropDownMenu_CreateInfo()
   info.func = function()
-    EPGP:GetModule("EPGP_Backend"):SetGPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
+    backend:SetGPMember(ListingDropDown.member_name, EPGPEPInputBox:GetText())
   end
   info.text = L["Set GP"]
   info.checked = nil

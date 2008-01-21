@@ -2,9 +2,7 @@ local L = EPGPGlobalStrings
 
 local mod = EPGP:NewModule("EPGP_Cache", "AceEvent-2.0")
 
-function mod:OnInitialize()
-  self.guild_member_count = 0
-end
+local guild_member_count = 0
 
 function mod:OnEnable()
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
@@ -156,10 +154,10 @@ function mod:LoadRoster()
   EPGP.db.profile.info = info
   EPGP.db.profile.alts = alts
 
-  local old_count = self.guild_member_count
-  self.guild_member_count = GetNumGuildMembers(true)
-  EPGP:Debug("old:%d new:%d", old_count, self.guild_member_count)
-  return old_count ~= self.guild_member_count
+  local old_count = guild_member_count
+  guild_member_count = GetNumGuildMembers(true)
+  EPGP:Debug("old:%d new:%d", old_count, guild_member_count)
+  return old_count ~= guild_member_count
 end
 
 local function EncodeNote(ep, gp)

@@ -51,9 +51,10 @@ function mod:GetListingIDs()
   return LISTING_IDS
 end
 
+local cache = nil
+local popup_data = nil
 function mod:OnInitialize()
-  self.cache = EPGP:GetModule("EPGP_Cache")
-  self.gptooltip = EPGP:GetModule("EPGP_GPTooltip")
+  cache = EPGP:GetModule("EPGP_Cache")
 
   StaticPopupDialogs["EPGP_RESET_EPGP"] = {
     text = L["Reset all EP and GP to 0 and make officer notes readable by all?"],
@@ -88,17 +89,18 @@ function mod:OnInitialize()
     hideOnEscape = 1,
     whileDead = 1,
   }
-  self.popup_modify_epgp_data = {}
+  local gptooltip = EPGP:GetModule("EPGP_GPTooltip")
+  popup_data = {}
   StaticPopupDialogs["EPGP_MODIFY_EPGP"] = {
     text = "%s",
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
     OnShow = function()
-      local data = self.popup_modify_epgp_data
+      local data = popup_data
       local editBox = getglobal(this:GetName().."EditBox")
-      if self.gptooltip:GetGPValue(data.reason) then
-        editBox:SetText(self.gptooltip:GetGPValue(data.reason))
+      if gptooltip:GetGPValue(data.reason) then
+        editBox:SetText(gptooltip:GetGPValue(data.reason))
       elseif EPGP.db.profile.reason_award_cache[data.reason] then
         editBox:SetText(EPGP.db.profile.reason_award_cache[data.reason])
       end
@@ -107,7 +109,7 @@ function mod:OnInitialize()
     end,
     OnHide = OnStaticPopupHide,
     OnAccept = function()
-      local data = self.popup_modify_epgp_data
+      local data = popup_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
       if not data.valid_func or data.valid_func(number) then
@@ -120,7 +122,7 @@ function mod:OnInitialize()
       end
     end,
     EditBoxOnEnterPressed = function()
-      local data = self.popup_modify_epgp_data
+      local data = popup_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local number = editBox:GetNumber()
       if not data.valid_func or data.valid_func(number) then
@@ -134,7 +136,7 @@ function mod:OnInitialize()
       end
     end,
     EditBoxOnTextChanged = function()
-      local data = self.popup_modify_epgp_data
+      local data = popup_data
       local editBox = getglobal(this:GetParent():GetName().."EditBox")
       local button1 = getglobal(this:GetParent():GetName().."Button1")
       local number = editBox:GetNumber()
@@ -213,9 +215,9 @@ function mod:ResetEPGP()
   -- Now set zero values
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
-    self.cache:SetMemberEPGP(name, 0, 0)
+    cache:SetMemberEPGP(name, 0, 0)
   end
-  self.cache:SaveRoster()
+  cache:SaveRoster()
   -- Make officer notes readable by all ranks
   for i = 1,GuildControlGetNumRanks() do
     GuildControlSetRank(i)
@@ -229,16 +231,16 @@ function mod:DecayEPGP()
   local factor = 1 - EPGP.db.profile.decay_percent*0.01
   for i = 1, GetNumGuildMembers(true) do
     local name = GetGuildRosterInfo(i)
-    if not self.cache:IsAlt(name) then
-      local ep, gp = self.cache:GetMemberEPGP(name)
+    if not cache:IsAlt(name) then
+      local ep, gp = cache:GetMemberEPGP(name)
       if ep then
         ep = math.floor(ep * factor)
         gp = math.floor(gp * factor)
-        self.cache:SetMemberEPGP(name, ep, gp)
+        cache:SetMemberEPGP(name, ep, gp)
       end
     end
   end
-  self.cache:SaveRoster()
+  cache:SaveRoster()
   self:Report(L["Applied a decay of %d%% to EP and GP."], EPGP.db.profile.decay_percent)
 end
 
@@ -246,20 +248,20 @@ function mod:AddEP2Member(name, reason, points, silent)
   assert(type(name) == "string")
   assert(type(reason) == "string")
   if type(points) == "number" then
-    local ep, gp = self.cache:GetMemberEPGP(name)
+    local ep, gp = cache:GetMemberEPGP(name)
     if ep + points < 0 then
        points = 0 - ep
     end
-    self.cache:SetMemberEPGP(name, ep+points, gp)
-    self.cache:SaveRoster()
+    cache:SetMemberEPGP(name, ep+points, gp)
+    cache:SaveRoster()
     if not silent then
       self:Report(L["Awarded %d EP to %s (%s)."], points, name, reason)
     end
   else
-    self.popup_modify_epgp_data.func = mod.AddEP2Member
-    self.popup_modify_epgp_data.member = name
-    self.popup_modify_epgp_data.reason = reason
-    self.popup_modify_epgp_data.valid_func = IsValidEPValue
+    popup_data.func = mod.AddEP2Member
+    popup_data.member = name
+    popup_data.reason = reason
+    popup_data.valid_func = IsValidEPValue
     StaticPopup_Show("EPGP_MODIFY_EPGP", L["Award EP to %s (%s)"]:format(name, reason), popup_modify_epgp_data)
   end
 end
@@ -267,15 +269,15 @@ end
 function mod:SetEPMember(name, reason, points)
   assert(type(name) == "string")
   if type(points) == "number" then
-    local ep, gp = self.cache:GetMemberEPGP(name)
-    self.cache:SetMemberEPGP(name, points, gp)
-    self.cache:SaveRoster()
+    local ep, gp = cache:GetMemberEPGP(name)
+    cache:SetMemberEPGP(name, points, gp)
+    cache:SaveRoster()
     self:Report(L["Set EP for %s to %d (%s)."], name, points)
   else
-    self.popup_modify_epgp_data.func = mod.SetEPMember
-    self.popup_modify_epgp_data.member = name
-    self.popup_modify_epgp_data.reason = reason
-    self.popup_modify_epgp_data.valid_func = IsValidEPValue
+    popup_data.func = mod.SetEPMember
+    popup_data.member = name
+    popup_data.reason = reason
+    popup_data.valid_func = IsValidEPValue
     StaticPopup_Show("EPGP_MODIFY_EPGP", L["Set EP for %s (%s)"]:format(name, reason), popup_modify_epgp_data)
   end
 end
@@ -296,11 +298,11 @@ function mod:AcceptEPWhisperHandler(event, ...)
       else
         player = text:sub(1,1):upper()..text:sub(2):lower()
       end
-      if not self.cache:GetInGuildName(player) then
+      if not cache:GetInGuildName(player) then
         SendChatMessage(L["%s is not eligible for EP award (%s)"]:format(player, award_reason),
                         "WHISPER", nil, sender)
       else
-        local awarded = self.cache:GetInGuildName(player)
+        local awarded = cache:GetInGuildName(player)
         if not awarded_members[awarded] then
           awarded_members[awarded] = true
           self:AddEP2Member(player, award_reason, award_ep, true)
@@ -340,10 +342,10 @@ function mod:AddEP2Raid(reason, points)
   end
 
   if type(points) ~= "number" then
-    self.popup_modify_epgp_data.func = mod.AddEP2Raid
-    self.popup_modify_epgp_data.member = nil
-    self.popup_modify_epgp_data.reason = reason
-    self.popup_modify_epgp_data.valid_func = IsValidEPValue
+    popup_data.func = mod.AddEP2Raid
+    popup_data.member = nil
+    popup_data.reason = reason
+    popup_data.valid_func = IsValidEPValue
     StaticPopup_Show("EPGP_MODIFY_EPGP", L["Award EP to Raid (%s)"]:format(reason), popup_modify_epgp_data)
   else
     award_ep = points
@@ -351,8 +353,8 @@ function mod:AddEP2Raid(reason, points)
     awarded_members = {}
     for i = 1, GetNumRaidMembers() do
       local player = select(1, GetRaidRosterInfo(i))
-      if self.cache:GetMemberEPGP(player) then
-        local awarded = self.cache:GetInGuildName(player)
+      if cache:GetMemberEPGP(player) then
+        local awarded = cache:GetInGuildName(player)
         if awarded and not awarded_members[awarded] then
           awarded_members[awarded] = true
           self:AddEP2Member(player, reason, points, true)
@@ -373,10 +375,10 @@ function mod:RecurringEP2Raid(reason, points)
   assert(type(reason) == "string")
 
   if type(points) ~= "number" then
-    self.popup_modify_epgp_data.func = mod.RecurringEP2Raid
-    self.popup_modify_epgp_data.member = nil
-    self.popup_modify_epgp_data.reason = reason
-    self.popup_modify_epgp_data.valid_func = IsValidEPValue
+    popup_data.func = mod.RecurringEP2Raid
+    popup_data.member = nil
+    popup_data.reason = reason
+    popup_data.valid_func = IsValidEPValue
     StaticPopup_Show("EPGP_MODIFY_EPGP", L["Recurring EP to Raid (%s)"]:format(reason), popup_modify_epgp_data)
   else
     if points == 0 then
@@ -404,15 +406,15 @@ function mod:AddGP2Member(name, reason, points)
   end
 
   if type(points) == "number" then
-    local ep, gp = self.cache:GetMemberEPGP(name)
-    self.cache:SetMemberEPGP(name, ep, math.max(gp+points, 0))
-    self.cache:SaveRoster()
+    local ep, gp = cache:GetMemberEPGP(name)
+    cache:SetMemberEPGP(name, ep, math.max(gp+points, 0))
+    cache:SaveRoster()
     self:Report(L["Credited %d GPs to %s (%s)."], points, name, reason)
   else
-    self.popup_modify_epgp_data.func = mod.AddGP2Member
-    self.popup_modify_epgp_data.member = name
-    self.popup_modify_epgp_data.reason = reason
-    self.popup_modify_epgp_data.valid_func = IsValidGPValue
+    popup_data.func = mod.AddGP2Member
+    popup_data.member = name
+    popup_data.reason = reason
+    popup_data.valid_func = IsValidGPValue
     StaticPopup_Show("EPGP_MODIFY_EPGP", L["Credit GP to %s (%s)"]:format(name, reason))
   end
 end
@@ -420,15 +422,15 @@ end
 function mod:SetGPMember(name, points)
   assert(type(name) == "string")
   if type(points) == "number" then
-    local ep, gp = self.cache:GetMemberEPGP(name)
-    self.cache:SetMemberEPGP(name, ep, points)
-    self.cache:SaveRoster()
+    local ep, gp = cache:GetMemberEPGP(name)
+    cache:SetMemberEPGP(name, ep, points)
+    cache:SaveRoster()
     self:Report(L["Set GPs for %s to %d (%s)."], name, points, reason)
   else
-    self.popup_modify_epgp_data.func = mod.SetGPMember
-    self.popup_modify_epgp_data.member = name
-    self.popup_modify_epgp_data.reason = reason
-    self.popup_modify_epgp_data.valid_func = IsValueGPValue
+    popup_data.func = mod.SetGPMember
+    popup_data.member = name
+    popup_data.reason = reason
+    popup_data.valid_func = IsValueGPValue
     StaticPopup_Show("EPGP_MODIFY_EPGP", L["Set GP for %s (%s)"]:format(name, reason), popup_modify_epgp_data)
   end
 end
@@ -484,16 +486,16 @@ function mod:GetListing(list_name, sort_on, show_alts, search_str)
   local iterator = ITERATORS[list_name]
   search_str = strlower(search_str)
   if not iterator then return t end
-  if not self.cache then return t end
+  if not cache then return t end
   for i,name in iterator,self,1 do
-    if show_alts or not self.cache:IsAlt(name) then
-      local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
+    if show_alts or not cache:IsAlt(name) then
+      local rank, rankIndex, level, class, zone, note, officernote, online, status = cache:GetMemberInfo(name)
       if not search_str or
          search_str == "search" or
          (class and search_str == strlower(class)) or
          string.find(strlower(name), search_str, 1, true) then
-        local ep, gp = self.cache:GetMemberEPGP(name)
-        local rank, rankIndex, level, class, zone, note, officernote, online, status = self.cache:GetMemberInfo(name)
+        local ep, gp = cache:GetMemberEPGP(name)
+        local rank, rankIndex, level, class, zone, note, officernote, online, status = cache:GetMemberInfo(name)
         if ep and gp then
           local pr = gp == 0 and ep or ep/gp
           table.insert(t, { name, class, ep, gp, pr })
