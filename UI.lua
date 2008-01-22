@@ -22,9 +22,7 @@ local function OnStaticPopupHide()
   getglobal(this:GetName().."EditBox"):SetText("")
 end
 
-local backend = nil
 function EPGP_UI:OnInitialize()
-  backend = EPGP:GetModule("EPGP_Backend")
   UIPanelWindows["EPGPFrame"] = { area = "left", pushable = 1, whileDead = 1, }
   StaticPopupDialogs["EPGP_TEXT_EXPORT"] = {
     text = L["The current frame standings in plain text."],
@@ -138,6 +136,7 @@ function EPGP_UI:SetRestoreButtonStatus(button)
 end
 
 function EPGP_UI:SetEPButtonStatus(button)
+  local backend = EPGP:GetModule("EPGP_Backend")
   button:Enable()
   if not backend:CanLogRaids() then
     button:Disable()
@@ -179,6 +178,7 @@ function EPGP_UI.UpdateListing()
   if not EPGPFrame:IsShown() then return end
 
   local frame = getglobal("EPGPScrollFrame")
+  local backend = EPGP:GetModule("EPGP_Backend")
   local t = EPGP_UI:GetListingForListingFrame()
 
   local scrollbar_shown = FauxScrollFrame_Update(EPGPScrollFrame, #t, 15, 16)--, "EPGPListingEntry", 298, 330)
@@ -222,7 +222,7 @@ function EPGP_UI:UpdateCheckButtons()
 end
 
 function EPGP_UI:GetListingForListingFrame()
-  local t = backend:GetListing(
+  local t = EPGP:GetModule("EPGP_Backend"):GetListing(
     EPGP.db.profile.current_listing,
     EPGP.db.profile.comparator_name,
     EPGP.db.profile[EPGP.db.profile.current_listing].show_alts,
@@ -298,7 +298,7 @@ function EPGP_UI.ListingList_Initialize()
       EPGP_UI:UpdateCheckButtons()
     end
 
-  local options = backend:GetListingIDs()
+  local options = EPGP:GetModule("EPGP_Backend"):GetListingIDs()
   for i,v in pairs(options) do
     info.text = getglobal(v)
     info.value = strupper(v)
@@ -308,6 +308,7 @@ function EPGP_UI.ListingList_Initialize()
 end
 
 function EPGP_UI.ListingDropDown_Initialize()
+  local backend = EPGP:GetModule("EPGP_Backend")
   local info = UIDropDownMenu_CreateInfo()
 
   info.text = ListingDropDown.member_name
