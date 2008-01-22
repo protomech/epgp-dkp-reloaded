@@ -344,7 +344,7 @@
                 EPGP_UI:SetEPButtonStatus(this)
               </OnShow>
               <OnClick>
-                EPGP_UI.backend:AddEP2Raid(this:GetParent():GetText())
+                EPGP:GetModule("EPGP_Backend"):AddEP2Raid(this:GetParent():GetText())
               </OnClick>
             </Scripts>
           </Button>
@@ -360,7 +360,7 @@
                 EPGP_UI:SetEPButtonStatus(this)
               </OnShow>
               <OnClick>
-                EPGP_UI.backend:RecurringEP2Raid(this:GetParent():GetText())
+                EPGP:GetModule("EPGP_Backend"):RecurringEP2Raid(this:GetParent():GetText())
               </OnClick>
             </Scripts>
           </Button>
