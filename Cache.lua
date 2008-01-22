@@ -27,6 +27,7 @@ function mod:LoadConfig()
       --   @DECAY_P:<number>    // for decay percent (defaults to 10)
       --   @MIN_EP:<number>     // for min eps until member can need items (defaults to 1000)
       --   @FC                  // for flat credentials (true if specified, false otherwise)
+      --   @BASE_GP:<number>    // for base GP (defaults to 0)
 
       -- Decay percent
       local dp = line:match("@DECAY_P:(%d+)")
