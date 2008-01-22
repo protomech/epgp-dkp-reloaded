@@ -111,8 +111,9 @@ function mod:GetMemberInfo(name)
 end
 
 function mod:SetMemberEPGP(name, ep, gp)
-  assert(type(ep) == "number" and ep >= 0 and ep <= 999999999999999)
-  assert(type(gp) == "number" and gp >= 0 and gp <= 999999999999999)
+  assert(type(ep) == "number" and type(gp) == "number")
+  ep = max(0, min(999999999999999, ep))
+  gp = max(0, min(999999999999999, gp))
   local t = GetMemberData(self, name)
   t[1] = ep
   t[2] = gp
