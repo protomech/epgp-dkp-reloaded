@@ -61,9 +61,10 @@ function mod:OnInitialize()
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
-    OnAccept = function()
-                 mod:ResetEPGP()
-               end,
+    OnAccept =
+      function()
+        mod:ResetEPGP()
+      end,
     hideOnEscape = 1,
     whileDead = 1,
   }
@@ -72,9 +73,10 @@ function mod:OnInitialize()
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
-    OnAccept = function()
-                 mod:DecayEPGP()
-               end,
+    OnAccept =
+      function()
+        mod:DecayEPGP()
+      end,
     hideOnEscape = 1,
     whileDead = 1,
   }
@@ -83,9 +85,10 @@ function mod:OnInitialize()
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
-    OnAccept = function()
-                 mod:RestoreNotes()
-               end,
+    OnAccept =
+      function()
+        mod:RestoreNotes()
+      end,
     hideOnEscape = 1,
     whileDead = 1,
   }
@@ -96,59 +99,64 @@ function mod:OnInitialize()
     button1 = ACCEPT,
     button2 = CANCEL,
     timeout = 0,
-    OnShow = function()
-               local data = popup_data
-               local editBox = getglobal(this:GetName().."EditBox")
-               if gptooltip:GetGPValue(data.reason) then
-                 editBox:SetText(gptooltip:GetGPValue(data.reason))
-               elseif EPGP.db.profile.reason_award_cache[data.reason] then
-                 editBox:SetText(EPGP.db.profile.reason_award_cache[data.reason])
-               end
-               editBox:HighlightText()
-               editBox:SetFocus()
-             end,
+    OnShow =
+      function()
+        local data = popup_data
+        local editBox = getglobal(this:GetName().."EditBox")
+        if gptooltip:GetGPValue(data.reason) then
+          editBox:SetText(gptooltip:GetGPValue(data.reason))
+        elseif EPGP.db.profile.reason_award_cache[data.reason] then
+          editBox:SetText(EPGP.db.profile.reason_award_cache[data.reason])
+        end
+        editBox:HighlightText()
+        editBox:SetFocus()
+      end,
     OnHide = OnStaticPopupHide,
-    OnAccept = function()
-                 local data = popup_data
-                 local editBox = getglobal(this:GetParent():GetName().."EditBox")
-                 local number = editBox:GetNumber()
-                 if not data.valid_func or data.valid_func(number) then
-                   EPGP.db.profile.reason_award_cache[data.reason] = number
-                   if data.member then
-                     data.func(mod, data.member, data.reason, number)
-                   else
-                     data.func(mod, data.reason, number)
-                   end
-                 end
-               end,
-    EditBoxOnEnterPressed = function()
-                              local data = popup_data
-                              local editBox = getglobal(this:GetParent():GetName().."EditBox")
-                              local number = editBox:GetNumber()
-                              if not data.valid_func or data.valid_func(number) then
-                                EPGP.db.profile.reason_award_cache[data.reason] = number
-                                if data.member then
-                                  data.func(mod, data.member, data.reason, number)
-                                else
-                                  data.func(mod, data.reason, number)
-                                end
-                                this:GetParent():Hide()
-                              end
-                            end,
-    EditBoxOnTextChanged = function()
-                             local data = popup_data
-                             local editBox = getglobal(this:GetParent():GetName().."EditBox")
-                             local button1 = getglobal(this:GetParent():GetName().."Button1")
-                             local number = editBox:GetNumber()
-                             if not data.valid_func or data.valid_func(number) then
-                               button1:Enable()
-                             else
-                               button1:Disable()
-                             end
-                           end,
-    EditBoxOnEscapePressed = function()
-                               this:GetParent():Hide()
-                             end,
+    OnAccept =
+      function()
+        local data = popup_data
+        local editBox = getglobal(this:GetParent():GetName().."EditBox")
+        local number = editBox:GetNumber()
+        if not data.valid_func or data.valid_func(number) then
+          EPGP.db.profile.reason_award_cache[data.reason] = number
+          if data.member then
+            data.func(mod, data.member, data.reason, number)
+          else
+            data.func(mod, data.reason, number)
+          end
+        end
+      end,
+    EditBoxOnEnterPressed =
+      function()
+        local data = popup_data
+        local editBox = getglobal(this:GetParent():GetName().."EditBox")
+        local number = editBox:GetNumber()
+        if not data.valid_func or data.valid_func(number) then
+          EPGP.db.profile.reason_award_cache[data.reason] = number
+          if data.member then
+            data.func(mod, data.member, data.reason, number)
+          else
+            data.func(mod, data.reason, number)
+          end
+          this:GetParent():Hide()
+        end
+      end,
+    EditBoxOnTextChanged =
+      function()
+        local data = popup_data
+        local editBox = getglobal(this:GetParent():GetName().."EditBox")
+        local button1 = getglobal(this:GetParent():GetName().."Button1")
+        local number = editBox:GetNumber()
+        if not data.valid_func or data.valid_func(number) then
+          button1:Enable()
+        else
+          button1:Disable()
+        end
+      end,
+    EditBoxOnEscapePressed =
+      function()
+        this:GetParent():Hide()
+      end,
     hideOnEscape = 1,
     hasEditBox = 1,
     whileDead = 1,
