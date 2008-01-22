@@ -12,7 +12,7 @@ end
 local function GuildIterator(obj, i)
   local name = GetGuildRosterInfo(i)
   -- Handle dummies
-  if obj.cache:IsDummy(name) then
+  if obj:IsDummy(name) then
     name = EPGP.db.profile.dummies[name]
   end
   if not name then return end
@@ -257,13 +257,12 @@ function mod:AddEP2Member(name, reason, points, silent)
   assert(type(reason) == "string")
   if type(points) == "number" then
     local ep, gp = cache:GetMemberEPGP(name)
-    if ep + points < 0 then
-      points = 0 - ep
-    end
-    cache:SetMemberEPGP(name, ep+points, gp)
-    cache:SaveRoster()
-    if not silent then
-      self:Report(L["Awarded %d EP to %s (%s)."], points, name, reason)
+    if ep then
+      cache:SetMemberEPGP(name, ep+points, gp)
+      cache:SaveRoster()
+      if not silent then
+        self:Report(L["Awarded %d EP to %s (%s)."], points, name, reason)
+      end
     end
   else
     popup_data.func = mod.AddEP2Member
@@ -306,14 +305,16 @@ function mod:AcceptEPWhisperHandler(event, ...)
       else
         player = text:sub(1,1):upper()..text:sub(2):lower()
       end
-      if not cache:GetInGuildName(player) then
+      local ep, gp = cache:GetMemberEPGP(player)
+      if not ep then
         SendChatMessage(L["%s is not eligible for EP award (%s)"]:format(player, award_reason),
                         "WHISPER", nil, sender)
       else
         local awarded = cache:GetInGuildName(player)
         if not awarded_members[awarded] then
           awarded_members[awarded] = true
-          self:AddEP2Member(player, award_reason, award_ep, true)
+          cache:SetMemberEPGP(player, ep+award_ep, gp)
+          cache:SaveRoster()
           SendChatMessage(L["Awarded %d EP to %s (%s)"]:format(award_ep, player, award_reason),
                           "WHISPER", nil, sender)
         else
@@ -361,15 +362,17 @@ function mod:AddEP2Raid(reason, points)
     awarded_members = {}
     for i = 1, GetNumRaidMembers() do
       local player = select(1, GetRaidRosterInfo(i))
-      if cache:GetMemberEPGP(player) then
+      local ep, gp = cache:GetMemberEPGP(player)
+      if ep and gp then
         local awarded = cache:GetInGuildName(player)
-        if awarded and not awarded_members[awarded] then
+        if not awarded_members[awarded] then
           awarded_members[awarded] = true
-          self:AddEP2Member(player, reason, points, true)
+          cache:SetMemberEPGP(player, ep+points, gp)
         end
       end
     end
     self:Report(L["Awarded %d EP to raid (%s)."], points, reason)
+    cache:SaveRoster()
     self:Report(L["Whisper 'ep' or your main toon's name to receive standby EP for %s"],
                 reason)
 
@@ -495,7 +498,7 @@ function mod:GetListing(list_name, sort_on, show_alts, search_str)
   search_str = strlower(search_str)
   if not iterator then return t end
   if not cache then return t end
-  for i,name in iterator,self,1 do
+  for i,name in iterator,cache,1 do
     if show_alts or not cache:IsAlt(name) then
       local rank, rankIndex, level, class, zone, note, officernote, online, status = cache:GetMemberInfo(name)
       if not search_str or
