@@ -93,9 +93,9 @@ local CUSTOM_ITEM_DATA = {
   ["31098"] = { 4, 146, "INVTYPE_LEGS" },
   ["31099"] = { 4, 146, "INVTYPE_LEGS" },
   ["31100"] = { 4, 146, "INVTYPE_LEGS" },
-  ["31001"] = { 4, 146, "INVTYPE_SHOULDER" },
+  ["31101"] = { 4, 146, "INVTYPE_SHOULDER" },
   ["31102"] = { 4, 146, "INVTYPE_SHOULDER" },
-  ["31003"] = { 4, 146, "INVTYPE_SHOULDER" },
+  ["31103"] = { 4, 146, "INVTYPE_SHOULDER" },
   
   -- Tier 6 - BoE recipes - BoP crafts
   ["32737"] = { 4, 141, "INVTYPE_SHOULDER" },
