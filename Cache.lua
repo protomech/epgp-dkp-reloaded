@@ -56,7 +56,7 @@ function mod:LoadConfig()
       if fc then EPGP.db.profile.flat_credentials = true end
 
       -- Read in Outsiders
-      for outsider, dummy in line:gmatch("(%a+):(%a+)") do
+      for outsider, dummy in line:gmatch("([^%p%s]+):([^%p%s]+)") do
         outsiders[outsider] = dummy
         dummies[dummy] = outsider
       end
@@ -143,7 +143,8 @@ function mod:LoadRoster()
   for i = 1, GetNumGuildMembers(true) do
     local name, rank, rankIndex, level, class, zone, note, officernote, online, status = GetGuildRosterInfo(i)
     -- This is an alt and officernote stores the main
-    if string.match(officernote, "%u%l*") == officernote then
+    if string.match(officernote, "[^%p%s]+") == officernote then
+      officernote = officernote:sub(1,1):upper() .. officernote:sub(2):lower()
       alts[name] = officernote
       data[name] = nil
     -- This is a main and officernote stores EPGP
