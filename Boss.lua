@@ -31,9 +31,18 @@ function mod:OnEnable()
   self:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
+local function IsRLorML()
+  if UnitInRaid("player") then
+    local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
+    if loot_method == "master" and ml_party_id == 0 then return true end
+    if loot_method ~= "master" and IsRaidLeader() then return true end
+  end
+  return false
+end
+
 local monitoring = false
 function mod:RAID_ROSTER_UPDATE()
-  if UnitInRaid("player") and IsRaidLeader() and EPGP.db.profile.boss_tracking then
+  if IsRLorML() and EPGP.db.profile.boss_tracking then
     if not monitoring then
       monitoring = true
       self:RegisterEvent("CHAT_MSG_COMBAT_HOSTILE_DEATH")
