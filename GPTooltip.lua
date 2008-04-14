@@ -96,6 +96,15 @@ local CUSTOM_ITEM_DATA = {
   ["31101"] = { 4, 146, "INVTYPE_SHOULDER" },
   ["31102"] = { 4, 146, "INVTYPE_SHOULDER" },
   ["31103"] = { 4, 146, "INVTYPE_SHOULDER" },
+  ["34848"] = { 4, 154, "INVTYPE_WRIST" },
+  ["34851"] = { 4, 154, "INVTYPE_WRIST" },
+  ["34852"] = { 4, 154, "INVTYPE_WRIST" },
+  ["34853"] = { 4, 154, "INVTYPE_WAIST" },
+  ["34854"] = { 4, 154, "INVTYPE_WAIST" },
+  ["34855"] = { 4, 154, "INVTYPE_WAIST" },
+  ["34856"] = { 4, 154, "INVTYPE_FEET" },
+  ["34857"] = { 4, 154, "INVTYPE_FEET" },
+  ["34858"] = { 4, 154, "INVTYPE_FEET" },
   
   -- Tier 6 - BoE recipes - BoP crafts
   ["32737"] = { 4, 141, "INVTYPE_SHOULDER" },
