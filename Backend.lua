@@ -179,7 +179,7 @@ end
 
 function mod:EPGP_CACHE_UPDATE()
   local guild_name = GetGuildInfo("player")
-  if guild_name ~= EPGP:GetProfile() then EPGP:SetProfile(guild_name) end
+  if guild_name and guild_name ~= EPGP:GetProfile() then EPGP:SetProfile(guild_name) end
 end
 
 function mod:EPGP_BOSS_KILLED(boss)
