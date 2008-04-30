@@ -279,7 +279,7 @@ function mod:SetEPMember(name, reason, points)
     local ep, gp = cache:GetMemberEPGP(name)
     cache:SetMemberEPGP(name, points, gp)
     cache:SaveRoster()
-    self:Report(L["Set EP for %s to %d (%s)."], name, points)
+    self:Report(L["Set EP for %s to %d (%s)."], name, points, reason)
   else
     popup_data.func = mod.SetEPMember
     popup_data.member = name
@@ -430,7 +430,7 @@ function mod:AddGP2Member(name, reason, points)
   end
 end
 
-function mod:SetGPMember(name, points)
+function mod:SetGPMember(name, reason, points)
   assert(type(name) == "string")
   if type(points) == "number" then
     local ep, gp = cache:GetMemberEPGP(name)
