@@ -131,7 +131,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(timestamp, event,
   -- and the NPC id is:
   --   (guid & 0x0000FFFFFF000000) >> 24
   if event == "UNIT_DIED" and dest:sub(5, 5) == "3" then
-    local npc_id = tonumber("0x"..string.sub(dest, 7, 12))
+    local npc_id = tonumber(string.sub(dest, -12, -7), 16)
     if BOSSES[npc_id] then
       self:TriggerEvent("EPGP_BOSS_KILLED", BOSSES[npc_id])
     end
