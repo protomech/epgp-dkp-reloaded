@@ -7,7 +7,7 @@ local mod = EPGP:NewModule("EPGP_Boss", "AceEvent-2.0")
 local BOSSES = {
   -- The Black Temple
   [22887] = BB["High Warlord Naj'entus"],
-  [22989] = BB["Supremus"],
+  [22898] = BB["Supremus"],
   [22841] = BB["Shade of Akama"],
   [22871] = BB["Teron Gorefiend"],
   [22948] = BB["Gurtogg Bloodboil"],
