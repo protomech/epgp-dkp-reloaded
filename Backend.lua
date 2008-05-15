@@ -461,7 +461,8 @@ function mod:RestoreNotes()
     local t = EPGP.db.profile.backup_notes[name]
     if t then
       GuildRosterSetPublicNote(i, t[1])
-      GuildRosterSetOfficerNote(i, t[2])
+      upgraded_note = t[2]:gsub('|', ',')
+      GuildRosterSetOfficerNote(i, upgraded_note)
     end
   end
   EPGP:Print(L["Restored Officer and Public notes."])

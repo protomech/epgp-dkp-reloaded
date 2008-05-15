@@ -120,19 +120,26 @@ function mod:SetMemberEPGP(name, ep, gp)
 end
 
 local function ParseNote(note)
-  -- Parse old format ep|tep|gp|tgp
+  -- Parse old format: ep|tep|gp|tgp
   local ep, tep, gp, tgp = string.match(note, "^(%d+)|(%d+)|(%d+)|(%d+)$")
   if ep then
     return tonumber(ep) + tonumber(tep), tonumber(gp) + tonumber(tgp) + EPGP.db.profile.base_gp
   end
 
-  -- Parse new format ep|gp
-  ep, gp = string.match(note, "^(%d+)|(%d+)$")
+  -- Parse post 2.4.2 old format: ep|tep|gp|tgp
+  local ep, tep, gp, tgp = string.match(note, "^(%d+),(%d+),(%d+),(%d+)$")
+  if ep then
+    return tonumber(ep) + tonumber(tep), tonumber(gp) + tonumber(tgp) + EPGP.db.profile.base_gp
+  end
+
+  -- Parse post 2.4.2 new format: ep,gp
+  ep, gp = string.match(note, "^(%d+),(%d+)$")
   if ep then
     return tonumber(ep), tonumber(gp) + EPGP.db.profile.base_gp
   end
 
-  -- Nothing works just return 0|BaseGP
+
+  -- Nothing works just return 0,BaseGP
   return 0, EPGP.db.profile.base_gp
 end
 
@@ -166,7 +173,7 @@ end
 local function EncodeNote(ep, gp)
   gp = gp - EPGP.db.profile.base_gp
   if gp < 0 then gp = 0 end
-  return string.format("%d|%d|%d|%d", 0, ep, 0, gp)
+  return string.format("%d,%d", ep, gp)
 end
 
 function mod:SaveRoster()
