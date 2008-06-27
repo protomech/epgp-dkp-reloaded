@@ -219,7 +219,7 @@
           <AbsDimension x="296" y="256"/>
         </Size>
         <Anchors>
-          <Anchor point="TOPLEFT" relativeTo="$parentNameColumnHeader" relativePoint="BOTTOMLEFT"/>
+          <Anchor point="TOPLEFT" relativeTo="EPGPListingNameColumnHeader" relativePoint="BOTTOMLEFT"/>
           <Anchor point="BOTTOMRIGHT" relativeTo="$parentHorizontalBarRight" relativePoint="TOPRIGHT">
             <OffSet>
               <AbsDimension x="-30" y="0"/>
