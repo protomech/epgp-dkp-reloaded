@@ -396,8 +396,9 @@ function mod:RecurringEP2Raid(reason, points)
       self:TriggerEvent("EPGP_STOP_RECURRING_EP_AWARDS")
     else
       self:ScheduleRepeatingEvent("RECURRING_EP", mod.AddEP2Raid, EPGP.db.profile.recurring_ep_period, self, reason, points)
-      self:Report(L["Awarding %d EP/%s (%s)."], points, SecondsToTime(EPGP.db.profile.recurring_ep_period), reason)
-    end
+      local fmt, val = SecondsToTimeAbbrev(EPGP.db.profile.recurring_ep_period)
+      self:Report(L["Awarding %d EP/%s (%s)."], points, fmt:format(val), reason)
+      end
   end
 end
 
