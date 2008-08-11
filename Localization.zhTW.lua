@@ -21,7 +21,6 @@ EPGPGlobalStrings = {
 	["Click to stop recurring award."] = "Click to stop recurring award.",
 	["Credit GP"] = "Credit GP",
 	["Credit GP to %s (%s)"] = "Credit GP to %s (%s)",
-	["Credit GP to %s for %s"] = "Credit GP to %s for %s",
 	["Credited %d GPs to %s (%s)."] = "Credited %d GPs to %s (%s).",
 	["Decay"] = "Decay",
 	["Decay EP and GP"] = "Decay EP and GP",

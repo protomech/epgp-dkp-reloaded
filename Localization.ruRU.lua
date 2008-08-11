@@ -1,4 +1,4 @@
-if GetLocale() ~= "koKR" then return end
+if GetLocale() ~= "ruRU" then return end
 EPGPGlobalStrings = {
 	["%s is not eligible for EP award (%s)"] = "%s is not eligible for EP award (%s)",
 	["%s was already awarded EP (%s)"] = "%s was already awarded EP (%s)",

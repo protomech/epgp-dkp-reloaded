@@ -42,6 +42,7 @@ local languages = {
   "zhTW",
   "koKR",
   "esES",
+  "ruRU",
 }
 
 local lang_tables = {}

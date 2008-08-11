@@ -16,6 +16,7 @@ Localization.frFR.lua
 Localization.deDE.lua
 Localization.esES.lua
 Localization.koKR.lua
+Localization.ruRU.lua
 Localization.zhCN.lua
 Localization.zhTW.lua
 
