@@ -1,5 +1,5 @@
 ## Interface: 20300
-## Title: EPGP
+## Title: EPGP-dev
 ## Notes: Effort Points/Gear Points Loot System
 ## Author: Alkis Evlogimenos
 ## Version: @VERSION@
