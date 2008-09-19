@@ -3,30 +3,9 @@
 ## Notes: Effort Points/Gear Points Loot System
 ## Author: Alkis Evlogimenos
 ## Version: @VERSION@
-## OptionalDeps: Ace2
-## SavedVariables: EPGP_Core_DB
-## SavedVariablesPerCharacter: EPGP_Core_PerCharDB
+## SavedVariables: EPGP_DB
+## SavedVariablesPerCharacter: EPGP_PerCharDB
 ## X-Category: Guild
 ## X-Website: http://code.google.com/p/epgp/
 
 embeds.xml
-
-Localization.enUS.lua
-Localization.frFR.lua
-Localization.deDE.lua
-Localization.esES.lua
-Localization.koKR.lua
-Localization.ruRU.lua
-Localization.zhCN.lua
-Localization.zhTW.lua
-
-Core.lua
-Boss.lua
-Cache.lua
-Backend.lua
-GPTooltip.lua
-Loot.lua
-OfficerNoteWarning.lua
-
-ATemplates.xml
-UI.xml
