@@ -24,3 +24,4 @@ LibGuildStorage-1.0.lua
 Localization.enUS.lua
 epgp.lua
 GPTooltip.lua
+OfficerNoteWarning.lua

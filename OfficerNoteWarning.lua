@@ -1,6 +1,6 @@
-local L = EPGPGlobalStrings
+local mod = EPGP:NewModule("EPGP_OfficerNoteWarning", "AceHook-3.0")
 
-local mod = EPGP:NewModule("EPGP_OfficerNoteWarning", "AceHook-2.1")
+local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 
 function mod:OnInitialize()
   StaticPopupDialogs["EPGP_OFFICER_NOTE_WARNING"] = {
