@@ -1,6 +1,6 @@
-local L = EPGPGlobalStrings
+local mod = EPGP:NewModule("EPGP_GPTooltip", "AceHook-3.0")
 
-local mod = EPGP:NewModule("EPGP_GPTooltip", "AceHook-2.1")
+local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 
 local EQUIPSLOT_VALUE = {
   ["INVTYPE_HEAD"] = 1,
@@ -146,14 +146,16 @@ end
 function mod:OnTooltipSetItem(tooltip, ...)
   local _, itemlink = tooltip:GetItem()
   self.hooks[tooltip]["OnTooltipSetItem"](tooltip, ...)
-  if EPGP.db.profile.gp_in_tooltips then
-    local gp, ilvl, ivalue = self:GetGPValue(itemlink)
-    if gp and gp > 0 then
-      tooltip:AddLine(
-        L["GP: %d [ItemLevel=%d ItemValue=%d]"]:format(gp, ilvl, ivalue),
-        NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
-    end
+  local gp, ilvl, ivalue = self:GetGPValue(itemlink)
+  if gp and gp > 0 then
+    tooltip:AddLine(
+      L["GP: %d [ItemLevel=%d ItemValue=%d]"]:format(gp, ilvl, ivalue),
+      NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
   end
+end
+
+function mod:OnInitialize()
+  -- TODO(alkis): Use db to persist enabled/disabled state.
 end
 
 function mod:OnEnable()
