@@ -98,10 +98,10 @@ frame:SetScript("OnUpdate", UpdateGuildRoster)
 frame:RegisterEvent("PLAYER_GUILD_UPDATE")
 frame:RegisterEvent("GUILD_ROSTER_UPDATE")
 
-function lib:PLAYER_GUILD_UPDATE(unit)
-  debug("Got PLAYER_GUILD_UPDATE unit=", unit)
+function lib:PLAYER_GUILD_UPDATE()
+  debug("Got PLAYER_GUILD_UPDATE")
   -- Hide the frame to stop OnUpdate from reading guild information
-  if frame:IsShown() then
+  if frame:IsShown() and not IsInGuild() then
     frame:Hide()
   end
   GuildRoster()
