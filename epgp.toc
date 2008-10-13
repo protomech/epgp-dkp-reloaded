@@ -25,3 +25,4 @@ Localization.enUS.lua
 epgp.lua
 GPTooltip.lua
 OfficerNoteWarning.lua
+Loot.lua

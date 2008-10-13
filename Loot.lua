@@ -1,7 +1,7 @@
-local L = EPGPGlobalStrings
-local deformat = AceLibrary("Deformat-2.0")
+local mod = EPGP:NewModule("EPGP_Loot", "AceEvent-3.0")
 
-local mod = EPGP:NewModule("EPGP_Loot", "AceEvent-2.0")
+local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local deformat = LibStub:GetLibrary("Deformat-2.0")
 
 local ignored_items = {
   [20725] = true, -- Nexus Crystal
@@ -18,10 +18,6 @@ local ignored_items = {
   [30320] = true, -- Bundle of Nether Spikes
 }
 
-function mod:OnInitialize()
-  self:RegisterEvent("RAID_ROSTER_UPDATE")
-end
-
 local function IsRLorML()
   if UnitInRaid("player") then
     local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
@@ -31,18 +27,11 @@ local function IsRLorML()
   return false
 end
 
-local monitoring = false
 function mod:RAID_ROSTER_UPDATE()
-  if IsRLorML() and EPGP.db.profile.loot_tracking then
-    if not monitoring then
-      monitoring = true
-      self:RegisterEvent("CHAT_MSG_LOOT")
-    end
+  if IsRLorML() then
+    self:RegisterEvent("CHAT_MSG_LOOT")
   else
-    if monitoring then
-      monitoring = false
-      self:UnregisterEvent("CHAT_MSG_LOOT")
-    end
+    self:UnregisterEvent("CHAT_MSG_LOOT")
   end
 end
 
@@ -79,6 +68,15 @@ function mod:CHAT_MSG_LOOT(msg)
   if not item_id then return end
 
   if ignored_items[item_id] then return end
-  if item_rarity < EPGP.db.profile.loot_tracking_quality_threshold then return end
-  self:TriggerEvent("EPGP_LOOT_RECEIVED", player, item_link, quantity)
+  -- TODO(alkis): Add quality threshold variable
+  self:SendMessage("LootReceived", player, item_link, quantity)
+end
+
+
+function mod:OnInitialize()
+  -- TODO(alkis): Use db to persist enabled/disabled state.
+end
+
+function mod:OnEnable()
+  self:RegisterEvent("RAID_ROSTER_UPDATE")
 end
