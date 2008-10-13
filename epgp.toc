@@ -16,9 +16,9 @@ Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\AceHook-3.0\AceHook-3.0.xml
 Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\AceTimer-3.0\AceTimer-3.0.xml
-Libs\Deformat-2.0\Deformat-2.0.xml
-Libs\LibBabble-Boss-3.0\LibBabble-Boss-3.0.xml
-Libs\LibBabble-Class-3.0\LibBabble-Class-3.0.xml
+Libs\Deformat-2.0\Deformat-2.0.lua
+Libs\LibBabble-Boss-3.0\lib.xml
+Libs\LibBabble-Class-3.0\lib.xml
 
 LibGuildStorage-1.0.lua
 Localization.enUS.lua
