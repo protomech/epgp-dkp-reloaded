@@ -62,13 +62,13 @@ function mod:CHAT_MSG_LOOT(msg)
   if not player or not item then return end
 
   local item_name, item_link, item_rarity = GetItemInfo(item)
+  if item_rarity < 4 then return end
   local item_id = select(3, item_link:find("item:(%d+):"))
   if not item_id then return end
   item_id = tonumber(item_id:trim())
   if not item_id then return end
 
   if ignored_items[item_id] then return end
-  -- TODO(alkis): Add quality threshold variable
   self:SendMessage("LootReceived", player, item_link, quantity)
 end
 
