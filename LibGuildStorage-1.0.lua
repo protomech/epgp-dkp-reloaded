@@ -73,18 +73,19 @@ local function UpdateGuildRoster()
   local e = math.min(next_index + 99, GetNumGuildMembers(true))
   for i = next_index, e do
     local name, _, _, _, _, _, _, note, _, _, class = GetGuildRosterInfo(i)
-      
-    local t = cache[name]
-    if not t then
-      t = {}
-      cache[name] = t
-    end
-    t.index = i
-    t.class = class
-    if t.note ~= note then
-      t.note = note
-      debug("name=", name, " note=", note)
-      callbacks:Fire("GuildNoteChanged", name, note)
+    if name then
+      local t = cache[name]
+      if not t then
+        t = {}
+        cache[name] = t
+      end
+      t.index = i
+      t.class = class
+      if t.note ~= note then
+        t.note = note
+        debug("name=", name, " note=", note)
+        callbacks:Fire("GuildNoteChanged", name, note)
+      end
     end
   end
   next_index = e + 1
