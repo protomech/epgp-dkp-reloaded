@@ -2,36 +2,41 @@ local mod = EPGP:NewModule("EPGP_GPTooltip", "AceHook-3.0")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 
-local EQUIPSLOT_VALUE = {
+-- This is the high price equipslot multiplier.
+local EQUIPSLOT_MULTIPLIER_1 = {
   ["INVTYPE_HEAD"] = 1,
-  ["INVTYPE_NECK"] = 0.55,
-  ["INVTYPE_SHOULDER"] = 0.777,
+  ["INVTYPE_NECK"] = 0.5,
+  ["INVTYPE_SHOULDER"] = 0.75,
   ["INVTYPE_CHEST"] = 1,
   ["INVTYPE_ROBE"] = 1,
-  ["INVTYPE_WAIST"] = 0.777,
+  ["INVTYPE_WAIST"] = 0.75,
   ["INVTYPE_LEGS"] = 1,
-  ["INVTYPE_FEET"] = 0.777,
-  ["INVTYPE_WRIST"] = 0.55,
-  ["INVTYPE_HAND"] = 0.777,
-  ["INVTYPE_FINGER"] = 0.55,
-  ["INVTYPE_TRINKET"] = 0.7,
-  ["INVTYPE_CLOAK"] = 0.55,
-  ["INVTYPE_WEAPON"] = 0.42,
-  ["INVTYPE_SHIELD"] = 0.55,
-  ["INVTYPE_2HWEAPON"] = 1,
-  ["INVTYPE_WEAPONMAINHAND"] = 0.42,
-  ["INVTYPE_WEAPONOFFHAND"] = 0.42,
-  ["INVTYPE_HOLDABLE"] = 0.55,
-  ["INVTYPE_RANGED"] = 0.42,
-  ["INVTYPE_RANGEDRIGHT"] = 0.42,
-  ["INVTYPE_THROWN"] = 0.42,
-  ["INVTYPE_RELIC"] = 0.42
+  ["INVTYPE_FEET"] = 0.75,
+  ["INVTYPE_WRIST"] = 0.5,
+  ["INVTYPE_HAND"] = 0.75,
+  ["INVTYPE_FINGER"] = 0.5,
+  ["INVTYPE_TRINKET"] = 0.75,
+  ["INVTYPE_CLOAK"] = 0.5,
+  ["INVTYPE_WEAPON"] = 1.5,
+  ["INVTYPE_SHIELD"] = 1.5,
+  ["INVTYPE_2HWEAPON"] = 2,
+  ["INVTYPE_WEAPONMAINHAND"] = 1.5,
+  ["INVTYPE_WEAPONOFFHAND"] = 0.5,
+  ["INVTYPE_HOLDABLE"] = 0.5,
+  ["INVTYPE_RANGED"] = 1.5,
+  ["INVTYPE_RANGEDRIGHT"] = 1.5,
+  ["INVTYPE_THROWN"] = 0.5,
+  ["INVTYPE_RELIC"] = 0.5
 }
 
-local ILVL_TO_IVALUE = {
-  [2] = function(ilvl) return (ilvl - 4) / 2 end,         -- Green
-  [3] = function(ilvl) return (ilvl - 1.84) / 1.6 end,   -- Blue
-  [4] = function(ilvl) return (ilvl - 1.3) / 1.3 end,     -- Purple
+-- This is the low price equipslot multiplier (off hand weapons, non
+-- tanking shields).
+local EQUIPSLOT_MULTIPLIER_2 = {
+  ["INVTYPE_WEAPON"] = 0.5,
+  ["INVTYPE_SHIELD"] = 0.5,
+  ["INVTYPE_2HWEAPON"] = 1,
+  ["INVTYPE_RANGED"] = 0.5,
+  ["INVTYPE_RANGEDRIGHT"] = 0.5,
 }
 
 --Used to display GP values directly on tier tokens
@@ -121,36 +126,50 @@ local CUSTOM_ITEM_DATA = {
   ["32386"] = { 4, 125, "INVTYPE_FINGER" },
 
   -- Kael'thas' Sphere
-  ["32405"] = { 4, 138, "INVTYPE_NECK" },
+  ["32405"] = { 4, 138, "INVTYPE_NECK" },  
 }
 
 function mod:GetGPValue(itemLink)
   if not itemLink then return end
-  local _, _, rarity, level, _, _, _, _, equipLoc = GetItemInfo(itemLink)
 
   -- Get the item ID to check against known token IDs
   local _, _, itemID = string.find(itemLink, "^|c%x+|Hitem:([^:]+):.+|h%[.+%]")
   -- Check to see if there is custom data for this item ID
+  local rarity, level, equipLoc
   if CUSTOM_ITEM_DATA[itemID] then
     rarity, level, equipLoc = unpack(CUSTOM_ITEM_DATA[itemID])
+  else
+    _, _, rarity, level, _, _, _, _, equipLoc = GetItemInfo(itemLink)
   end
-  local islot_mod = EQUIPSLOT_VALUE[equipLoc]
-  if not islot_mod then return end
-  local ilvl2ivalue = ILVL_TO_IVALUE[rarity]
-  if ilvl2ivalue then
-    local ivalue = ilvl2ivalue(level)
-    return math.floor(ivalue^2 * 0.04 * islot_mod), level, ivalue
+  -- Non-epic items do not have GP value
+  if rarity and rarity < 4 then
+    return
   end
+  local slot_multiplier1 = EQUIPSLOT_MULTIPLIER_1[equipLoc]
+  local slot_multiplier2 = EQUIPSLOT_MULTIPLIER_2[equipLoc]
+
+  if not slot_multiplier1 then return end
+  local gp_base = 0.483 * 2 ^ (level/26)
+  local high = math.floor(gp_base * slot_multiplier1)
+  local low = slot_multiplier2 and math.floor(gp_base * slot_multiplier2) or nil
+  return high, low, level
 end
 
 function mod:OnTooltipSetItem(tooltip, ...)
   local _, itemlink = tooltip:GetItem()
   self.hooks[tooltip]["OnTooltipSetItem"](tooltip, ...)
-  local gp, ilvl, ivalue = self:GetGPValue(itemlink)
-  if gp and gp > 0 then
-    tooltip:AddLine(
-      L["GP: %d [ItemLevel=%d ItemValue=%d]"]:format(gp, ilvl, ivalue),
-      NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+  local gp1, gp2, ilvl = self:GetGPValue(itemlink)
+
+  if gp1 then
+    if gp2 then
+      tooltip:AddLine(
+        L["GP: %d or %d [ItemLevel=%d]"]:format(gp1, gp2, ilvl),
+        NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+    else
+      tooltip:AddLine(
+        L["GP: %d [ItemLevel=%d]"]:format(gp1, ilvl),
+        NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+    end
   end
 end
 
