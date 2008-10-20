@@ -102,7 +102,7 @@ local function CreateTabButton(parent, text, id)
   local f = CreateFrame("Button", "$parentTabButton"..id, parent, "CharacterFrameTabButtonTemplate")
   f:SetID(id)
   f:SetText(text)
-  --      f:RegisterForClicks("LeftButtonUp")
+  --f:RegisterForClicks("LeftButtonUp")
   f:Show()
   return f
 end
@@ -142,10 +142,18 @@ local function CreateListingRow(parent, anchor, index)
   b:SetHeight(14)
   b:SetWidth(298)
   
+  local checkbox = CreateFrame("CheckButton", "$parentCheckBox", b, "UICheckButtonTemplate")
+  checkbox:SetWidth(14)
+  checkbox:SetHeight(14)
+  checkbox:SetPoint("TOPLEFT", b, "TOPLEFT", 3, 0)
+  --checkbox:SetScript("OnLoad", function() end)
+  checkbox:SetScript("OnShow", function() this:SetChecked(true) end)
+  --checkbox:SetScript("OnClick", function() end)
+  
   local name_text = b:CreateFontString("$parentNameText", "ARTWORK", "GameFontNormalSmall")
-  name_text:SetWidth(92)
+  name_text:SetWidth(72)
   name_text:SetHeight(14)
-  name_text:SetPoint("TOPLEFT",b,"TOPLEFT",7,0)
+  name_text:SetPoint("TOPLEFT", checkbox, "TOPRIGHT", 10, 0)
   name_text:SetJustifyH("LEFT") 
   name_text:SetText("test_"..index) -- debug line
   
@@ -170,13 +178,6 @@ local function CreateListingRow(parent, anchor, index)
   pr_text:SetJustifyH("RIGHT") 
   pr_text:SetText(index..".0") -- debug line
   
-  local checkbox = CreateFrame("CheckButton", "$parentCheckBox", b, "UICheckButtonTemplate")
-  checkbox:SetWidth(14)
-  checkbox:SetHeight(14)
-  checkbox:SetPoint("TOPLEFT", pr_text, "TOPRIGHT", 0, 0)
-  --checkbox:SetScript("OnLoad", function() end)
-  checkbox:SetScript("OnShow", function() this:SetChecked(true) end)
-  --checkbox:SetScript("OnClick", function() end)
   
   return b
 end
@@ -270,21 +271,27 @@ local function CreateStandingsPage(parent, id)
   alts_text:SetPoint("LEFT", alts, "RIGHT", 0, 0)
   alts_text:SetText(EPGP_TEXT_SHOWALTS)
 
+  local checkbox = CreateFrame("CheckButton", "$parentMasterCheckBox", f, "UICheckButtonTemplate")
+  checkbox:SetHeight(20)
+  checkbox:SetWidth(20)
+  checkbox:SetPoint("TOPLEFT", f, "TOPLEFT", 19, -70)
+  checkbox:SetScript("OnShow", function() this:SetChecked(true) end)
+
   -- ## Table Headers ##
   
   local NameHeader = CreateColumnHeader(f, "Name")
-  NameHeader:SetPoint("TOPLEFT", f, "TOPLEFT",19,-70)
+  NameHeader:SetPoint("TOPLEFT", checkbox, "TOPRIGHT", 1, 0)
   NameHeader:SetWidth(64)
   --NameHeader:SetScript("OnClick", function() end)
   
   local EP_Header = CreateColumnHeader(f, "EP")
   EP_Header:SetPoint("TOPLEFT", NameHeader, "TOPRIGHT",45,0)
-  EP_Header:SetWidth(64)
+  EP_Header:SetWidth(48)
   --EP_Header:SetScript("OnClick", function() end)
   
   local GP_Header = CreateColumnHeader(f, "GP")
   GP_Header:SetPoint("TOPLEFT", EP_Header, "TOPRIGHT",5,0)
-  GP_Header:SetWidth(64)
+  GP_Header:SetWidth(48)
   --GP_Header:SetScript("OnClick", function() end)
   
   local PR_Header = CreateColumnHeader(f, "PR")
@@ -292,20 +299,14 @@ local function CreateStandingsPage(parent, id)
   PR_Header:SetWidth(48)
   --PR_Header:SetScript("OnClick", function() end)
   
-  local checkbox = CreateFrame("CheckButton", "$parentMasterCheckBox", f, "UICheckButtonTemplate")
-  checkbox:SetHeight(20)
-  checkbox:SetWidth(20)
-  checkbox:SetPoint("TOPLEFT", PR_Header, "TOPRIGHT", 0, 0)
-  checkbox:SetScript("OnShow", function() this:SetChecked(true) end)
-  
   local scrollbar = CreateFrame("ScrollFrame", "$parentScrollBar", f, "FauxScrollFrameTemplate")
   scrollbar:SetWidth(296)
   scrollbar:SetHeight(210)
-  scrollbar:SetPoint("TOPLEFT", NameHeader, "BOTTOMRIGHT", -62, 0)
+  scrollbar:SetPoint("TOPLEFT", NameHeader, "BOTTOMRIGHT", -85, 0)
   
   -- ## Listing Rows ## --
   
-  local anchor = NameHeader
+  local anchor = checkbox
   for i=1,15 do
     anchor = CreateListingRow(f, anchor, i)
   end
