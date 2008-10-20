@@ -13,77 +13,11 @@ EPGP_TEXT_UNDO = "Undo"
 EPGP_TEXT_RECURRING_EP = "Recurring EPs"
 EPGP_TEXT_TITLE = "EPGP v5.0"
 
-function mod:OnInitialize()
-  LogPage:Hide()
-  HideUIPanel(EPGPFrame)
-end
-
 local function initButton(button, text)
   button:SetWidth(48)
   button:SetHeight(32)
   button:SetText(text)
   button:SetWidth(button:GetTextWidth()+20)
-end
-
--- ## Paper Doll Frame used by main EPGP frame ##
-
-local function PaperDollFrame(name)
-  local f = CreateFrame("Frame",name,UIParent)
-  f:SetFrameStrata("BACKGROUND")
-  f:SetWidth(384)
-  f:SetHeight(512)
-  f:SetPoint("TOPLEFT", nil, "TOPLEFT", 0, -104)
-  f:SetHitRectInsets(0,30,0,70)
-  --f:SetToplevel(true)
-  f:EnableMouse(true)
-  f:SetMovable(true) 
-  f:SetAttribute("UIPanelLayout-defined", true)
-  f:SetAttribute("UIPanelLayout-enabled", true)
-  f:SetAttribute("UIPanelLayout-area", "left")
-  f:SetAttribute("UIPanelLayout-pushable", 5)
-  f:SetAttribute("UIPanelLayout-whileDead", true)
-  
-  local titlebar = CreateFrame("Button", "$parentTitleBar", f)
-  titlebar:SetWidth(64)
-  titlebar:SetHeight(32)
-  titlebar:SetPoint("TOPLEFT", f, "TOPLEFT", 164, -8)
-  local titletext = titlebar:CreateFontString("$parentTitle", "ARTWORK", "GameFontNormalSmall")
-  titletext:SetAllPoints(titlebar)
-  titletext:SetText(EPGP_TEXT_TITLE)
-  
-  t = f:CreateTexture(nil,"BACKGROUND")
-  t:SetTexture("Interface\\PetitionFrame\\GuildCharter-Icon.blp")
-  t:SetWidth(60)
-  t:SetHeight(60)
-  t:SetPoint("TOPLEFT",f,"TOPLEFT",7,-6)
-  tl = f:CreateTexture(nil,"ARTWORK")
-  tl:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopLeft.blp")
-  tl:SetWidth(256)
-  tl:SetHeight(256)
-  tl:SetPoint("TOPLEFT",f,"TOPLEFT")
-  tr = f:CreateTexture(nil,"ARTWORK")
-  tr:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopRight.blp")
-  tr:SetWidth(128)
-  tr:SetHeight(256)
-  tr:SetPoint("TOPRIGHT",f,"TOPRIGHT")
-  bl = f:CreateTexture(nil,"ARTWORK")
-  bl:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-BottomLeft.blp")
-  bl:SetWidth(256)
-  bl:SetHeight(256)
-  bl:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT")
-  tr = f:CreateTexture(nil,"ARTWORK")
-  tr:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-BottomRight.blp")
-  tr:SetWidth(128)
-  tr:SetHeight(256)
-  tr:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT")
-
-  closebutton = CreateFrame("Button", "$parentXButton", f, "UIPanelCloseButton")
-  closebutton:SetPoint("CENTER", f, "TOPRIGHT", -46, -24)
-  closebutton:RegisterForClicks("LeftButtonUp")
-  closebutton:SetScript("OnClick", function() HideUIPanel(f) end )
-  closebutton:Enable()
-
-  return f
 end
 
 -- Creates a tab page. 
@@ -366,21 +300,84 @@ local function CreateLogPage(parent, id)
   return f   
 end
 
--- ## Main Frame Construction ##
+function mod:OnInitialize()
+  ChatFrame1:AddMessage("*** EPGP UI initializing..")
 
-ChatFrame1:AddMessage("*** EPGP UI initializing..")
+  -- EPGPFrame
+  local f = CreateFrame("Frame", "EPGPFrame", UIParent)
+  f:SetToplevel(true)
+  f:EnableMouse(true)
+  f:SetMovable(true) 
+  f:SetAttribute("UIPanelLayout-defined", true)
+  f:SetAttribute("UIPanelLayout-enabled", true)
+  f:SetAttribute("UIPanelLayout-area", "left")
+  f:SetAttribute("UIPanelLayout-pushable", 5)
+  f:SetAttribute("UIPanelLayout-whileDead", true)
 
-EPGPFrame = PaperDollFrame("EPGP")
+  f:SetWidth(384)
+  f:SetHeight(512)
+  f:SetPoint("TOPLEFT", nil, "TOPLEFT", 0, -104)
+  f:SetHitRectInsets(0, 30, 0, 45)
 
-StandingsPage = CreateStandingsPage(EPGPFrame, 1)
-LogPage = CreateLogPage(EPGPFrame, 2)
+  local t = f:CreateTexture(nil, "BACKGROUND")
+  t:SetTexture("Interface\\PetitionFrame\\GuildCharter-Icon.blp")
+  t:SetWidth(60)
+  t:SetHeight(60)
+  t:SetPoint("TOPLEFT", f, "TOPLEFT", 7, -6)
 
--- make Tab Buttons
-StandingsTabButton = CreateTabButton(EPGPFrame, EPGP_TEXT_STANDINGS, 1)
-StandingsTabButton:SetPoint("CENTER", EPGPFrame, "BOTTOMLEFT", 60, 61)
-StandingsTabButton:SetScript("OnClick", function(self) LogPage:Hide() StandingsPage:Show() end)
-LogTabButton = CreateTabButton(EPGPFrame, EPGP_TEXT_LOG, 2)
-LogTabButton:SetPoint("LEFT", StandingsTabButton, "RIGHT", -10, 0)
-LogTabButton:SetScript("OnClick", function(self) StandingsPage:Hide() LogPage:Show() end)
+  t = f:CreateTexture(nil, "ARTWORK")
+  t:SetTexture(
+    "Interface\\PaperDollInfoFrame\\UI-Character-General-TopLeft.blp")
+  t:SetWidth(256)
+  t:SetHeight(256)
+  t:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
 
-ChatFrame1:AddMessage("*** EPGP UI loaded successfully!")
+  t = f:CreateTexture(nil, "ARTWORK")
+  t:SetTexture(
+    "Interface\\PaperDollInfoFrame\\UI-Character-General-TopRight.blp")
+  t:SetWidth(128)
+  t:SetHeight(256)
+  t:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
+
+  t = f:CreateTexture(nil, "ARTWORK")
+  t:SetTexture(
+    "Interface\\PaperDollInfoFrame\\UI-Character-General-BottomLeft.blp")
+  t:SetWidth(256)
+  t:SetHeight(256)
+  t:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 0, 0)
+
+  t = f:CreateTexture(nil, "ARTWORK")
+  t:SetTexture(
+    "Interface\\PaperDollInfoFrame\\UI-Character-General-BottomRight.blp")
+  t:SetWidth(128)
+  t:SetHeight(256)
+  t:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
+
+  t = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  t:SetWidth(250)
+  t:SetHeight(16)
+  t:SetPoint("TOP", f, "TOP", 3, -16)
+  t:SetText(EPGP_TEXT_TITLE)
+
+  local cb =
+    CreateFrame("Button", "$parentCloseButton", f, "UIPanelCloseButton")
+  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -8)
+
+  -- Standings tab
+  StandingsPage = CreateStandingsPage(f, 1)
+
+  -- make Tab Buttons
+  StandingsTabButton = CreateTabButton(f, EPGP_TEXT_STANDINGS, 1)
+  StandingsTabButton:SetPoint("CENTER", f, "BOTTOMLEFT", 60, 61)
+  StandingsTabButton:SetScript("OnClick", function(self) LogPage:Hide() StandingsPage:Show() end)
+
+  -- Log tab
+  LogPage = CreateLogPage(f, 2)
+  LogTabButton = CreateTabButton(f, EPGP_TEXT_LOG, 2)
+  LogTabButton:SetPoint("LEFT", StandingsTabButton, "RIGHT", -10, 0)
+  LogTabButton:SetScript("OnClick", function(self) StandingsPage:Hide() LogPage:Show() end)
+
+  ChatFrame1:AddMessage("*** EPGP UI loaded successfully!")
+  
+  HideUIPanel(EPGPFrame)
+end
