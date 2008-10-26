@@ -152,12 +152,6 @@ local function CheckDB()
   return true
 end
 
--- REMOVE THIS AFTER 3.0 PATCH
-local function CalendarGetDate()
-  local t = date("!*t")
-  return t.wday, t.day, t.month, t.year
-end
-
 local timestamp_t = {}
 local function GetTimestamp()
   timestamp_t.month = select(2, CalendarGetDate())
