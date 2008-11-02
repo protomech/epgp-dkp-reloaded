@@ -4,6 +4,9 @@ local mod = EPGP:NewModule("EPGP_UI", "AceEvent-3.0")
 
 local CURRENT_VERSION = GetAddOnMetadata('EPGP_UI', 'Version')
 
+local BUTTON_TEXT_PADDING = 20
+local BUTTON_HEIGHT = 22
+
 EPGP_TEXT_STANDINGS = "Standings"
 EPGP_TEXT_LOG = "Logs"
 EPGP_TEXT_SHOWALTS = "Show Alts"
@@ -115,13 +118,140 @@ local function CreateColumnHeader(parent, text, width)
   return h
 end
 
+local function CreateEPGPLogFrame()
+  local f = CreateFrame("Frame", "EPGPLogFrame", EPGPFrame)
+  f:Hide()
+  f:SetWidth(350)
+  f:SetHeight(435)
+  f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -37, -6)
+
+  local t = f:CreateTexture(nil, "OVERLAY")
+  t:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Corner")
+  t:SetWidth(32)
+  t:SetHeight(32)
+  t:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -7)
+
+  t = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  t:SetPoint("TOPLEFT", f, "TOPLEFT", 17, -17)
+  t:SetText(GUILD_EVENT_LOG)
+
+  f:SetBackdrop(
+    {
+      bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+      edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+      tile = true,
+      tileSize = 32,
+      edgeSize = 32,
+      insets = { left=11, right=12, top=12, bottom=11 }
+    })
+
+  local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
+
+  local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+  undo:SetHeight(BUTTON_HEIGHT)
+  undo:SetText("Undo")
+  undo:SetWidth(undo:GetTextWidth() + BUTTON_TEXT_PADDING)
+  undo:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -9, 13)
+  undo:GetNormalFontObject():SetFontObject("GameFontNormalSmall")
+  undo:GetHighlightFontObject():SetFontObject("GameFontHighlightSmall")
+  undo:GetDisabledFontObject():SetFontObject("GameFontDisableSmall")
+  undo:SetScript("OnClick",
+                 function (self, value)
+                   EPGP:UndoLastAction()
+                 end)                   
+
+  local scrollParent = CreateFrame("Frame", nil, f)
+  scrollParent:SetWidth(f:GetWidth() - 20)
+  scrollParent:SetHeight(f:GetHeight() - 65)
+  scrollParent:SetPoint("TOPLEFT", f, "TOPLEFT", 11, -32)
+  scrollParent:SetBackdrop(
+    {
+      bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+      tile = true,
+      tileSize = 16,
+      edgeSize = 16,
+      insets = { left=5, right=5, top=5, bottom=5 }
+    })
+  scrollParent:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r,
+                                      TOOLTIP_DEFAULT_COLOR.g,
+                                      TOOLTIP_DEFAULT_COLOR.b)
+  scrollParent:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r,
+                                TOOLTIP_DEFAULT_BACKGROUND_COLOR.g,
+                                TOOLTIP_DEFAULT_BACKGROUND_COLOR.b)
+
+  local font = ChatFontSmall
+  local fontHeight = select(2, font:GetFont())
+  local recordHeight = fontHeight + 2
+  local numLogRecordFrames = math.floor(
+    (scrollParent:GetHeight() - 3) / recordHeight)
+  local record = CreateFrame("Button", "EPGPLogRecordFrame1", scrollParent)
+  record:SetNormalFontObject(font)
+  record:GetNormalFontObject():SetJustifyH("LEFT")
+  record:SetHeight(recordHeight)
+  record:SetWidth(scrollParent:GetWidth())
+  record:SetPoint("TOPLEFT", scrollParent, "TOPLEFT", 5, -3)
+  for i=2,numLogRecordFrames do
+    record = CreateFrame("Button", "EPGPLogRecordFrame"..i, scrollParent)
+    record:SetNormalFontObject(font)
+    record:GetNormalFontObject():SetJustifyH("LEFT")
+    record:SetHeight(recordHeight)
+    record:SetWidth(scrollParent:GetWidth())
+    record:SetPoint("TOPLEFT", "EPGPLogRecordFrame"..(i-1), "BOTTOMLEFT")
+  end
+
+  local scrollFrame = CreateFrame("ScrollFrame", "EPGPLogRecordScrollFrame",
+                                  scrollParent, "FauxScrollFrameTemplate")
+  scrollFrame:SetWidth(scrollParent:GetWidth() - 35)
+  scrollFrame:SetHeight(scrollParent:GetHeight() - 10)
+  scrollFrame:SetPoint("TOPRIGHT", scrollParent, "TOPRIGHT", -28, -6)
+
+  local function UpdateLog()
+    local offset = FauxScrollFrame_GetOffset(EPGPLogRecordScrollFrame)
+    local numRecords = EPGP:GetNumRecords()
+    local numDisplayedRecords = math.min(numLogRecordFrames, numRecords - offset)
+    for i=1,numLogRecordFrames do
+      local record = getglobal("EPGPLogRecordFrame"..i)
+      local logIndex = i + offset - 1
+      if logIndex < numRecords then
+        record:SetText(EPGP:GetLogRecord(logIndex))
+        record:Show()
+      else
+        record:Hide()
+      end
+    end
+    if numRecords > 0 then
+      undo:Enable()
+    else
+      undo:Disable()
+    end
+    FauxScrollFrame_Update(EPGPLogRecordScrollFrame,
+                           numRecords, numDisplayedRecords, recordHeight)
+  end
+
+  scrollFrame:SetScript("OnShow", UpdateLog)
+  scrollFrame:SetScript("OnVerticalScroll",
+                        function(self, value)
+                          FauxScrollFrame_OnVerticalScroll(
+                            self, value, recordHeight, UpdateLog)
+                        end)
+  EPGP:RegisterCallback("LogChanged", UpdateLog)
+
+  -- Make sure when the parent shows we are hidden
+  EPGPFrame:SetScript("OnShow",
+                      function(self)
+                        EPGPLogFrame:Hide()
+                      end)
+end
+
 local function CreateEPGPFrameStandings()
-  local f = CreateFrame("Frame", "$parentStandings", EPGPFrame)
+  -- Make the show alts checkbox
+  local f = CreateFrame("Frame", nil, EPGPFrame)
   f:SetWidth(210)
   f:SetHeight(23)
   f:SetPoint("TOPRIGHT", EPGPFrame, "TOPRIGHT", -42, -38)
 
-  -- Make the show alts checkbox
   local tr = f:CreateTexture(nil, "BACKGROUND")
   tr:SetTexture("Interface\\ClassTrainerFrame\\UI-ClassTrainer-FilterBorder")
   tr:SetWidth(12)
@@ -152,104 +282,56 @@ local function CreateEPGPFrameStandings()
   t:SetText("Show alts")
   t:SetPoint("RIGHT", cb, "LEFT", -10, 1)
 
-  -- Make the table
-  f = CreateFrame("Frame", nil, EPGPFrame)
-  f:SetWidth(300)
-  f:SetHeight(200)
-  f:SetPoint("TOPLEFT")
+  -- Make the main frame
+  local main = CreateFrame("Frame", nil, EPGPFrame)
+  main:SetWidth(322)
+  main:SetHeight(358)
+  main:SetPoint("TOPLEFT", EPGPFrame, 19, -72)
 
-  local h1 = CreateColumnHeader(f, "Name", 100)
-  h1:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -70)
+  -- Make the headers
+  local h1 = CreateColumnHeader(main, "Name", 100)
+  h1:SetPoint("TOPLEFT")
 
-  local h2 = CreateColumnHeader(f, "EP", 64)
+  local h2 = CreateColumnHeader(main, "EP", 64)
   h2:SetPoint("TOPLEFT", h1, "TOPRIGHT")
 
-  local h3 = CreateColumnHeader(f, "GP", 64)
+  local h3 = CreateColumnHeader(main, "GP", 64)
   h3:SetPoint("TOPLEFT", h2, "TOPRIGHT")
 
-  local h4 = CreateColumnHeader(f, "PR", 64)
+  local h4 = CreateColumnHeader(main, "PR", 64)
   h4:SetPoint("TOPLEFT", h3, "TOPRIGHT")
 
-end
+  -- Make the log frame
+  CreateEPGPLogFrame()
 
-local function CreateEPGPFrameLog()
-  local f = CreateFrame("Frame", "$parentLog", EPGPFrame)
-  f:SetWidth(395)
-  f:SetHeight(435)
-  f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -37, -6)
+  -- Make the buttons
+  local once = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
+  once:SetHeight(BUTTON_HEIGHT)
+  once:SetPoint("BOTTOMLEFT")
+  once:SetText("Once")
+  once:SetWidth(once:GetTextWidth() + BUTTON_TEXT_PADDING)
 
-  local t = f:CreateTexture(nil, "OVERLAY")
-  t:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Corner")
-  t:SetWidth(32)
-  t:SetHeight(32)
-  t:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -7)
+  local recur = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
+  recur:SetHeight(BUTTON_HEIGHT)
+  recur:SetPoint("LEFT", once, "RIGHT", 0, 0)
+  recur:SetText("Recurring")
+  recur:SetWidth(recur:GetTextWidth() + BUTTON_TEXT_PADDING)
 
-  t = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  t:SetPoint("TOPLEFT", f, "TOPLEFT", 17, -17)
-  t:SetText(GUILD_EVENT_LOG)
+  local log = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
+  log:SetHeight(BUTTON_HEIGHT)
+  log:SetPoint("BOTTOMRIGHT")
+  log:SetText("Log")
+  log:SetWidth(log:GetTextWidth() + BUTTON_TEXT_PADDING)
+  log:SetScript("OnClick",
+                function(self, button, down)
+                  EPGPLogFrame:Show()
+                end)
 
-  f:SetBackdrop(
-    {
-      bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-      edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-      tile = true,
-      tileSize = 32,
-      edgeSize = 32,
-      insets = { left=11, right=12, top=12, bottom=11 }
-    })
-
-  local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
-
-  local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-  undo:SetWidth(139)
-  undo:SetHeight(22)
-  undo:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -9, 13)
-  undo:GetNormalFontObject():SetFontObject("GameFontNormalSmall")
-  undo:GetHighlightFontObject():SetFontObject("GameFontHighlightSmall")
-  undo:GetDisabledFontObject():SetFontObject("GameFontDisableSmall")
-  undo:SetText("Undo")
-
-  local events = CreateFrame("Frame", "$parentEvents", f)
-  events:SetWidth(375)
-  events:SetHeight(370)
-  events:SetPoint("TOPLEFT", f, "TOPLEFT", 11, -32)
-  events:SetBackdrop(
-    {
-      bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-      tile = true,
-      tileSize = 16,
-      edgeSize = 16,
-      insets = { left=5, right=5, top=5, bottom=5 }
-    })
-  events:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r,
-                                TOOLTIP_DEFAULT_COLOR.g,
-                                TOOLTIP_DEFAULT_COLOR.b)
-  events:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r,
-                          TOOLTIP_DEFAULT_BACKGROUND_COLOR.g,
-                          TOOLTIP_DEFAULT_BACKGROUND_COLOR.b)
-
-  local records = CreateFrame("ScrollingMessageFrame", nil, events)
-  records:SetWidth(345)
-  records:SetHeight(350)
-  records:SetPoint("TOPLEFT", events, "TOPLEFT", 8, -8)
-
-  local scrollFrame = CreateFrame("ScrollFrame", nil, records,
-                                  "FauxScrollFrameTemplate")
-  scrollFrame:SetWidth(340)
-  scrollFrame:SetHeight(359)
-  scrollFrame:SetPoint("TOPRIGHT", events, "TOPRIGHT", -28, -6)
-  scrollFrame:SetScript("OnVerticalScroll",
-                        function(self)
-                          -- FauxScrollFrame_OnVerticalScroll(...)
-                        end)
 end
 
 function mod:OnInitialize()
   CreateEPGPFrame()
   CreateEPGPFrameStandings()
-  CreateEPGPFrameLog()
 
   HideUIPanel(EPGPFrame)
 end
