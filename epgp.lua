@@ -21,6 +21,10 @@
 --
 -- GetMinEP(): Returns the min EP configured in guild info.
 --
+-- GetNumRecords(): Returns the number of log records.
+--
+-- GetLogRecord(i): Returns the ith log record starting 0.
+--
 -- ExportLog(): Returns a string with the data of the exported log for
 -- import into the web application.
 --
@@ -41,12 +45,26 @@
 --
 -- GetMinEP(): Retuns the min EP configured in GuildInfo.
 --
+-- The library also fires the following messages, which you can
+-- register for through RegisterCallback and unregister through
+-- UnregisterCallback. You can also unregister all messages through
+-- UnregisterAllCallbacks.
+--
+-- LogChanged(n): Fired when the log is changed. n is the new size of
+-- the log.
+--
 
 EPGP = LibStub:GetLibrary("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0")
 local EPGP = EPGP
 local GS = LibStub:GetLibrary("LibGuildStorage-1.0")
 local AceDB = LibStub:GetLibrary("AceDB-3.0")
+local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0")
+if not EPGP.callbacks then
+  EPGP.callbacks = CallbackHandler:New(EPGP)
+end
+local callbacks = EPGP.callbacks
+
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 
 local function debug(...)
@@ -171,6 +189,7 @@ local function AppendLog(timestamp, kind, dst, reason, amount)
   assert(type(amount) == "number")
 
   table.insert(db.profile.log, {timestamp, kind, player, dst, reason, amount})
+  callbacks:Fire("LogChanged", #db.profile.log)
 end
 
 local function LogRecordToString(record)
@@ -178,11 +197,12 @@ local function LogRecordToString(record)
 
   if kind == "EP" then
     return string.format("%s: %s awards %d EP to %s for %s",
-                         date("%c", timestamp), src, amount, dst, reason)
+                         date("%F %R", timestamp), src, amount, dst, reason)
   elseif kind == "GP" then
     return string.format("%s: %s credits %d GP to %s for %s",
-                         date("%c", timestamp), src, amount, dst, reason)
+                         date("%F %R", timestamp), src, amount, dst, reason)
   else
+    debug(tostring(timestamp), tostring(kind), tostring(src), tostring(dst), tostring(reason), tostring(amount))
     assert(false, "Unknown record in the log")
   end
 end
@@ -362,7 +382,23 @@ function EPGP:UndoLastAction()
     assert(false, "Unknown record in the log")
   end
 
+  callbacks:Fire("LogChanged", #db.profile.log)
   return true
+end
+
+function EPGP:GetNumRecords()
+  assert(CheckDB())
+
+  return #db.profile.log
+end
+
+function EPGP:GetLogRecord(i)
+  assert(CheckDB())
+
+  local logsize = #db.profile.log
+  assert(i >= 0 and i < #db.profile.log, "Index "..i.." is out of bounds")
+
+  return LogRecordToString(db.profile.log[logsize - i])
 end
 
 function EPGP:OnInitialize()
