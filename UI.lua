@@ -121,7 +121,7 @@ end
 local function CreateEPGPLogFrame()
   local f = CreateFrame("Frame", "EPGPLogFrame", EPGPFrame)
   f:Hide()
-  f:SetWidth(350)
+  f:SetWidth(450)
   f:SetHeight(435)
   f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -37, -6)
 
@@ -184,21 +184,24 @@ local function CreateEPGPLogFrame()
   local font = ChatFontSmall
   local fontHeight = select(2, font:GetFont())
   local recordHeight = fontHeight + 2
+  local recordWidth = scrollParent:GetWidth() - 35
   local numLogRecordFrames = math.floor(
     (scrollParent:GetHeight() - 3) / recordHeight)
-  local record = CreateFrame("Button", "EPGPLogRecordFrame1", scrollParent)
-  record:SetNormalFontObject(font)
-  record:GetNormalFontObject():SetJustifyH("LEFT")
+  local record = scrollParent:CreateFontString("EPGPLogRecordFrame1")
+  record:SetFontObject(font)
   record:SetHeight(recordHeight)
-  record:SetWidth(scrollParent:GetWidth())
+  record:SetWidth(recordWidth)
+  record:SetMultilineIndent(false)
+  record:SetText("amsdoiamsdASD")
   record:SetPoint("TOPLEFT", scrollParent, "TOPLEFT", 5, -3)
   for i=2,numLogRecordFrames do
-    record = CreateFrame("Button", "EPGPLogRecordFrame"..i, scrollParent)
-    record:SetNormalFontObject(font)
-    record:GetNormalFontObject():SetJustifyH("LEFT")
+    record = scrollParent:CreateFontString("EPGPLogRecordFrame"..i)
+    record:SetFontObject(font)
     record:SetHeight(recordHeight)
-    record:SetWidth(scrollParent:GetWidth())
+    record:SetWidth(recordWidth)
+    record:SetMultilineIndent(false)
     record:SetPoint("TOPLEFT", "EPGPLogRecordFrame"..(i-1), "BOTTOMLEFT")
+    record:SetText("amsdoiamsdASD")
   end
 
   local scrollFrame = CreateFrame("ScrollFrame", "EPGPLogRecordScrollFrame",
@@ -208,6 +211,9 @@ local function CreateEPGPLogFrame()
   scrollFrame:SetPoint("TOPRIGHT", scrollParent, "TOPRIGHT", -28, -6)
 
   local function UpdateLog()
+    if false then
+      return
+    end
     local offset = FauxScrollFrame_GetOffset(EPGPLogRecordScrollFrame)
     local numRecords = EPGP:GetNumRecords()
     local numDisplayedRecords = math.min(numLogRecordFrames, numRecords - offset)
@@ -216,6 +222,7 @@ local function CreateEPGPLogFrame()
       local logIndex = i + offset - 1
       if logIndex < numRecords then
         record:SetText(EPGP:GetLogRecord(logIndex))
+        record:GetFontObject():SetJustifyH("LEFT")
         record:Show()
       else
         record:Hide()
@@ -305,17 +312,31 @@ local function CreateEPGPFrameStandings()
   CreateEPGPLogFrame()
 
   -- Make the buttons
+  local function DisableWhileNotInRaid(self)
+    if UnitInRaid("player") then
+      self:Enable()
+    else
+      self:Disable()
+    end
+  end
+
   local once = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   once:SetHeight(BUTTON_HEIGHT)
   once:SetPoint("BOTTOMLEFT")
   once:SetText("Once")
   once:SetWidth(once:GetTextWidth() + BUTTON_TEXT_PADDING)
+  once:SetScript("OnEvent", DisableWhileNotInRaid)
+  once:SetScript("OnShow", DisableWhileNotInRaid)
+  once:RegisterEvent("RAID_ROSTER_UPDATE")
 
   local recur = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   recur:SetHeight(BUTTON_HEIGHT)
   recur:SetPoint("LEFT", once, "RIGHT", 0, 0)
   recur:SetText("Recurring")
   recur:SetWidth(recur:GetTextWidth() + BUTTON_TEXT_PADDING)
+  recur:SetScript("OnShow", DisableWhileNotInRaid)
+  recur:SetScript("OnEvent", DisableWhileNotInRaid)
+  recur:RegisterEvent("RAID_ROSTER_UPDATE")
 
   local log = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   log:SetHeight(BUTTON_HEIGHT)
@@ -326,7 +347,6 @@ local function CreateEPGPFrameStandings()
                 function(self, button, down)
                   EPGPLogFrame:Show()
                 end)
-
 end
 
 function mod:OnInitialize()
