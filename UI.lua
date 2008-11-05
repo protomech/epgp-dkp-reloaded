@@ -204,11 +204,11 @@ local function CreateEPGPLogFrame()
     record:SetText("amsdoiamsdASD")
   end
 
-  local scrollFrame = CreateFrame("ScrollFrame", "EPGPLogRecordScrollFrame",
-                                  scrollParent, "FauxScrollFrameTemplate")
-  scrollFrame:SetWidth(scrollParent:GetWidth() - 35)
-  scrollFrame:SetHeight(scrollParent:GetHeight() - 10)
-  scrollFrame:SetPoint("TOPRIGHT", scrollParent, "TOPRIGHT", -28, -6)
+  local scrollBar = CreateFrame("ScrollFrame", "EPGPLogRecordScrollFrame",
+                                scrollParent, "FauxScrollFrameTemplate")
+  scrollBar:SetWidth(scrollParent:GetWidth() - 35)
+  scrollBar:SetHeight(scrollParent:GetHeight() - 10)
+  scrollBar:SetPoint("TOPRIGHT", scrollParent, "TOPRIGHT", -28, -6)
 
   local function UpdateLog()
     if false then
@@ -237,12 +237,12 @@ local function CreateEPGPLogFrame()
                            numRecords, numDisplayedRecords, recordHeight)
   end
 
-  scrollFrame:SetScript("OnShow", UpdateLog)
-  scrollFrame:SetScript("OnVerticalScroll",
-                        function(self, value)
-                          FauxScrollFrame_OnVerticalScroll(
-                            self, value, recordHeight, UpdateLog)
-                        end)
+  scrollBar:SetScript("OnShow", UpdateLog)
+  scrollBar:SetScript("OnVerticalScroll",
+                      function(self, value)
+                        FauxScrollFrame_OnVerticalScroll(
+                          self, value, recordHeight, UpdateLog)
+                      end)
   EPGP:RegisterCallback("LogChanged", UpdateLog)
 
   -- Make sure when the parent shows we are hidden
