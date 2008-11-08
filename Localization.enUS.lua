@@ -9,4 +9,5 @@ if L then
   L["Full"] = true
   L["Offspec"] = true
   L["Credit GP to %s"] = true
+  L["Decay EP and GP by %d%%?"] = true
 end

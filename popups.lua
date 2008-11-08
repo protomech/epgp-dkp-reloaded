@@ -63,6 +63,17 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 		ClearCursor();
 	end
 }
+StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
+	text = L["Decay EP and GP by %d%%?"],
+	button1 = ACCEPT,
+	button2 = CANCEL,
+	timeout = 0,
+	hideOnEscape = 1,
+	whileDead = 1,
+	OnAccept = function()
+		EPGP:DecayEPGP()
+	end
+}
 
 
 local function Debug(fmt, ...)
@@ -70,15 +81,16 @@ local function Debug(fmt, ...)
 end
 
 function mod:OnInitialize()
-   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541) 
-   local r, g, b = GetItemQualityColor(itemRarity);
+--   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541) 
+--   local r, g, b = GetItemQualityColor(itemRarity);
 
-   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",
-         itemName, itemLink, itemRarity, itemTexture)
-   StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", "Lane", "", {
-                      texture = itemTexture,
-                      name = itemName,
-                      color = {r, g, b, 1},
-                      link = itemLink
-                    })
+--   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",
+--         itemName, itemLink, itemRarity, itemTexture)
+--   StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", "Lane", "", {
+--                      texture = itemTexture,
+--                      name = itemName,
+--                      color = {r, g, b, 1},
+--                      link = itemLink
+--                    })
+--	StaticPopup_Show("EPGP_DECAY_EPGP", 7)
 end
