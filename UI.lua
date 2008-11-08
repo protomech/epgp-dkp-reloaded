@@ -16,6 +16,16 @@ EPGP_TEXT_UNDO = "Undo"
 EPGP_TEXT_RECURRING_EP = "Recurring EPs"
 EPGP_TEXT_TITLE = "EPGP v5.0"
 
+local function Debug(fmt, ...)
+  DEFAULT_CHAT_FRAME:AddMessage(string.format(fmt, ...))
+end
+
+local function DebugFrame(frame, r, g, b)
+  local t = frame:CreateTexture()
+  t:SetAllPoints(frame)
+  t:SetTexture(r or 0, g or 1, b or 0, 0.2)
+end
+
 local function CreateEPGPFrame()
   -- EPGPFrame
   local f = CreateFrame("Frame", "EPGPFrame", UIParent)
@@ -41,13 +51,13 @@ local function CreateEPGPFrame()
   t:SetPoint("TOPLEFT", f, "TOPLEFT", 7, -6)
 
   t = f:CreateTexture(nil, "ARTWORK")
-  t:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopLeft")
+  t:SetTexture("Interface\\ClassTrainerFrame\\UI-ClassTrainer-TopLeft")
   t:SetWidth(256)
   t:SetHeight(256)
   t:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
 
   t = f:CreateTexture(nil, "ARTWORK")
-  t:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopRight")
+  t:SetTexture("Interface\\ClassTrainerFrame\\UI-ClassTrainer-TopRight")
   t:SetWidth(128)
   t:SetHeight(256)
   t:SetPoint("TOPRIGHT", f, "TOPRIGHT", 0, 0)
@@ -75,9 +85,8 @@ local function CreateEPGPFrame()
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -8)
 end
 
-local function CreateColumnHeader(parent, text, width)
+local function CreateTableHeader(parent)
   local h = CreateFrame("Button", nil, parent)
-  h:SetWidth(width)
   h:SetHeight(24)
 
   local tl = h:CreateTexture(nil, "BACKGROUND")
@@ -96,26 +105,112 @@ local function CreateColumnHeader(parent, text, width)
 
   local tm = h:CreateTexture(nil, "BACKGROUND")
   tm:SetTexture("Interface\\FriendsFrame\\WhoFrame-ColumnTabs")
-  tm:SetWidth(10)
   tm:SetHeight(24)
   tm:SetPoint("LEFT", tl, "RIGHT")
   tm:SetPoint("RIGHT", tr, "LEFT")
   tm:SetTexCoord(0.07815, 0.90625, 0, 0.75)
 
-  h:SetText(text)
-  h:GetFontString():SetPoint("LEFT", h, "LEFT", 8, 0)
-
-  h:SetNormalFontObject("GameFontHighlightSmall")
   local hl = h:CreateTexture()
-  h:SetHighlightTexture(hl)
-  hl:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight")
-  hl:SetBlendMode("ADD")
-  hl:SetWidth(5)
-  hl:SetHeight(33)
-  hl:SetPoint("LEFT", h, "LEFT", 0, -2)
-  hl:SetPoint("RIGHT", h, "RIGHT", 0, -2)
+  h:SetHighlightTexture(
+    "Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
+  hl:SetPoint("TOPLEFT", tl, "TOPLEFT", -2, 5)
+  hl:SetPoint("BOTTOMRIGHT", tr, "BOTTOMRIGHT", 2, -7)
 
   return h
+end
+
+local function CreateTableRow(parent, rowHeight, widths, justifiesH)
+  local row = CreateFrame("Button", nil, parent)
+  row:SetHighlightTexture(
+    "Interface\QuestFrame\UI-QuestTitleHighlight", "ADD")
+  row:SetHeight(rowHeight)
+  row:SetPoint("LEFT")
+  row:SetPoint("RIGHT")
+
+  row.cells = {}
+  for i,w in ipairs(widths) do
+    local c =
+      row:CreateFontString("$parentName", "ARTWORK", "GameFontNormalSmall")
+    c:SetHeight(rowHeight)
+    c:SetWidth(w)
+    c:SetJustifyH(justifiesH[i])
+    if #row.cells == 0 then
+      c:SetPoint("LEFT")
+    else
+      c:SetPoint("LEFT", row.cells[#row.cells], "RIGHT")
+    end
+    table.insert(row.cells, c)
+    c:SetText(w)
+  end
+
+  return row
+end
+
+local function CreateTable(parent, texts, widths, justfiesH)
+  assert(#texts == #widths and #texts == #justfiesH,
+         "All specification tables must be the same size")
+  -- Compute widths
+  local totalFixedWidths = 0
+  local numDynamicWidths = 0
+  for i,w in ipairs(widths) do
+    if w > 0 then
+      totalFixedWidths = totalFixedWidths + w
+    else
+      numDynamicWidths = numDynamicWidths + 1
+    end
+  end
+  local remainingWidthSpace = parent:GetWidth() - totalFixedWidths
+  assert(remainingWidthSpace >= 0, "Widths specified exceed parent width")
+
+  local dynamicWidth = math.floor(remainingWidthSpace / numDynamicWidths)
+  local leftoverWidth = remainingWidthSpace % numDynamicWidths
+  for i,w in ipairs(widths) do
+    if w <= 0 then
+      numDynamicWidths = numDynamicWidths - 1
+      if numDynamicWidths then
+        widths[i] = dynamicWidth
+      else
+        widths[i] = dynamicWidth + leftoverWidth
+      end
+    end
+  end
+
+  -- Make headers
+  parent.headers = {}
+  for i=1,#texts do
+    local text, width, justifyH = texts[i], widths[i], justfiesH[i]
+    local h = CreateTableHeader(parent, text, width)
+    h:SetNormalFontObject("GameFontHighlightSmall")
+    h:SetText(text)
+    h:GetFontString():SetJustifyH(justifyH)
+    h:SetWidth(width)
+    if #parent.headers == 0 then
+      h:SetPoint("TOPLEFT")
+    else
+      h:SetPoint("TOPLEFT", parent.headers[#parent.headers], "TOPRIGHT")
+    end
+    table.insert(parent.headers, h)
+  end
+
+  -- Compute number of rows
+  local leftoverHeight =
+    parent:GetHeight() - parent.headers[#parent.headers]:GetHeight()
+  local fontHeight = select(2, GameFontNormalSmall:GetFont())
+  local rowHeight = fontHeight + 2
+
+  local numRows = math.floor(leftoverHeight / rowHeight)
+
+  -- Make rows
+  parent.rows = {}
+  for i=1,numRows do
+    local r = CreateTableRow(parent, rowHeight, widths, justfiesH)
+    if #parent.rows == 0 then
+      r:SetPoint("TOP", parent.headers[#parent.headers], "BOTTOM")
+    else
+      r:SetPoint("TOP", parent.rows[#parent.rows], "BOTTOM")
+    end
+    table.insert(parent.rows, r)
+  end
 end
 
 local function CreateEPGPLogFrame()
@@ -192,7 +287,6 @@ local function CreateEPGPLogFrame()
   record:SetHeight(recordHeight)
   record:SetWidth(recordWidth)
   record:SetMultilineIndent(false)
-  record:SetText("amsdoiamsdASD")
   record:SetPoint("TOPLEFT", scrollParent, "TOPLEFT", 5, -3)
   for i=2,numLogRecordFrames do
     record = scrollParent:CreateFontString("EPGPLogRecordFrame"..i)
@@ -201,7 +295,6 @@ local function CreateEPGPLogFrame()
     record:SetWidth(recordWidth)
     record:SetMultilineIndent(false)
     record:SetPoint("TOPLEFT", "EPGPLogRecordFrame"..(i-1), "BOTTOMLEFT")
-    record:SetText("amsdoiamsdASD")
   end
 
   local scrollBar = CreateFrame("ScrollFrame", "EPGPLogRecordScrollFrame",
@@ -289,27 +382,14 @@ local function CreateEPGPFrameStandings()
   t:SetText("Show alts")
   t:SetPoint("RIGHT", cb, "LEFT", -10, 1)
 
+  -- Make the log frame
+  CreateEPGPLogFrame()
+
   -- Make the main frame
   local main = CreateFrame("Frame", nil, EPGPFrame)
   main:SetWidth(322)
   main:SetHeight(358)
   main:SetPoint("TOPLEFT", EPGPFrame, 19, -72)
-
-  -- Make the headers
-  local h1 = CreateColumnHeader(main, "Name", 100)
-  h1:SetPoint("TOPLEFT")
-
-  local h2 = CreateColumnHeader(main, "EP", 64)
-  h2:SetPoint("TOPLEFT", h1, "TOPRIGHT")
-
-  local h3 = CreateColumnHeader(main, "GP", 64)
-  h3:SetPoint("TOPLEFT", h2, "TOPRIGHT")
-
-  local h4 = CreateColumnHeader(main, "PR", 64)
-  h4:SetPoint("TOPLEFT", h3, "TOPRIGHT")
-
-  -- Make the log frame
-  CreateEPGPLogFrame()
 
   -- Make the buttons
   local function DisableWhileNotInRaid(self)
@@ -347,6 +427,18 @@ local function CreateEPGPFrameStandings()
                 function(self, button, down)
                   EPGPLogFrame:Show()
                 end)
+
+  -- Make the table frame
+  local tabl = CreateFrame("Frame", nil, main)
+  tabl:SetPoint("TOPLEFT")
+  tabl:SetPoint("TOPRIGHT")
+  tabl:SetPoint("BOTTOM", once, "TOP")
+
+  -- Populate the table
+  CreateTable(tabl,
+              {"Name", "EP", "GP", "PR"},
+              {0, 64, 64, 64},
+              {"LEFT", "RIGHT", "RIGHT", "RIGHT"})
 end
 
 function mod:OnInitialize()
