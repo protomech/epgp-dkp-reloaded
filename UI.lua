@@ -196,7 +196,7 @@ local function CreateTable(parent, texts, widths, justfiesH)
   local leftoverHeight =
     parent:GetHeight() - parent.headers[#parent.headers]:GetHeight()
   local fontHeight = select(2, GameFontNormalSmall:GetFont())
-  local rowHeight = fontHeight + 2
+  local rowHeight = fontHeight + 4
 
   local numRows = math.floor(leftoverHeight / rowHeight)
 
@@ -480,7 +480,7 @@ local function CreateEPGPFrameStandings()
         row.cells[2]:SetText(ep)
         row.cells[3]:SetText(gp)
         if gp > 0 then
-          row.cells[4]:SetFormattedText("%.2f", ep / gp)
+          row.cells[4]:SetFormattedText("%.4g", ep / gp)
         else
           row.cells[4]:SetText(0)
         end
