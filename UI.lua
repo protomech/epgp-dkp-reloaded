@@ -121,8 +121,7 @@ end
 
 local function CreateTableRow(parent, rowHeight, widths, justifiesH)
   local row = CreateFrame("Button", nil, parent)
-  row:SetHighlightTexture(
-    "Interface\QuestFrame\UI-QuestTitleHighlight", "ADD")
+  row:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
   row:SetHeight(rowHeight)
   row:SetPoint("LEFT")
   row:SetPoint("RIGHT")
@@ -130,7 +129,7 @@ local function CreateTableRow(parent, rowHeight, widths, justifiesH)
   row.cells = {}
   for i,w in ipairs(widths) do
     local c =
-      row:CreateFontString("$parentName", "ARTWORK", "GameFontNormalSmall")
+      row:CreateFontString("$parentName", "ARTWORK", "GameFontHighlightSmall")
     c:SetHeight(rowHeight)
     c:SetWidth(w)
     c:SetJustifyH(justifiesH[i])
