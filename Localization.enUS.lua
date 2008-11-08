@@ -6,4 +6,7 @@ if L then
   L["GP: %d [ItemLevel=%d]"] = true
   L["GP: %d or %d [ItemLevel=%d]"] = true
   L["EPGP is using Officer Notes for data storage. Do you really want to edit the Officer Note by hand?"] = true
+  L["Full"] = true
+  L["Offspec"] = true
+  L["Credit GP to %s"] = true
 end

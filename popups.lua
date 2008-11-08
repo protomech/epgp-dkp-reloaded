@@ -1,11 +1,12 @@
 local mod = EPGP:NewModule("EPGP_Popups")
 
-EPGP_TEXT_CONFIRM_GP_CREDIT = "Add GP to member"
+local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
 StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
-  text = EPGP_TEXT_CONFIRM_GP_CREDIT,
-  button1 = "Full",
-  button3 = "Offspec",
+  text = L["Credit GP to %s"],
+  button1 = L["Full"],
+  button3 = L["Offspec"],
   button2 = CANCEL,
   timeout = 0,
   whileDead = 1,
@@ -15,51 +16,52 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   hasItemFrame = 1,
   
   OnAccept = function()
-               --todo : hook it!
-             end,
+		-- Todo : hook it!
+	end,
   
   OnCancel = function()
-               self:GetParent():Hide();
-               ClearCursor();
-             end,
+		self:GetParent():Hide();
+		ClearCursor();
+	end,
   
   OnShow = function()
-             local itemFrame = getglobal(this:GetName().."ItemFrame")
-             local editBox = getglobal(this:GetName().."EditBox")
-             local button1 = getglobal(this:GetName().."Button1")
-             
-             editBox:SetText("410")
-             editBox:HighlightText()
-             itemFrame:SetPoint("TOPLEFT", 55, -35)
-             editBox:SetPoint("TOPLEFT", itemFrame, "TOPRIGHT", 150, -10)
-             button1:SetPoint("TOPRIGHT", itemFrame, "BOTTOMLEFT", 94, -6)		
-           end,
+		local itemFrame = getglobal(this:GetName().."ItemFrame")
+		local editBox = getglobal(this:GetName().."EditBox")
+		local button1 = getglobal(this:GetName().."Button1")
+
+		itemFrame:SetPoint("TOPLEFT", 55, -35)
+		editBox:SetPoint("TOPLEFT", itemFrame, "TOPRIGHT", 150, -10)
+		button1:SetPoint("TOPRIGHT", itemFrame, "BOTTOMLEFT", 94, -6)		
+		
+		editBox:SetText(GPTooltip:GetGPValue(itemFrame.link))
+		editBox:HighlightText()
+	end,
   
-  OnHide = function()
-             if ( ChatFrameEditBox:IsShown() ) then
-               ChatFrameEditBox:SetFocus();
-             end
-           end,
-  
-  EditBoxOnEnterPressed = function() 
-                            --todo : hook it!
-                          end,
-  
-  EditBoxOnTextChanged = function(self)
-                           local parent = self:GetParent();
-                           if ( strupper(parent.editBox:GetText()) ==  "" ) then
-                             parent.button1:Disable();
-                             parent.button3:Disable();
-                           else
-                             parent.button1:Enable();
-                             parent.button3:Enable();
-                           end
-                         end,
-  
-  EditBoxOnEscapePressed = function(self)
-                             self:GetParent():Hide();
-                             ClearCursor();
-                           end
+	OnHide = function()
+		if ChatFrameEditBox:IsShown() then
+			ChatFrameEditBox:SetFocus();
+		end
+	end,
+	
+	EditBoxOnEnterPressed = function() 
+		-- Todo : hook it!
+	end,
+	
+	EditBoxOnTextChanged = function(self)
+		local parent = self:GetParent();
+		if parent.editBox:GetNumber() > 0 then
+			parent.button1:Enable();
+			parent.button3:Enable();
+		else
+			parent.button1:Disable();
+			parent.button3:Disable();
+		end
+	end,
+	
+	EditBoxOnEscapePressed = function(self)
+		self:GetParent():Hide();
+		ClearCursor();
+	end
 }
 
 
@@ -68,15 +70,15 @@ local function Debug(fmt, ...)
 end
 
 function mod:OnInitialize()
---   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541) 
---   local r, g, b = GetItemQualityColor(itemRarity);
+   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541) 
+   local r, g, b = GetItemQualityColor(itemRarity);
 
---   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",
---         itemName, itemLink, itemRarity, itemTexture)
---   StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", "", "", {
---                      texture = itemTexture,
---                      name = itemName,
---                      color = {r, g, b, 1},
---                      link = itemLink
---                    })
+   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",
+         itemName, itemLink, itemRarity, itemTexture)
+   StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", "Lane", "", {
+                      texture = itemTexture,
+                      name = itemName,
+                      color = {r, g, b, 1},
+                      link = itemLink
+                    })
 end
