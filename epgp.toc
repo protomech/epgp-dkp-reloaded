@@ -27,3 +27,4 @@ GPTooltip.lua
 OfficerNoteWarning.lua
 Loot.lua
 UI.lua
+popups.lua
