@@ -92,7 +92,6 @@ local main_data = {}
 local player
 local db
 local standings = {}
-local standings_dirty = true
 
 local function DecodeNote(note)
   local ep, gp = string.match(note, "^(%d+),(%d+)$")
@@ -105,6 +104,64 @@ end
 
 local function EncodeNote(ep, gp)
   return string.format("%d,%d", ep, gp)
+end
+
+local comparators = {
+  NAME = function(a, b)
+           return a < b
+         end,
+  EP = function(a, b)
+         local main_a = main_data[a]
+         if main_a then a = main_a end
+         local main_b = main_data[b]
+         if main_b then b = main_b end
+
+         local a_ep, b_ep = ep_data[a] or 0, ep_data[b] or 0
+         return a_ep > b_ep
+       end,
+  GP = function(a, b)
+         local main_a = main_data[a]
+         if main_a then a = main_a end
+         local main_b = main_data[b]
+         if main_b then b = main_b end
+
+         local a_gp, b_gp = gp_data[a] or 0, gp_data[b] or 0
+         return a_gp > b_gp
+       end,
+  PR = function(a, b)
+         local main_a = main_data[a]
+         if main_a then a = main_a end
+         local main_b = main_data[b]
+         if main_b then b = main_b end
+         -- TODO(alkis): Fix MIN_EP computation
+         local a_ep, b_ep = ep_data[a] or 0
+         local b_ep = ep_data[b] or 0
+         local a_gp = gp_data[a] + base_gp or base_gp
+         local b_gp = gp_data[b] + base_gp or base_gp
+         return a_ep/a_gp > b_ep/b_gp
+       end,
+}
+
+local function DestroyStandings()
+  -- Remove everything from standings
+  for k,v in pairs(standings) do
+    standings[k] = nil
+  end
+end
+
+local function RefreshStandings(order, showAlts)
+  -- Add all mains
+  for n in pairs(ep_data) do
+    table.insert(standings, n)
+  end
+  -- Add all alts if necessary
+  if showAlts then
+    for n in pairs(main_data) do
+      table.insert(standings, n)
+    end
+  end
+  -- Sort
+  table.sort(standings, comparators[order])
 end
 
 -- Parse options. Options are inside GuildInfo and are inside a -EPGP-
@@ -140,7 +197,7 @@ local function ParseGuildInfo(callback, info)
         if mep >= 0 then
           if min_ep ~= mep then
             min_ep = mep
-            standings_dirty = true
+            DestroyStandings()
             callbacks:Fire("StandingsChanged")
           end
         else
@@ -154,7 +211,7 @@ local function ParseGuildInfo(callback, info)
         if bgp >= 0 then
           if base_gp ~= bgp then
             base_gp = bgp
-            standings_dirty = true
+            DestroyStandings()
             callbacks:Fire("StandingsChanged")
           end
         else
@@ -179,7 +236,7 @@ local function ParseGuildNote(callback, name, note)
     ep_data[name] = ep or 0
     gp_data[name] = gp or base_gp
   end
-  standings_dirty = true
+  DestroyStandings()
   callbacks:Fire("StandingsChanged")
 end
 
@@ -231,42 +288,6 @@ local function LogRecordToString(record)
   end
 end
 
-local comparators = {
-  NAME = function(a, b)
-           return a < b
-         end,
-  EP = function(a, b)
-         local main_a = main_data[a]
-         if main_a then a = main_a end
-         local main_b = main_data[b]
-         if main_b then b = main_b end
-
-         local a_ep, b_ep = ep_data[a] or 0, ep_data[b] or 0
-         return a_ep > b_ep
-       end,
-  GP = function(a, b)
-         local main_a = main_data[a]
-         if main_a then a = main_a end
-         local main_b = main_data[b]
-         if main_b then b = main_b end
-
-         local a_gp, b_gp = gp_data[a] or 0, gp_data[b] or 0
-         return a_gp > b_gp
-       end,
-  PR = function(a, b)
-         local main_a = main_data[a]
-         if main_a then a = main_a end
-         local main_b = main_data[b]
-         if main_b then b = main_b end
-         -- TODO(alkis): Fix MIN_EP computation
-         local a_ep, b_ep = ep_data[a] or 0
-         local b_ep = ep_data[b] or 0
-         local a_gp = gp_data[a] + base_gp or base_gp
-         local b_gp = gp_data[b] + base_gp or base_gp
-         return a_ep/a_gp > b_ep/b_gp
-       end,
-}
-
 function EPGP:StandingsSort(order)
   assert(CheckDB())
 
@@ -277,7 +298,7 @@ function EPGP:StandingsSort(order)
   assert(comparators[order], "Unknown sort order")
 
   db.profile.sort_order = order
-  standings_dirty = true
+  DestroyStandings()
   callbacks:Fire("StandingsChanged")
 end
 
@@ -289,35 +310,15 @@ function EPGP:StandingsShowAlts(val)
   end
 
   db.profile.show_alts = not not val
-  standings_dirty = true
+  DestroyStandings()
   callbacks:Fire("StandingsChanged")
-end
-
-local function RefreshStandings(order, showAlts)
-  -- Remove everything from standings
-  for k,v in pairs(standings) do
-    standings[k] = nil
-  end
-  -- Add all mains
-  for n in pairs(ep_data) do
-    table.insert(standings, n)
-  end
-  -- Add all alts if necessary
-  if showAlts then
-    for n in pairs(main_data) do
-      table.insert(standings, n)
-    end
-  end
-  -- Sort
-  table.sort(standings, comparators[order])
 end
 
 function EPGP:GetNumMembers()
   assert(CheckDB())
 
-  if standings_dirty then
+  if #standings == 0 then
     RefreshStandings(db.profile.sort_order, db.profile.show_alts)
-    standings_dirty = false
   end
 
   return #standings
@@ -326,9 +327,8 @@ end
 function EPGP:GetMember(i)
   assert(CheckDB())
 
-  if standings_dirty then
+  if #standings == 0 then
     RefreshStandings(db.profile.sort_order, db.profile.show_alts)
-    standings_dirty = false
   end
 
   return standings[i]
