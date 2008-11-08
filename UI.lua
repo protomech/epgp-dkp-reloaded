@@ -6,6 +6,7 @@ local CURRENT_VERSION = GetAddOnMetadata('EPGP_UI', 'Version')
 
 local BUTTON_TEXT_PADDING = 20
 local BUTTON_HEIGHT = 22
+local ROW_TEXT_PADDING = 5
 
 EPGP_TEXT_STANDINGS = "Standings"
 EPGP_TEXT_LOG = "Logs"
@@ -131,12 +132,12 @@ local function CreateTableRow(parent, rowHeight, widths, justifiesH)
     local c =
       row:CreateFontString("$parentName", "ARTWORK", "GameFontHighlightSmall")
     c:SetHeight(rowHeight)
-    c:SetWidth(w)
+    c:SetWidth(w - (2 * ROW_TEXT_PADDING))
     c:SetJustifyH(justifiesH[i])
     if #row.cells == 0 then
-      c:SetPoint("LEFT")
+      c:SetPoint("LEFT", row, "LEFT", ROW_TEXT_PADDING, 0)
     else
-      c:SetPoint("LEFT", row.cells[#row.cells], "RIGHT")
+      c:SetPoint("LEFT", row.cells[#row.cells], "RIGHT", 2 * ROW_TEXT_PADDING, 0)
     end
     table.insert(row.cells, c)
     c:SetText(w)
