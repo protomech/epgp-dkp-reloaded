@@ -2,7 +2,17 @@
 -- administering and configuring EPGP. It implements the following
 -- functions:
 --
--- GetIter():
+-- StandingsSort(order): Sorts the standings list using the specified
+-- sort order. Valid values are: NAME, EP, GP, PR. If there is no
+-- parameter it returns the current value.
+--
+-- StandingsShowAlts(val): Sets listing alts or not in the
+-- standings. If there is no paramter it returns the current value.
+--
+-- GetNumMembers(): Returns the number of members in the standings.
+--
+-- GetMember(i): Returns the ith member in the standings based on the
+-- current sort.
 --
 -- ResetEPGP(): Resets all EP and GP to 0.
 --
@@ -53,6 +63,8 @@
 -- LogChanged(n): Fired when the log is changed. n is the new size of
 -- the log.
 --
+-- StandingsChanged: Fired when the standings have changed.
+--
 
 EPGP = LibStub:GetLibrary("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0")
@@ -79,6 +91,8 @@ local gp_data = {}
 local main_data = {}
 local player
 local db
+local standings = {}
+local standings_dirty = true
 
 local function DecodeNote(note)
   local ep, gp = string.match(note, "^(%d+),(%d+)$")
@@ -124,7 +138,11 @@ local function ParseGuildInfo(callback, info)
       local mep = tonumber(line:match("@MIN_EP:(%d+)"))
       if mep then
         if mep >= 0 then
-          min_ep = mep
+          if min_ep ~= mep then
+            min_ep = mep
+            standings_dirty = true
+            callbacks:Fire("StandingsChanged")
+          end
         else
           EPGP:Print(L["Min EP should be a positive number"])
         end
@@ -134,7 +152,11 @@ local function ParseGuildInfo(callback, info)
       local bgp = tonumber(line:match("BASE_GP:(%d+)"))
       if bgp then
         if bgp >= 0 then
-          base_gp = bgp
+          if base_gp ~= bgp then
+            base_gp = bgp
+            standings_dirty = true
+            callbacks:Fire("StandingsChanged")
+          end
         else
           EPGP:Print(L["Base GP should be a positive number"])
         end
@@ -157,6 +179,8 @@ local function ParseGuildNote(callback, name, note)
     ep_data[name] = ep or 0
     gp_data[name] = gp or base_gp
   end
+  standings_dirty = true
+  callbacks:Fire("StandingsChanged")
 end
 
 local function CheckDB()
@@ -212,14 +236,28 @@ local comparators = {
            return a < b
          end,
   EP = function(a, b)
+         local main_a = main_data[a]
+         if main_a then a = main_a end
+         local main_b = main_data[b]
+         if main_b then b = main_b end
+
          local a_ep, b_ep = ep_data[a] or 0, ep_data[b] or 0
          return a_ep > b_ep
        end,
   GP = function(a, b)
+         local main_a = main_data[a]
+         if main_a then a = main_a end
+         local main_b = main_data[b]
+         if main_b then b = main_b end
+
          local a_gp, b_gp = gp_data[a] or 0, gp_data[b] or 0
          return a_gp > b_gp
        end,
   PR = function(a, b)
+         local main_a = main_data[a]
+         if main_a then a = main_a end
+         local main_b = main_data[b]
+         if main_b then b = main_b end
          -- TODO(alkis): Fix MIN_EP computation
          local a_ep, b_ep = ep_data[a] or 0
          local b_ep = ep_data[b] or 0
@@ -229,30 +267,71 @@ local comparators = {
        end,
 }
 
-local function Iter(t)
-  local n = t.n + 1
-  t.n = n
-  return t[n]
+function EPGP:StandingsSort(order)
+  assert(CheckDB())
+
+  if not order then
+    return db.profile.sort_order
+  end
+
+  assert(comparators[order], "Unknown sort order")
+
+  db.profile.sort_order = order
+  standings_dirty = true
+  callbacks:Fire("StandingsChanged")
 end
 
-function EPGP:GetIter(sortName)
-  local comparator = comparators[sortName]
-  local t = {}
-  -- Main toons.
+function EPGP:StandingsShowAlts(val)
+  assert(CheckDB())
+
+  if val == nil then
+    return db.profile.show_alts
+  end
+
+  db.profile.show_alts = not not val
+  standings_dirty = true
+  callbacks:Fire("StandingsChanged")
+end
+
+local function RefreshStandings(order, showAlts)
+  -- Remove everything from standings
+  for k,v in pairs(standings) do
+    standings[k] = nil
+  end
+  -- Add all mains
   for n in pairs(ep_data) do
-    table.insert(t, n)
+    table.insert(standings, n)
   end
-  -- Alt toons.
-  for n in pairs(main_data) do
-    table.insert(t, n)
+  -- Add all alts if necessary
+  if showAlts then
+    for n in pairs(main_data) do
+      table.insert(standings, n)
+    end
+  end
+  -- Sort
+  table.sort(standings, comparators[order])
+end
+
+function EPGP:GetNumMembers()
+  assert(CheckDB())
+
+  if standings_dirty then
+    RefreshStandings(db.profile.sort_order, db.profile.show_alts)
+    standings_dirty = false
   end
 
-  if comparator then
-    table.sort(t, comparator)
-  end
-  t.n = 0
+  return #standings
+end
 
-  return Iter, t, nil
+function EPGP:GetMember(i)
+  assert(CheckDB())
+
+  if standings_dirty then
+    RefreshStandings(db.profile.sort_order, db.profile.show_alts)
+    standings_dirty = false
+  end
+
+  return standings[i]
 end
 
 function EPGP:ResetEPGP()
@@ -404,8 +483,10 @@ end
 function EPGP:OnInitialize()
   player = UnitName("player")
   db = AceDB:New("EPGP_DB", {
-                   ["profile"] = {
-                     ["log"] = {}
+                   profile = {
+                     log = {},
+                     show_alts = false,
+                     sort_order = "PR",
                    }
                  })
   GS:RegisterCallback("GuildInfoChanged", ParseGuildInfo)

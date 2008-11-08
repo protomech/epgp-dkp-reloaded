@@ -377,7 +377,14 @@ local function CreateEPGPFrameStandings()
   cb:SetWidth(20)
   cb:SetHeight(20)
   cb:SetPoint("RIGHT", f, "RIGHT", -8, 0)
-
+  cb:SetScript("OnShow",
+               function(self)
+                 self:SetChecked(EPGP:StandingsShowAlts())
+               end)
+  cb:SetScript("OnClick",
+               function(self)
+                 EPGP:StandingsShowAlts(not not self:GetChecked())
+               end)
   local t = cb:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   t:SetText("Show alts")
   t:SetPoint("RIGHT", cb, "LEFT", -10, 1)
@@ -439,6 +446,53 @@ local function CreateEPGPFrameStandings()
               {"Name", "EP", "GP", "PR"},
               {0, 64, 64, 64},
               {"LEFT", "RIGHT", "RIGHT", "RIGHT"})
+
+  tabl.headers[1]:SetScript("OnClick",
+                            function(self)
+                              EPGP:StandingsSort("NAME")
+                            end)
+  tabl.headers[2]:SetScript("OnClick",
+                            function(self)
+                              EPGP:StandingsSort("EP")
+                            end)
+  tabl.headers[3]:SetScript("OnClick",
+                            function(self)
+                              EPGP:StandingsSort("GP")
+                            end)
+  tabl.headers[4]:SetScript("OnClick",
+                            function(self)
+                              EPGP:StandingsSort("PR")
+                            end)
+
+
+  local function UpdateStandings()
+    if not tabl:IsVisible() then
+      return
+    end
+    Debug("Updating standings")
+    local numMembers = EPGP:GetNumMembers()
+    for i=1,#tabl.rows do
+      local row = tabl.rows[i]
+      if i <= numMembers then
+        local name = EPGP:GetMember(i)
+        row.cells[1]:SetText(name)
+        local ep, gp = EPGP:GetEPGP(name)
+        row.cells[2]:SetText(ep)
+        row.cells[3]:SetText(gp)
+        if gp > 0 then
+          row.cells[4]:SetFormattedText("%.2f", ep / gp)
+        else
+          row.cells[4]:SetText(0)
+        end
+        row:Show()
+      else
+        row:Hide()
+      end
+    end
+  end
+
+  EPGP:RegisterCallback("StandingsChanged", UpdateStandings)
+  tabl:SetScript("OnShow", UpdateStandings)
 end
 
 function mod:OnInitialize()
