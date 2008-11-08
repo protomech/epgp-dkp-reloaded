@@ -64,12 +64,17 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 	end
 }
 StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
-	text = L["Decay EP and GP by %d%%?"],
+	text = "",
 	button1 = ACCEPT,
 	button2 = CANCEL,
 	timeout = 0,
 	hideOnEscape = 1,
 	whileDead = 1,
+        OnShow = function()
+               local text = getglobal(this:GetName().."Text")
+               text:SetFormattedText(L["Decay EP and GP by %d%%?"],
+                                     EPGP:GetDecayPercent())
+        end,
 	OnAccept = function()
 		EPGP:DecayEPGP()
 	end

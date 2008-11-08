@@ -441,7 +441,7 @@ local function CreateEPGPFrameStandings()
   decay:SetWidth(decay:GetTextWidth() + BUTTON_TEXT_PADDING)
   decay:SetScript("OnClick",
                   function(self, button, down)
-                    EPGP:DecayEPGP()
+                    StaticPopup_Show("EPGP_DECAY_EPGP")
                   end)
 
   -- Make the table frame
