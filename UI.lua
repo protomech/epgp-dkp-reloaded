@@ -433,6 +433,15 @@ local function CreateEPGPFrameStandings()
                 function(self, button, down)
                   EPGPLogFrame:Show()
                 end)
+  local decay = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
+  decay:SetHeight(BUTTON_HEIGHT)
+  decay:SetPoint("RIGHT", log, "LEFT")
+  decay:SetText("Decay")
+  decay:SetWidth(decay:GetTextWidth() + BUTTON_TEXT_PADDING)
+  decay:SetScript("OnClick",
+                  function(self, button, down)
+                    EPGP:DecayEPGP()
+                  end)
 
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)

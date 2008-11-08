@@ -355,16 +355,14 @@ function EPGP:DecayEPGP()
   local decay = decay_p  * 0.01
   local reason = string.format("Decay %d%%", decay_p)
   local timestamp = GetTimestamp()
-  for name in GetIter("PR") do
-    if not main_data[name] then
-      local ep, gp = ep_data[name], gp_data[name]
-      local decay_ep = math.floor(ep * decay)
-      local decay_gp = math.floot((gp + base_gp) * decay)
-      GS:SetNote(name, EncodeNote(math.max(ep - decay_ep, 0),
-                                  math.max(gp - decay_gp, base_gp)))
-      AppendLog(timestamp, "EP", name, reason, new_ep - ep)
-      AppendLog(timestamp, "GP", name, reason, new_gp - gp)
-    end
+  for n,ep in pairs(ep_data) do
+    local gp = gp_data[n]
+    local decay_ep = math.floor(ep * decay)
+    local decay_gp = math.floor((gp + base_gp) * decay)
+    GS:SetNote(n, EncodeNote(math.max(ep - decay_ep, 0),
+                             math.max(gp - decay_gp, base_gp)))
+    AppendLog(timestamp, "EP", n, reason, -decay_ep)
+    AppendLog(timestamp, "GP", n, reason, -decay_gp)
   end
 end
 
