@@ -7,6 +7,7 @@
 --
 --StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", "", "", {["texture"] = itemTexture, ["name"] = itemName, ["color"] = {r, g, b, 1}, ["link"] = itemLink, ["index"] = nil, ["count"] = 1});
 
+EPGP_TEXT_CONFIRM_GP_CREDIT = "Add GP to member"
 
 StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 	text = EPGP_TEXT_CONFIRM_GP_CREDIT,
