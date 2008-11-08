@@ -456,6 +456,17 @@ local function CreateEPGPFrameStandings()
               {0, 64, 64, 64},
               {"LEFT", "RIGHT", "RIGHT", "RIGHT"})
 
+  -- Make all our rows have a check on them
+  for i,r in ipairs(tabl.rows) do
+    r.check = r:CreateTexture(nil, "BACKGROUND")
+    r.check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+    r.check:SetWidth(r:GetHeight())
+    r.check:SetHeight(r:GetHeight())
+    r.check:SetPoint("RIGHT", r.cells[1])
+    r.check:Hide()
+  end
+
+  -- Hook up the headers
   tabl.headers[1]:SetScript("OnClick",
                             function(self)
                               EPGP:StandingsSort("NAME")
@@ -473,7 +484,7 @@ local function CreateEPGPFrameStandings()
                               EPGP:StandingsSort("PR")
                             end)
 
-
+  -- Install the update function
   local function UpdateStandings()
     if not tabl:IsVisible() then
       return
