@@ -83,9 +83,9 @@ local function debug(...)
   ChatFrame1:AddMessage(table.concat({...}, ""))
 end
 
-local decay_p
-local base_gp
-local min_ep
+local decay_p = 0
+local min_ep = 0
+local base_gp = 1
 local ep_data = {}
 local gp_data = {}
 local main_data = {}
