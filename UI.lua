@@ -523,7 +523,7 @@ local function CreateEPGPFrameStandings()
         if UnitInRaid("player") and EPGP:StandingsShowEveryone() and EPGP:IsMemberInStandings(row.name) then
           row.check:Show()
         end
-        row:SetAlpha(EPGP:IsMemberInStandingsExtra(row.name) and 0.75 or 1)
+        row:SetAlpha(EPGP:IsMemberInStandingsExtra(row.name) and 0.6 or 1)
         row:Show()
       else
         row:Hide()
