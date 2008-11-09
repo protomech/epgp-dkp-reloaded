@@ -1,7 +1,6 @@
 --[[ EPGP User Interface ]]--
 
 local mod = EPGP:NewModule("EPGP_UI", "AceEvent-3.0")
-local BC = LibStub:GetLibrary("LibBabble-Class-3.0")
 
 local CURRENT_VERSION = GetAddOnMetadata('EPGP_UI', 'Version')
 
