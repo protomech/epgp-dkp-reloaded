@@ -145,7 +145,7 @@ local function UpdateRecentLoot(itemID)
 end
 
 function mod:GetNumRecentItems()
-  return #items
+  return #recent_items
 end
 
 function mod:GetRecentItemID(i)
