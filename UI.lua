@@ -354,7 +354,7 @@ local function SideFrameDropDown_Initialize()
     Debug("ItemID: %d", GPTooltip:GetRecentItemID(i))
     local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
     Debug("ItemLink: %s", itemLink)
-      info.text = itemLink
+    info.text = itemLink
     info.func = SideFrameDropDownButton_OnClick
     --info.checked = checked
     UIDropDownMenu_AddButton(info)
@@ -388,7 +388,7 @@ local function CreateEPGPSideFrame(self)
       edgeSize = 32,
       insets = { left=11, right=12, top=12, bottom=11 }
     })
-    
+  
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
   
