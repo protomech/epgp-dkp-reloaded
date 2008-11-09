@@ -132,6 +132,12 @@ local CUSTOM_ITEM_DATA = {
 local recent_items = {}
 
 local function UpdateRecentLoot(itemID)
+  for k,v in recent_items do
+    if v == itemID then
+      return
+    end
+  end
+
   table.insert(recent_items, 1, itemID)
   if #recent_items > 15 then
     table.remove(recent_items)
