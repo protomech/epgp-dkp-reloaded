@@ -132,7 +132,7 @@ local CUSTOM_ITEM_DATA = {
 local recent_items = {}
 
 local function UpdateRecentLoot(itemID)
-  for k,v in recent_items do
+  for k,v in pairs(recent_items) do
     if v == itemID then
       return
     end
