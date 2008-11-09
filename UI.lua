@@ -1,6 +1,7 @@
 --[[ EPGP User Interface ]]--
 
 local mod = EPGP:NewModule("EPGP_UI", "AceEvent-3.0")
+local BC = LibStub:GetLibrary("LibBabble-Class-3.0")
 
 local CURRENT_VERSION = GetAddOnMetadata('EPGP_UI', 'Version')
 
@@ -508,6 +509,8 @@ local function CreateEPGPFrameStandings()
       if i <= numMembers then
         row.name = EPGP:GetMember(i)
         row.cells[1]:SetText(row.name)
+        local c = RAID_CLASS_COLORS[EPGP:GetClass(row.name)]
+        row.cells[1]:SetTextColor(c.r, c.g, c.b)
         local ep, gp = EPGP:GetEPGP(row.name)
         row.cells[2]:SetText(ep)
         row.cells[3]:SetText(gp)

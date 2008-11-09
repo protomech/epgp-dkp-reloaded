@@ -7,6 +7,8 @@
 -- SetNote(name, note): Sets the officer note of member 'name' to
 -- 'note'
 --
+-- GetClass(name): Returns the class of member 'name'
+--
 -- GetGuildInfo(): Returns the guild info text
 --
 --
@@ -83,7 +85,7 @@ local function UpdateGuildRoster()
       t.class = class
       if t.note ~= note then
         t.note = note
-        debug("name=", name, " note=", note)
+        debug("name=", name, " note=", note, " class=", class)
         callbacks:Fire("GuildNoteChanged", name, note)
       end
     end
@@ -140,6 +142,14 @@ function lib:SetNote(name, note)
   -- TODO(alkis): Investigate performance issues in case we want to
   -- verify if this is the right index or not.
   GuildRosterSetOfficerNote(entry.index, note)
+end
+
+function lib:GetClass(name)
+  local entry = cache[name]
+  if not entry then
+    return
+  end
+  return entry.class
 end
 
 function lib:GetGuildInfo()

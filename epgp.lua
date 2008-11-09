@@ -62,6 +62,9 @@
 -- main toon since this is an alt. If <name> is an invalid name or the
 -- officer note is empty it returns <0, BaseGP, nil>.
 --
+-- GetClass(name): Returns the class of member <name>. It returns nil
+-- if the class is unknown.
+--
 -- GetDecayPercent(): Returns the decay % configured in GuildInfo.
 --
 -- GetBaseGP(): Retuns the base GP configured in GuildInfo.
@@ -183,7 +186,14 @@ end
 local function RefreshStandings(order, showEveryone)
   -- Add all mains
   for n in pairs(ep_data) do
-    if showEveryone or not UnitInRaid("player") or UnitInRaid(n) or extras[n] then
+    if showEveryone or EPGP:IsMemberInStandings(n) then
+      table.insert(standings, n)
+    end
+  end
+
+  -- Add alts if we are not in raid view
+  if showEveryone and not UnitInRaid("player") then
+    for n in pairs(main_data) do
       table.insert(standings, n)
     end
   end
@@ -425,6 +435,10 @@ function EPGP:GetEPGP(name)
     name = main
   end
   return ep_data[name], gp_data[name] + base_gp, main
+end
+
+function EPGP:GetClass(name)
+  return GS:GetClass(name)
 end
 
 function EPGP:IncEPBy(name, reason, amount)
