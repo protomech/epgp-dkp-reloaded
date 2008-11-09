@@ -103,7 +103,7 @@ local function DecodeNote(note)
 end
 
 local function EncodeNote(ep, gp)
-  return string.format("%d,%d", ep, gp)
+  return string.format("%d,%d", math.max(ep, 0), math.max(gp - base_gp, 0))
 end
 
 local comparators = {
@@ -111,34 +111,29 @@ local comparators = {
            return a < b
          end,
   EP = function(a, b)
-         local main_a = main_data[a]
-         if main_a then a = main_a end
-         local main_b = main_data[b]
-         if main_b then b = main_b end
+         local a_ep, a_gp = EPGP:GetEPGP(a)
+         local b_ep, b_gp = EPGP:GetEPGP(b)
 
-         local a_ep, b_ep = ep_data[a] or 0, ep_data[b] or 0
          return a_ep > b_ep
        end,
   GP = function(a, b)
-         local main_a = main_data[a]
-         if main_a then a = main_a end
-         local main_b = main_data[b]
-         if main_b then b = main_b end
+         local a_ep, a_gp = EPGP:GetEPGP(a)
+         local b_ep, b_gp = EPGP:GetEPGP(b)
 
-         local a_gp, b_gp = gp_data[a] or 0, gp_data[b] or 0
          return a_gp > b_gp
        end,
   PR = function(a, b)
-         local main_a = main_data[a]
-         if main_a then a = main_a end
-         local main_b = main_data[b]
-         if main_b then b = main_b end
-         -- TODO(alkis): Fix MIN_EP computation
-         local a_ep, b_ep = ep_data[a] or 0
-         local b_ep = ep_data[b] or 0
-         local a_gp = gp_data[a] + base_gp or base_gp
-         local b_gp = gp_data[b] + base_gp or base_gp
-         return a_ep/a_gp > b_ep/b_gp
+         local a_ep, a_gp = EPGP:GetEPGP(a)
+         local b_ep, b_gp = EPGP:GetEPGP(b)
+
+         local a_qualifies = a_ep >= min_ep
+         local b_qualifies = b_ep >= min_ep
+
+         if a_qualifies == b_qualifies then
+           return a_ep/a_gp > b_ep/b_gp
+         else
+           return a_qualifies
+         end
        end,
 }
 
@@ -355,14 +350,15 @@ function EPGP:DecayEPGP()
   local decay = decay_p  * 0.01
   local reason = string.format("Decay %d%%", decay_p)
   local timestamp = GetTimestamp()
-  for n,ep in pairs(ep_data) do
-    local gp = gp_data[n]
+  for name,_ in pairs(ep_data) do
+    local ep, gp, main = self:GetEPGP(name)
+    assert(main == nil, "Corrupt alt data!")
     local decay_ep = math.floor(ep * decay)
-    local decay_gp = math.floor((gp + base_gp) * decay)
-    GS:SetNote(n, EncodeNote(math.max(ep - decay_ep, 0),
-                             math.max(gp - decay_gp, base_gp)))
-    AppendLog(timestamp, "EP", n, reason, -decay_ep)
-    AppendLog(timestamp, "GP", n, reason, -decay_gp)
+    local decay_gp = math.floor(gp * decay)
+    GS:SetNote(name, EncodeNote(math.max(ep - decay_ep, 0),
+                                math.max(gp - decay_gp, 0)))
+    AppendLog(timestamp, "EP", name, reason, -decay_ep)
+    AppendLog(timestamp, "GP", name, reason, -decay_gp)
   end
 end
 
@@ -378,11 +374,7 @@ function EPGP:IncEPBy(name, reason, amount)
   assert(CheckDB())
   assert(reason, "reason cannot be an empty string")
 
-  local main = main_data[name]
-  if not main then
-    main = name
-  end
-  local ep, gp = ep_data[main], gp_data[main]
+  local ep, gp, main = self:GetEPGP(name)
   assert(ep + amount >= 0, "Resulting EP should be positive")
 
   GS:SetNote(main, EncodeNote(ep + amount, gp))
@@ -392,11 +384,7 @@ end
 function EPGP:IncGPBy(name, reason, amount)
   assert(CheckDB())
 
-  local main = main_data[name]
-  if not main then
-    main = name
-  end
-  local ep, gp = ep_data[main], gp_data[main]
+  local ep, gp, main = self:GetEPGP(name)
   assert(gp + amount >= 0, "Resulting GP should be positive")
 
   GS:SetNote(main, EncodeNote(ep, gp + amount))
@@ -445,16 +433,16 @@ function EPGP:UndoLastAction()
   local timestamp, kind, src, dst, reason, amount = unpack(record)
 
   debug("Rolling back: ", LogRecordToString(record))
-  local main = main_data[dst]
-  if not main then
-    main = dst
+  local ep, gp, main = self:GetEPGP(dst)
+  if main then
+    dst = main
+    debug("Rolling back on main toon: ", main)
   end
-  assert(main, "Cannot find main toon's name!")
-  local ep, gp = ep_data[main], gp_data[main]
+
   if kind == "EP" then
-    GS:SetNote(main, EncodeNote(ep - amount, gp))
+    GS:SetNote(dst, EncodeNote(ep - amount, gp))
   elseif kind == "GP" then
-    GS:SetNote(main, EncodeNote(ep, gp - amount))
+    GS:SetNote(dst, EncodeNote(ep, gp - amount))
   else
     assert(false, "Unknown record in the log")
   end
