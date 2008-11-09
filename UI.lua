@@ -350,20 +350,15 @@ end
 
 local function SideFrameDropDown_Initialize()
   local info = UIDropDownMenu_CreateInfo()
-  for i=1, GPTooltip:GetNumRecentItems() do
-    Debug("ItemID: %d", GPTooltip:GetRecentItemID(i))
+  for i=1,GPTooltip:GetNumRecentItems() do
     local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
-    Debug("ItemLink: %s", itemLink)
     info.text = itemLink
-    info.func = SideFrameDropDownButton_OnClick
-    --info.checked = checked
+    info.func = function(self)
+                  UIDropDownMenu_SetSelectedID(SideFrameDropDown, self:GetID())
+                end
+    info.checked = false
     UIDropDownMenu_AddButton(info)
   end
-end
-
-function SideFrameDropDownButton_OnClick(self)
-  UIDropDownMenu_SetSelectedID(SideFrameDropDown, self:GetID())
-  --WhoList_Update();
 end
 
 local function CreateEPGPSideFrame(self)
