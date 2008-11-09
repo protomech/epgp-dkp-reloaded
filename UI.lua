@@ -456,14 +456,26 @@ local function CreateEPGPFrameStandings()
               {0, 64, 64, 64},
               {"LEFT", "RIGHT", "RIGHT", "RIGHT"})
 
-  -- Make all our rows have a check on them
+  -- Make all our rows have a check on them and setup the OnClick
+  -- handler for each row.
   for i,r in ipairs(tabl.rows) do
     r.check = r:CreateTexture(nil, "BACKGROUND")
     r.check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
     r.check:SetWidth(r:GetHeight())
     r.check:SetHeight(r:GetHeight())
     r.check:SetPoint("RIGHT", r.cells[1])
-    r.check:Hide()
+
+    r:RegisterForClicks("LeftButtonDown")
+    r:SetScript("OnClick",
+                function(self, value)
+                  if IsModifiedClick("QUESTWATCHTOGGLE") then
+                    if self.check:IsShown() then
+                      EPGP:StandingsRemoveExtra(self.name)
+                    else
+                      EPGP:StandingsAddExtra(self.name)
+                    end
+                  end
+                end)
   end
 
   -- Hook up the headers
@@ -494,9 +506,9 @@ local function CreateEPGPFrameStandings()
     for i=1,#tabl.rows do
       local row = tabl.rows[i]
       if i <= numMembers then
-        local name = EPGP:GetMember(i)
-        row.cells[1]:SetText(name)
-        local ep, gp = EPGP:GetEPGP(name)
+        row.name = EPGP:GetMember(i)
+        row.cells[1]:SetText(row.name)
+        local ep, gp = EPGP:GetEPGP(row.name)
         row.cells[2]:SetText(ep)
         row.cells[3]:SetText(gp)
         if gp > 0 then
@@ -504,6 +516,11 @@ local function CreateEPGPFrameStandings()
         else
           row.cells[4]:SetText(0)
         end
+        row.check:Hide()
+        if UnitInRaid("player") and EPGP:StandingsShowEveryone() and EPGP:IsMemberInStandings(row.name) then
+          row.check:Show()
+        end
+        row:SetAlpha(EPGP:IsMemberInStandingsExtra(row.name) and 0.75 or 1)
         row:Show()
       else
         row:Hide()

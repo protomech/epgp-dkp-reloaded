@@ -16,6 +16,17 @@
 -- GetMember(i): Returns the ith member in the standings based on the
 -- current sort.
 --
+-- StandingsAddExtraMember(name): Add member to the standings. Returns true
+-- if the member was added, false otherwise.
+--
+-- StandingsRemoveExtraMember(name): Remove member from the
+-- standings. Returns true if the member was added, false otherwise.
+--
+-- IsMemberInStandings(name): Returns true if member is in standings.
+--
+-- IsMemberInStandingsExtra(name): Returns true if member is in
+-- standings as an extra.
+--
 -- ResetEPGP(): Resets all EP and GP to 0.
 --
 -- DecayEPGP(): Decays all EP and GP by the configured decay percent
@@ -94,6 +105,7 @@ local main_data = {}
 local player
 local db
 local standings = {}
+local extras = {}
 
 local function DecodeNote(note)
   local ep, gp = string.match(note, "^(%d+),(%d+)$")
@@ -106,6 +118,24 @@ end
 
 local function EncodeNote(ep, gp)
   return string.format("%d,%d", math.max(ep, 0), math.max(gp - base_gp, 0))
+end
+
+-- A wrapper function to handle sort logic for extras and min_ep
+local function ComparatorWrapper(f)
+  return function(a, b)
+           if db.profile.show_everyone then
+             return f(a, b)
+           end
+
+           local a_extra = extras[a]
+           local b_extra = extras[b]
+
+           if a_extra == b_extra then
+             return f(a, b)
+           else
+             return b_extra
+           end
+         end
 end
 
 local comparators = {
@@ -138,22 +168,22 @@ local comparators = {
          end
        end,
 }
+for k,f in pairs(comparators) do
+  comparators[k] = ComparatorWrapper(f)
+end
 
 local function DestroyStandings()
   -- Remove everything from standings
   for k,v in pairs(standings) do
     standings[k] = nil
   end
+  callbacks:Fire("StandingsChanged")
 end
 
 local function RefreshStandings(order, showEveryone)
   -- Add all mains
   for n in pairs(ep_data) do
-    table.insert(standings, n)
-  end
-  -- Add everyone if necessary
-  if showEveryone then
-    for n in pairs(main_data) do
+    if showEveryone or not UnitInRaid("player") or UnitInRaid(n) or extras[n] then
       table.insert(standings, n)
     end
   end
@@ -195,7 +225,6 @@ local function ParseGuildInfo(callback, info)
           if min_ep ~= mep then
             min_ep = mep
             DestroyStandings()
-            callbacks:Fire("StandingsChanged")
           end
         else
           EPGP:Print(L["Min EP should be a positive number"])
@@ -209,7 +238,6 @@ local function ParseGuildInfo(callback, info)
           if base_gp ~= bgp then
             base_gp = bgp
             DestroyStandings()
-            callbacks:Fire("StandingsChanged")
           end
         else
           EPGP:Print(L["Base GP should be a positive number"])
@@ -234,7 +262,6 @@ local function ParseGuildNote(callback, name, note)
     gp_data[name] = gp or base_gp
   end
   DestroyStandings()
-  callbacks:Fire("StandingsChanged")
 end
 
 local function CheckDB()
@@ -296,7 +323,6 @@ function EPGP:StandingsSort(order)
 
   db.profile.sort_order = order
   DestroyStandings()
-  callbacks:Fire("StandingsChanged")
 end
 
 function EPGP:StandingsShowEveryone(val)
@@ -308,7 +334,6 @@ function EPGP:StandingsShowEveryone(val)
 
   db.profile.show_everyone = not not val
   DestroyStandings()
-  callbacks:Fire("StandingsChanged")
 end
 
 function EPGP:GetNumMembers()
@@ -329,6 +354,36 @@ function EPGP:GetMember(i)
   end
 
   return standings[i]
+end
+
+function EPGP:StandingsAddExtra(name)
+  if UnitInRaid("player") then
+    if not UnitInRaid(name) then
+      extras[name] = true
+      DestroyStandings()
+      return true
+    end
+  end
+  return false
+end
+
+function EPGP:StandingsRemoveExtra(name)
+  if UnitInRaid("player") then
+    if not UnitInRaid(name) and extras[name] then
+      extras[name] = nil
+      DestroyStandings()
+      return true
+    end
+  end
+  return false
+end
+
+function EPGP:IsMemberInStandings(name)
+  return not UnitInRaid("player") or UnitInRaid(name) or extras[name]
+end
+
+function EPGP:IsMemberInStandingsExtra(name)
+  return extras[name]
 end
 
 function EPGP:ResetEPGP()
@@ -379,7 +434,7 @@ function EPGP:IncEPBy(name, reason, amount)
   local ep, gp, main = self:GetEPGP(name)
   assert(ep + amount >= 0, "Resulting EP should be positive")
 
-  GS:SetNote(main, EncodeNote(ep + amount, gp))
+  GS:SetNote(main or name, EncodeNote(ep + amount, gp))
   AppendLog(GetTimestamp(), "EP", name, reason, amount)
 end
 
@@ -389,7 +444,7 @@ function EPGP:IncGPBy(name, reason, amount)
   local ep, gp, main = self:GetEPGP(name)
   assert(gp + amount >= 0, "Resulting GP should be positive")
 
-  GS:SetNote(main, EncodeNote(ep, gp + amount))
+  GS:SetNote(main or name, EncodeNote(ep, gp + amount))
   AppendLog(GetTimestamp(), "GP", name, reason, amount)
 end
 
@@ -468,6 +523,16 @@ function EPGP:GetLogRecord(i)
   return LogRecordToString(db.profile.log[logsize - i])
 end
 
+function EPGP:RAID_ROSTER_UPDATE()
+  DestroyStandings()
+  -- Make sure no member of the raid is in extras
+  for name,_ in pairs(extras) do
+    if not UnitInRaid(name) then
+      extras[name] = nil
+    end
+  end
+end
+
 function EPGP:OnInitialize()
   player = UnitName("player")
   db = AceDB:New("EPGP_DB", {
@@ -479,4 +544,5 @@ function EPGP:OnInitialize()
                  })
   GS:RegisterCallback("GuildInfoChanged", ParseGuildInfo)
   GS:RegisterCallback("GuildNoteChanged", ParseGuildNote)
+  self:RegisterEvent("RAID_ROSTER_UPDATE")
 end
