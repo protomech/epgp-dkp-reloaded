@@ -24,10 +24,10 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 		ClearCursor();
 	end,
   
-  OnShow = function()
-		local itemFrame = getglobal(this:GetName().."ItemFrame")
-		local editBox = getglobal(this:GetName().."EditBox")
-		local button1 = getglobal(this:GetName().."Button1")
+  OnShow = function(self)
+		local itemFrame = getglobal(self:GetName().."ItemFrame")
+		local editBox = getglobal(self:GetName().."EditBox")
+		local button1 = getglobal(self:GetName().."Button1")
 
 		itemFrame:SetPoint("TOPLEFT", 55, -35)
 		editBox:SetPoint("TOPLEFT", itemFrame, "TOPRIGHT", 150, -10)

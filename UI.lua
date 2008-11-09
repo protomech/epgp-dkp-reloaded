@@ -1,6 +1,8 @@
 --[[ EPGP User Interface ]]--
 
 local mod = EPGP:NewModule("EPGP_UI", "AceEvent-3.0")
+local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
 local CURRENT_VERSION = GetAddOnMetadata('EPGP_UI', 'Version')
 
@@ -342,8 +344,93 @@ local function CreateEPGPLogFrame()
   EPGPFrame:SetScript("OnShow",
                       function(self)
                         EPGPLogFrame:Hide()
+                        EPGPSideFrame:Hide()
                       end)
 end
+
+local function SideFrameDropDown_Initialize()
+  local info = UIDropDownMenu_CreateInfo()
+  for i=1, GPTooltip:GetNumRecentItems() do
+    Debug("ItemID: %d", GPTooltip:GetRecentItemID(i))
+    local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
+    Debug("ItemLink: %s", itemLink)
+      info.text = itemLink
+    info.func = SideFrameDropDownButton_OnClick
+    --info.checked = checked
+    UIDropDownMenu_AddButton(info)
+  end
+end
+
+function SideFrameDropDownButton_OnClick(self)
+  UIDropDownMenu_SetSelectedID(SideFrameDropDown, self:GetID())
+  --WhoList_Update();
+end
+
+local function CreateEPGPSideFrame(self)
+  local f = CreateFrame("Frame", "EPGPSideFrame", EPGPFrame)
+  f:Hide()
+  f:SetWidth(212)
+  f:SetHeight(210)
+  f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -33, -28)
+  
+  local t = f:CreateTexture(nil, "OVERLAY")
+  t:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Corner")
+  t:SetWidth(32)
+  t:SetHeight(32)
+  t:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -7)
+  
+  f:SetBackdrop(
+    {
+      bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+      edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+      tile = true,
+      tileSize = 32,
+      edgeSize = 32,
+      insets = { left=11, right=12, top=12, bottom=11 }
+    })
+    
+  local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
+  
+  local name = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+  name:SetPoint("TOPLEFT", 17, -18)
+  
+  local reasonLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  reasonLabel:SetText(L["Reason"])
+  reasonLabel:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0, -20)
+
+  dropdown = CreateFrame("Frame", "SideFrameDropDown", f, "UIDropDownMenuTemplate")
+  dropdown:EnableMouse(true)
+  dropdown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", -5, -10)
+  UIDropDownMenu_Initialize(dropdown, SideFrameDropDown_Initialize)
+  UIDropDownMenu_SetSelectedValue(dropdown, 1)
+  UIDropDownMenu_SetWidth(dropdown, 140)
+  UIDropDownMenu_JustifyText(dropdown, "LEFT")
+  SideFrameDropDownLeft:SetHeight(50)
+  SideFrameDropDownMiddle:SetHeight(50)
+  SideFrameDropDownRight:SetHeight(50)
+  SideFrameDropDownButton:SetPoint("TOPRIGHT", SideFrameDropDownRight, "TOPRIGHT", -16, -12)
+
+  local valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  valueLabel:SetText(L["Value"])
+  valueLabel:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -50)
+
+  local valueBox = CreateFrame("EditBox", "SideFrameValueBox", f, "InputBoxTemplate")
+  valueBox:SetWidth(120);
+  valueBox:SetHeight(24);
+  valueBox:SetAutoFocus(false);
+  valueBox:SetFontObject("GameFontHighlightSmall")
+  valueBox:SetPoint("TOPLEFT", valueLabel, "BOTTOMLEFT", 15, -7);
+
+  local cgp = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+  cgp:SetHeight(BUTTON_HEIGHT)
+  cgp:SetPoint("TOPLEFT", valueLabel, "BOTTOMLEFT", 0, -50)
+  cgp:SetText(L["Credit GPs"])
+  cgp:SetWidth(cgp:GetTextWidth() + BUTTON_TEXT_PADDING)
+  
+  f:SetScript("OnShow", function(self) name:SetText(self.name) end)
+end
+
 
 local function CreateEPGPFrameStandings()
   -- Make the show everyone checkbox
@@ -391,7 +478,10 @@ local function CreateEPGPFrameStandings()
 
   -- Make the log frame
   CreateEPGPLogFrame()
-
+  
+  -- Make the side frame
+  CreateEPGPSideFrame()
+  
   -- Make the main frame
   local main = CreateFrame("Frame", nil, EPGPFrame)
   main:SetWidth(322)
@@ -474,6 +564,9 @@ local function CreateEPGPFrameStandings()
                     else
                       EPGP:StandingsAddExtra(self.name)
                     end
+                  else
+                    EPGPSideFrame.name = self.name 
+                    EPGPSideFrame:Show()
                   end
                 end)
   end
