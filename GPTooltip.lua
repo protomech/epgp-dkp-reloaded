@@ -129,6 +129,23 @@ local CUSTOM_ITEM_DATA = {
   ["32405"] = { 4, 138, "INVTYPE_NECK" },  
 }
 
+local recent_items = {}
+
+local function UpdateRecentLoot(itemID)
+  table.insert(recent_items, 1, itemID)
+  if #recent_items > 15 then
+    table.remove(recent_items)
+  end
+end
+
+function mod:GetNumRecentItems()
+  return #items
+end
+
+function mod:GetRecentItemID(i)
+  return recent_items[i]
+end
+
 function mod:GetGPValue(itemLink)
   if not itemLink then return end
 
@@ -145,6 +162,9 @@ function mod:GetGPValue(itemLink)
   if rarity and rarity < 4 then
     return
   end
+
+  UpdateRecentLoot(itemID)
+
   local slot_multiplier1 = EQUIPSLOT_MULTIPLIER_1[equipLoc]
   local slot_multiplier2 = EQUIPSLOT_MULTIPLIER_2[equipLoc]
 
