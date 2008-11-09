@@ -6,8 +6,10 @@
 -- sort order. Valid values are: NAME, EP, GP, PR. If there is no
 -- parameter it returns the current value.
 --
--- StandingsShowAlts(val): Sets listing alts or not in the
--- standings. If there is no paramter it returns the current value.
+-- StandingsShowEveryone(val): Sets listing everyone or not in the
+-- standings. If there is no paramter it returns the current
+-- value. Not showing everyone means no alts when not in raid and only
+-- raid members when in raid.
 --
 -- GetNumMembers(): Returns the number of members in the standings.
 --
@@ -144,13 +146,13 @@ local function DestroyStandings()
   end
 end
 
-local function RefreshStandings(order, showAlts)
+local function RefreshStandings(order, showEveryone)
   -- Add all mains
   for n in pairs(ep_data) do
     table.insert(standings, n)
   end
-  -- Add all alts if necessary
-  if showAlts then
+  -- Add everyone if necessary
+  if showEveryone then
     for n in pairs(main_data) do
       table.insert(standings, n)
     end
@@ -297,14 +299,14 @@ function EPGP:StandingsSort(order)
   callbacks:Fire("StandingsChanged")
 end
 
-function EPGP:StandingsShowAlts(val)
+function EPGP:StandingsShowEveryone(val)
   assert(CheckDB())
 
   if val == nil then
-    return db.profile.show_alts
+    return db.profile.show_everyone
   end
 
-  db.profile.show_alts = not not val
+  db.profile.show_everyone = not not val
   DestroyStandings()
   callbacks:Fire("StandingsChanged")
 end
@@ -313,7 +315,7 @@ function EPGP:GetNumMembers()
   assert(CheckDB())
 
   if #standings == 0 then
-    RefreshStandings(db.profile.sort_order, db.profile.show_alts)
+    RefreshStandings(db.profile.sort_order, db.profile.show_everyone)
   end
 
   return #standings
@@ -323,7 +325,7 @@ function EPGP:GetMember(i)
   assert(CheckDB())
 
   if #standings == 0 then
-    RefreshStandings(db.profile.sort_order, db.profile.show_alts)
+    RefreshStandings(db.profile.sort_order, db.profile.show_everyone)
   end
 
   return standings[i]
@@ -471,7 +473,7 @@ function EPGP:OnInitialize()
   db = AceDB:New("EPGP_DB", {
                    profile = {
                      log = {},
-                     show_alts = false,
+                     show_everyone = false,
                      sort_order = "PR",
                    }
                  })

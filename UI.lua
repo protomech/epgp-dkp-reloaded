@@ -24,7 +24,7 @@ end
 local function DebugFrame(frame, r, g, b)
   local t = frame:CreateTexture()
   t:SetAllPoints(frame)
-  t:SetTexture(r or 0, g or 1, b or 0, 0.2)
+  t:SetTexture(r or 0, g or 1, b or 0, 0.05)
 end
 
 local function CreateEPGPFrame()
@@ -346,10 +346,9 @@ local function CreateEPGPLogFrame()
 end
 
 local function CreateEPGPFrameStandings()
-  -- Make the show alts checkbox
+  -- Make the show everyone checkbox
   local f = CreateFrame("Frame", nil, EPGPFrame)
-  f:SetWidth(210)
-  f:SetHeight(23)
+  f:SetHeight(28)
   f:SetPoint("TOPRIGHT", EPGPFrame, "TOPRIGHT", -42, -38)
 
   local tr = f:CreateTexture(nil, "BACKGROUND")
@@ -359,19 +358,19 @@ local function CreateEPGPFrameStandings()
   tr:SetPoint("TOPRIGHT")
   tr:SetTexCoord(0.90625, 1, 0, 1)
 
-  local tm = f:CreateTexture(nil, "BACKGROUND")
-  tm:SetTexture("Interface\\ClassTrainerFrame\\UI-ClassTrainer-FilterBorder")
-  tm:SetWidth(96)
-  tm:SetHeight(28)
-  tm:SetPoint("RIGHT", tr, "LEFT")
-  tm:SetTexCoord(0.09375, 0.90625, 0, 1)
-
   local tl = f:CreateTexture(nil, "BACKGROUND")
   tl:SetTexture("Interface\\ClassTrainerFrame\\UI-ClassTrainer-FilterBorder")
   tl:SetWidth(12)
   tl:SetHeight(28)
-  tl:SetPoint("RIGHT", tm, "LEFT")
+  tl:SetPoint("TOPLEFT")
   tl:SetTexCoord(0, 0.09375, 0, 1)
+
+  local tm = f:CreateTexture(nil, "BACKGROUND")
+  tm:SetTexture("Interface\\ClassTrainerFrame\\UI-ClassTrainer-FilterBorder")
+  tm:SetHeight(28)
+  tm:SetPoint("RIGHT", tr, "LEFT")
+  tm:SetPoint("LEFT", tl, "RIGHT")
+  tm:SetTexCoord(0.09375, 0.90625, 0, 1)
 
   local cb = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
   cb:SetWidth(20)
@@ -379,15 +378,16 @@ local function CreateEPGPFrameStandings()
   cb:SetPoint("RIGHT", f, "RIGHT", -8, 0)
   cb:SetScript("OnShow",
                function(self)
-                 self:SetChecked(EPGP:StandingsShowAlts())
+                 self:SetChecked(EPGP:StandingsShowEveryone())
                end)
   cb:SetScript("OnClick",
                function(self)
-                 EPGP:StandingsShowAlts(not not self:GetChecked())
+                 EPGP:StandingsShowEveryone(not not self:GetChecked())
                end)
   local t = cb:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  t:SetText("Show alts")
-  t:SetPoint("RIGHT", cb, "LEFT", -10, 1)
+  t:SetText("Show everyone")
+  t:SetPoint("RIGHT", cb, "LEFT", 0, 2)
+  f:SetWidth(t:GetStringWidth() + 4 * tl:GetWidth() + cb:GetWidth())
 
   -- Make the log frame
   CreateEPGPLogFrame()
