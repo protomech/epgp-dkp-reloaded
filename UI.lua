@@ -348,13 +348,30 @@ local function CreateEPGPLogFrame()
                       end)
 end
 
-local function SideFrameDropDown_Initialize()
+local function SideFrameGPDropDown_Initialize()
   local info = UIDropDownMenu_CreateInfo()
   for i=1,GPTooltip:GetNumRecentItems() do
     local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
     info.text = itemLink
     info.func = function(self)
-                  UIDropDownMenu_SetSelectedID(SideFrameDropDown, self:GetID())
+                  UIDropDownMenu_SetSelectedID(SideFrameGPDropDown, self:GetID())
+                  local editbox = getglobal("SideFrameGPValueBox")
+                  editbox:SetText(GPTooltip:GetGPValue(itemLink))
+                  editbox:SetFocus()
+                  editbox:HighlightText()
+                end
+    info.checked = false
+    UIDropDownMenu_AddButton(info)
+  end
+end
+
+local function SideFrameEPDropDown_Initialize()
+  local info = UIDropDownMenu_CreateInfo()
+  for i=1,GPTooltip:GetNumRecentItems() do
+    local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
+    info.text = itemLink
+    info.func = function(self)
+                  UIDropDownMenu_SetSelectedID(SideFrameEPDropDown, self:GetID())
                 end
     info.checked = false
     UIDropDownMenu_AddButton(info)
@@ -364,9 +381,18 @@ end
 local function CreateEPGPSideFrame(self)
   local f = CreateFrame("Frame", "EPGPSideFrame", EPGPFrame)
   f:Hide()
-  f:SetWidth(212)
+  f:SetWidth(225)
   f:SetHeight(210)
   f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -33, -28)
+  
+  local h = f:CreateTexture(nil, "ARTWORK")
+  h:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
+  h:SetWidth(300)
+  h:SetHeight(68)
+  h:SetPoint("TOP", -9, 12)
+  
+  local htxt = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+  htxt:SetPoint("TOP", h, "TOP", 0, -15)
   
   local t = f:CreateTexture(nil, "OVERLAY")
   t:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Corner")
@@ -386,44 +412,80 @@ local function CreateEPGPSideFrame(self)
   
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
-  
-  local name = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-  name:SetPoint("TOPLEFT", 17, -18)
-  
-  local reasonLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  reasonLabel:SetText(L["Reason"])
-  reasonLabel:SetPoint("TOPLEFT", name, "BOTTOMLEFT", 0, -20)
 
-  dropdown = CreateFrame("Frame", "SideFrameDropDown", f, "UIDropDownMenuTemplate")
-  dropdown:EnableMouse(true)
-  dropdown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", -5, -10)
-  UIDropDownMenu_Initialize(dropdown, SideFrameDropDown_Initialize)
-  UIDropDownMenu_SetSelectedValue(dropdown, 1)
-  UIDropDownMenu_SetWidth(dropdown, 140)
-  UIDropDownMenu_JustifyText(dropdown, "LEFT")
-  SideFrameDropDownLeft:SetHeight(50)
-  SideFrameDropDownMiddle:SetHeight(50)
-  SideFrameDropDownRight:SetHeight(50)
-  SideFrameDropDownButton:SetPoint("TOPRIGHT", SideFrameDropDownRight, "TOPRIGHT", -16, -12)
+  local gp_reasonLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  gp_reasonLabel:SetText(L["GP Reason"])
+  gp_reasonLabel:SetPoint("TOPLEFT", 16, -35)
 
-  local valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  valueLabel:SetText(L["Value"])
-  valueLabel:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT", 0, -50)
+  gpDropdown = CreateFrame("Frame", "SideFrameGPDropDown", f, "UIDropDownMenuTemplate")
+  gpDropdown:EnableMouse(true)
+  gpDropdown:SetPoint("TOPLEFT", gp_reasonLabel, "BOTTOMLEFT", -8, -10)
+  UIDropDownMenu_Initialize(gpDropdown, SideFrameGPDropDown_Initialize)
+  UIDropDownMenu_SetSelectedValue(gpDropdown, 1)
+  UIDropDownMenu_SetWidth(gpDropdown, 160)
+  UIDropDownMenu_JustifyText(gpDropdown, "LEFT")
+  SideFrameGPDropDownLeft:SetHeight(50)
+  SideFrameGPDropDownMiddle:SetHeight(50)
+  SideFrameGPDropDownRight:SetHeight(50)
+  SideFrameGPDropDownButton:SetPoint("TOPRIGHT", SideFrameGPDropDownRight, "TOPRIGHT", -16, -12)
 
-  local valueBox = CreateFrame("EditBox", "SideFrameValueBox", f, "InputBoxTemplate")
-  valueBox:SetWidth(120);
-  valueBox:SetHeight(24);
-  valueBox:SetAutoFocus(false);
-  valueBox:SetFontObject("GameFontHighlightSmall")
-  valueBox:SetPoint("TOPLEFT", valueLabel, "BOTTOMLEFT", 15, -7);
+  local gp_valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  gp_valueLabel:SetText(L["Value"])
+  gp_valueLabel:SetPoint("TOPLEFT", gp_reasonLabel, "BOTTOMLEFT", 0, -30)
+
+  local gp_valueBox = CreateFrame("EditBox", "SideFrameGPValueBox", f, "InputBoxTemplate")
+  gp_valueBox:SetWidth(90);
+  gp_valueBox:SetHeight(24);
+  gp_valueBox:SetAutoFocus(false);
+  gp_valueBox:SetFontObject("GameFontHighlightSmall")
+  gp_valueBox:SetPoint("TOPLEFT", gp_valueLabel, "BOTTOMLEFT", 15, -5);
 
   local cgp = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   cgp:SetHeight(BUTTON_HEIGHT)
-  cgp:SetPoint("TOPLEFT", valueLabel, "BOTTOMLEFT", 0, -50)
+  cgp:SetPoint("TOPLEFT", gp_valueBox, "TOPRIGHT", 8, -1)
   cgp:SetText(L["Credit GPs"])
   cgp:SetWidth(cgp:GetTextWidth() + BUTTON_TEXT_PADDING)
+    
+  local ep_reasonLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  ep_reasonLabel:SetText(L["EP Reason"])
+  ep_reasonLabel:SetPoint("TOPLEFT", gp_valueLabel, "TOPLEFT", 0, -45)
   
-  f:SetScript("OnShow", function(self) name:SetText(self.name) end)
+  epDropdown = CreateFrame("Frame", "SideFrameEPDropDown", f, "UIDropDownMenuTemplate")
+  epDropdown:EnableMouse(true)
+  epDropdown:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", -8, -10)
+  UIDropDownMenu_Initialize(epDropdown, SideFrameEPDropDown_Initialize)
+  UIDropDownMenu_SetSelectedValue(epDropdown, 1)
+  UIDropDownMenu_SetWidth(epDropdown, 160)
+  UIDropDownMenu_JustifyText(epDropdown, "LEFT")
+  SideFrameEPDropDownLeft:SetHeight(50)
+  SideFrameEPDropDownMiddle:SetHeight(50)
+  SideFrameEPDropDownRight:SetHeight(50)
+  SideFrameEPDropDownButton:SetPoint("TOPRIGHT", SideFrameEPDropDownRight, "TOPRIGHT", -16, -12)
+  
+  local ep_valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  ep_valueLabel:SetText(L["Value"])
+  ep_valueLabel:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", 0, -30)
+
+  local ep_valueBox = CreateFrame("EditBox", "SideFrameEPValueBox", f, "InputBoxTemplate")
+  ep_valueBox:SetWidth(90);
+  ep_valueBox:SetHeight(24);
+  ep_valueBox:SetAutoFocus(false);
+  ep_valueBox:SetFontObject("GameFontHighlightSmall")
+  ep_valueBox:SetPoint("TOPLEFT", ep_valueLabel, "BOTTOMLEFT", 15, -5);
+
+  local aep = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+  aep:SetHeight(BUTTON_HEIGHT)
+  aep:SetPoint("TOPLEFT", ep_valueBox, "TOPRIGHT", 8, -1)
+  aep:SetText(L["Award EPs"])
+  aep:SetWidth(cgp:GetTextWidth() + BUTTON_TEXT_PADDING)
+
+  f:SetScript("OnShow", function(self) 
+                          gp_valueBox:SetText("")
+                          ep_valueBox:SetText("")
+                          UIDropDownMenu_ClearAll(gpDropdown)
+                          UIDropDownMenu_ClearAll(epDropdown)
+                          htxt:SetText(self.name)
+                        end)
 end
 
 

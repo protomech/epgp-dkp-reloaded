@@ -10,7 +10,9 @@ if L then
   L["Offspec"] = true
   L["Credit GP to %s"] = true
   L["Decay EP and GP by %d%%?"] = true
-  L["Reason"] = true
+  L["GP Reason"] = true
+  L["EP Reason"] = true
   L["Value"] = true
   L["Credit GPs"] = true
+  L["Award EPs"] = true
 end
