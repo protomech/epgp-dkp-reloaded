@@ -15,4 +15,5 @@ if L then
   L["Value"] = true
   L["Credit GPs"] = true
   L["Award EPs"] = true
+  L["Other"] = true
 end
