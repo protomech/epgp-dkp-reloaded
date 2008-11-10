@@ -668,6 +668,7 @@ local function CreateEPGPFrameStandings()
                       EPGP:StandingsAddExtra(self.name)
                     end
                   else
+                    EPGPSideFrame:Hide()
                     self:LockHighlight()
                     EPGPSideFrame.row = self 
                     EPGPSideFrame:Show()
