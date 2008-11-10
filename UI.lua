@@ -374,11 +374,30 @@ local function SideFrameEPDropDown_Initialize()
       info.text = dungeons[i*3 + 1]
       info.func = function(self)
                     UIDropDownMenu_SetSelectedID(SideFrameEPDropDown, self:GetID())
+                    getglobal("SideFrameEPOtherLabel"):SetAlpha(0.25)
+                    local other_editbox = getglobal("SideFrameEPOtherBox")
+                    other_editbox:SetAlpha(0.25)
+                    other_editbox:EnableKeyboard(false)
+                    other_editbox:EnableMouse(false)
+                    other_editbox:ClearFocus()
                   end
       info.checked = false
       UIDropDownMenu_AddButton(info)
     end
   end
+  
+  info.text = L["Other"]
+  info.func = function(self)
+                UIDropDownMenu_SetSelectedID(SideFrameEPDropDown, self:GetID())
+                getglobal("SideFrameEPOtherLabel"):SetAlpha(1)
+                local other_editbox = getglobal("SideFrameEPOtherBox")
+                other_editbox:SetAlpha(1)
+                other_editbox:EnableKeyboard(true)
+                other_editbox:EnableMouse(true)
+                other_editbox:SetFocus()
+              end
+  info.checked = false
+  UIDropDownMenu_AddButton(info)
 end
 
 local function CreateEPGPSideFrame(self)
@@ -420,7 +439,7 @@ local function CreateEPGPSideFrame(self)
   gp_reasonLabel:SetText(L["GP Reason"])
   gp_reasonLabel:SetPoint("TOPLEFT", 16, -35)
 
-  gpDropdown = CreateFrame("Frame", "SideFrameGPDropDown", f, "UIDropDownMenuTemplate")
+  local gpDropdown = CreateFrame("Frame", "SideFrameGPDropDown", f, "UIDropDownMenuTemplate")
   gpDropdown:EnableMouse(true)
   gpDropdown:SetPoint("TOPLEFT", gp_reasonLabel, "BOTTOMLEFT", -8, -10)
   UIDropDownMenu_Initialize(gpDropdown, SideFrameGPDropDown_Initialize)
@@ -453,7 +472,7 @@ local function CreateEPGPSideFrame(self)
   ep_reasonLabel:SetText(L["EP Reason"])
   ep_reasonLabel:SetPoint("TOPLEFT", gp_valueLabel, "TOPLEFT", 0, -45)
   
-  epDropdown = CreateFrame("Frame", "SideFrameEPDropDown", f, "UIDropDownMenuTemplate")
+  local epDropdown = CreateFrame("Frame", "SideFrameEPDropDown", f, "UIDropDownMenuTemplate")
   epDropdown:EnableMouse(true)
   epDropdown:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", -8, -10)
   UIDropDownMenu_Initialize(epDropdown, SideFrameEPDropDown_Initialize)
@@ -465,7 +484,7 @@ local function CreateEPGPSideFrame(self)
   SideFrameEPDropDownRight:SetHeight(50)
   SideFrameEPDropDownButton:SetPoint("TOPRIGHT", SideFrameEPDropDownRight, "TOPRIGHT", -16, -12)
   
-  local ep_otherLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  local ep_otherLabel = f:CreateFontString("SideFrameEPOtherLabel", "ARTWORK", "GameFontHighlightSmall")
   ep_otherLabel:SetText(L["Other"])
   ep_otherLabel:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", 0, -30)
 
@@ -499,6 +518,10 @@ local function CreateEPGPSideFrame(self)
                           ep_otherBox:SetText("")
                           UIDropDownMenu_ClearAll(gpDropdown)
                           UIDropDownMenu_ClearAll(epDropdown)
+                          ep_otherLabel:SetAlpha(0.25)
+                          ep_otherBox:SetAlpha(0.25)
+                          ep_otherBox:EnableKeyboard(false)
+                          ep_otherBox:EnableMouse(false)
                           htxt:SetText(self.row.name)
                         end)
 
