@@ -356,38 +356,83 @@ local function EPGPSideFrameGPDropDown_Initialize(dropDown)
     info.text = itemLink
     info.func = function(self)
                   UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                  local editbox = getglobal(parent:GetName().."GPValueBox")
                   local value = GPTooltip:GetGPValue(itemLink)
                   if value then
-                    editbox:SetText(value)
+                    parent.editbox:SetText(value)
                   else
-                    editbox:SetText("")
+                    parent.editbox:SetText("")
                   end
-                  editbox:SetFocus()
-                  editbox:HighlightText()
+                  parent.editbox:SetFocus()
+                  parent.editbox:HighlightText()
                 end
     info.checked = false
     UIDropDownMenu_AddButton(info)
   end
 end
 
+local function AddGPControls(frame)
+  local reasonLabel =
+    frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  reasonLabel:SetText(L["GP Reason"])
+  reasonLabel:SetPoint("TOPLEFT")
+
+  local dropDown = CreateFrame("Frame", "$parentGPControlDropDown",
+                               frame, "UIDropDownMenuTemplate")
+  dropDown:EnableMouse(true)
+  UIDropDownMenu_Initialize(dropDown, EPGPSideFrameGPDropDown_Initialize)
+  UIDropDownMenu_SetSelectedValue(dropDown, 1)
+  UIDropDownMenu_SetWidth(dropDown, 150)
+  UIDropDownMenu_JustifyText(dropDown, "LEFT")
+  dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
+
+  local label =
+    frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  label:SetText(L["Value"])
+  label:SetPoint("LEFT", reasonLabel)
+  label:SetPoint("TOP", dropDown, "BOTTOM")
+
+  local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+  button:SetHeight(BUTTON_HEIGHT)
+  button:SetText(L["Credit GPs"])
+  button:SetWidth(button:GetTextWidth() + BUTTON_TEXT_PADDING)
+  button:SetPoint("RIGHT", dropDown, "RIGHT", -15, 0)
+  button:SetPoint("TOP", label, "BOTTOM")
+
+  local editBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+  editBox:SetHeight(24)
+  editBox:SetAutoFocus(false)
+  editBox:SetFontObject("GameFontHighlightSmall")
+  editBox:SetPoint("LEFT", dropDown, "LEFT", 25, 0)
+  editBox:SetPoint("RIGHT", button, "LEFT")
+  editBox:SetPoint("TOP", label, "BOTTOM")
+
+  frame:SetHeight(
+    reasonLabel:GetHeight() +
+    dropDown:GetHeight() +
+    label:GetHeight() +
+    button:GetHeight())
+
+  frame.reasonLabel = reasonLabel
+  frame.dropDown = dropDown
+  frame.label = label
+  frame.button = button
+  frame.editBox = editBox
+end
+
 local function EPGPSideFrameEPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
-  local other_label = getglobal(parent:GetName().."EPOtherLabel")
-  local other_editbox = getglobal(parent:GetName().."EPOtherBox")
   local info = UIDropDownMenu_CreateInfo()
   local dungeons = {CalendarEventGetTextures(1)}
-  local total_dungeons = #dungeons / 3
-  for i=0,(total_dungeons-1) do
-    if dungeons[i*3 + 3] == 2 then
-      info.text = dungeons[i*3 + 1]
+  for i=1,#dungeons,3 do
+    if dungeons[i+2] == 2 then
+      info.text = dungeons[i]
       info.func = function(self)
                     UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                    other_label:SetAlpha(0.25)
-                    other_editbox:SetAlpha(0.25)
-                    other_editbox:EnableKeyboard(false)
-                    other_editbox:EnableMouse(false)
-                    other_editbox:ClearFocus()
+                    parent.otherLabel:SetAlpha(0.25)
+                    parent.otherEditBox:SetAlpha(0.25)
+                    parent.otherEditBox:EnableKeyboard(false)
+                    parent.otherEditBox:EnableMouse(false)
+                    parent.otherEditBox:ClearFocus()
                   end
       info.checked = false
       UIDropDownMenu_AddButton(info)
@@ -397,14 +442,80 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
   info.text = L["Other"]
   info.func = function(self)
                 UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                other_label:SetAlpha(1)
-                other_editbox:SetAlpha(1)
-                other_editbox:EnableKeyboard(true)
-                other_editbox:EnableMouse(true)
-                other_editbox:SetFocus()
+                parent.otherLabel:SetAlpha(1)
+                parent.otherEditBox:SetAlpha(1)
+                parent.otherEditBox:EnableKeyboard(true)
+                parent.otherEditBox:EnableMouse(true)
+                parent.otherEditBox:SetFocus()
               end
   info.checked = false
   UIDropDownMenu_AddButton(info)
+end
+
+local function AddEPControls(frame)
+  local reasonLabel =
+    frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  reasonLabel:SetText(L["EP Reason"])
+  reasonLabel:SetPoint("TOPLEFT")
+  
+  local dropDown = CreateFrame("Frame", "$parentEPControlDropDown",
+                               frame, "UIDropDownMenuTemplate")
+  dropDown:EnableMouse(true)
+  UIDropDownMenu_Initialize(dropDown, EPGPSideFrameEPDropDown_Initialize)
+  UIDropDownMenu_SetSelectedValue(dropDown, 1)
+  UIDropDownMenu_SetWidth(dropDown, 150)
+  UIDropDownMenu_JustifyText(dropDown, "LEFT")
+  dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
+  
+  local otherLabel =
+    frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  otherLabel:SetText(L["Other"])
+  otherLabel:SetPoint("LEFT", reasonLabel)
+  otherLabel:SetPoint("TOP", dropDown, "BOTTOM")
+
+  local otherEditBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+  otherEditBox:SetHeight(24)
+  otherEditBox:SetAutoFocus(false)
+  otherEditBox:SetFontObject("GameFontHighlightSmall")
+  otherEditBox:SetPoint("LEFT", dropDown, "LEFT", 25, 0)
+  otherEditBox:SetPoint("RIGHT", dropDown, "RIGHT", -15, 0)
+  otherEditBox:SetPoint("TOP", otherLabel, "BOTTOM")
+
+  local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  label:SetText(L["Value"])
+  label:SetPoint("LEFT", reasonLabel)
+  label:SetPoint("TOP", otherEditBox, "BOTTOM")
+
+  local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+  button:SetHeight(BUTTON_HEIGHT)
+  button:SetText(L["Award EPs"])
+  button:SetWidth(button:GetTextWidth() + BUTTON_TEXT_PADDING)
+  button:SetPoint("RIGHT", otherEditBox, "RIGHT")
+  button:SetPoint("TOP", label, "BOTTOM")
+
+  local editBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+  editBox:SetHeight(24)
+  editBox:SetAutoFocus(false)
+  editBox:SetFontObject("GameFontHighlightSmall")
+  editBox:SetPoint("LEFT", dropDown, "LEFT", 25, 0)
+  editBox:SetPoint("RIGHT", button, "LEFT")
+  editBox:SetPoint("TOP", label, "BOTTOM")
+
+  frame:SetHeight(
+    reasonLabel:GetHeight() +
+    dropDown:GetHeight() +
+    otherLabel:GetHeight() +
+    otherEditBox:GetHeight() +
+    label:GetHeight() +
+    button:GetHeight())
+
+  frame.reasonLabel = reasonLabel
+  frame.dropDown = dropDown
+  frame.otherLabel = otherLabel
+  frame.otherEditBox = otherEditBox
+  frame.label = label
+  frame.editBox = editBox
+  frame.button = button
 end
 
 local function CreateEPGPSideFrame(self)
@@ -442,96 +553,34 @@ local function CreateEPGPSideFrame(self)
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
 
-  local gp_reasonLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  gp_reasonLabel:SetText(L["GP Reason"])
-  gp_reasonLabel:SetPoint("TOPLEFT", 16, -35)
+  local gpFrame = CreateFrame("Frame", nil, f)
+  gpFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -30)
+  gpFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -30)
+  AddGPControls(gpFrame)
 
-  local gpDropdown = CreateFrame("Frame", "$parentGPDropDown", f, "UIDropDownMenuTemplate")
-  gpDropdown:EnableMouse(true)
-  gpDropdown:SetPoint("TOPLEFT", gp_reasonLabel, "BOTTOMLEFT", -8, 0)
-  UIDropDownMenu_Initialize(gpDropdown, EPGPSideFrameGPDropDown_Initialize)
-  UIDropDownMenu_SetSelectedValue(gpDropdown, 1)
-  UIDropDownMenu_SetWidth(gpDropdown, 160)
-  UIDropDownMenu_JustifyText(gpDropdown, "LEFT")
+  local epFrame = CreateFrame("Frame", nil, f)
+  epFrame:SetPoint("TOPLEFT", gpFrame, "BOTTOMLEFT", 0, -15)
+  epFrame:SetPoint("TOPRIGHT", gpFrame, "BOTTOMRIGHT", 0, -15)
+  AddEPControls(epFrame)
 
-  local gp_valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  gp_valueLabel:SetText(L["Value"])
-  gp_valueLabel:SetPoint("LEFT", gp_reasonLabel)
-  gp_valueLabel:SetPoint("TOP", gpDropdown, "BOTTOM")
+  f:SetScript("OnShow",
+              function(self) 
+                gpFrame.editBox:SetText("")
+                epFrame.editBox:SetText("")
+                epFrame.otherEditBox:SetText("")
+                UIDropDownMenu_ClearAll(gpFrame.dropDown)
+                UIDropDownMenu_ClearAll(epFrame.dropDown)
+                epFrame.otherLabel:SetAlpha(0.25)
+                epFrame.otherEditBox:SetAlpha(0.25)
+                epFrame.otherEditBox:EnableKeyboard(false)
+                epFrame.otherEditBox:EnableMouse(false)
+                htxt:SetText(self.row.name)
+              end)
 
-  local gp_valueBox = CreateFrame("EditBox", "$parentGPValueBox", f, "InputBoxTemplate")
-  gp_valueBox:SetWidth(90);
-  gp_valueBox:SetHeight(24);
-  gp_valueBox:SetAutoFocus(false);
-  gp_valueBox:SetFontObject("GameFontHighlightSmall")
-  gp_valueBox:SetPoint("TOPLEFT", gp_valueLabel, "BOTTOMLEFT", 15, 0);
-
-  local cgp = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-  cgp:SetHeight(BUTTON_HEIGHT)
-  cgp:SetPoint("LEFT", gp_valueBox, "RIGHT", 8, 0)
-  cgp:SetText(L["Credit GPs"])
-  cgp:SetWidth(cgp:GetTextWidth() + BUTTON_TEXT_PADDING)
-    
-  local ep_reasonLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  ep_reasonLabel:SetText(L["EP Reason"])
-  ep_reasonLabel:SetPoint("LEFT", gp_valueLabel)
-  ep_reasonLabel:SetPoint("TOP", gp_valueBox, "BOTTOM", 0, -15)
-  
-  local epDropdown = CreateFrame("Frame", "$parentEPDropDown", f, "UIDropDownMenuTemplate")
-  epDropdown:EnableMouse(true)
-  epDropdown:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", -8, 0)
-  UIDropDownMenu_Initialize(epDropdown, EPGPSideFrameEPDropDown_Initialize)
-  UIDropDownMenu_SetSelectedValue(epDropdown, 1)
-  UIDropDownMenu_SetWidth(epDropdown, 160)
-  UIDropDownMenu_JustifyText(epDropdown, "LEFT")
-  
-  local ep_otherLabel = f:CreateFontString("$parentEPOtherLabel", "ARTWORK", "GameFontHighlightSmall")
-  ep_otherLabel:SetText(L["Other"])
-  ep_otherLabel:SetPoint("LEFT", ep_reasonLabel)
-  ep_otherLabel:SetPoint("TOP", epDropdown, "BOTTOM")
-
-  local ep_otherBox = CreateFrame("EditBox", "$parentEPOtherBox", f, "InputBoxTemplate")
-  ep_otherBox:SetWidth(170);
-  ep_otherBox:SetHeight(24);
-  ep_otherBox:SetAutoFocus(false);
-  ep_otherBox:SetFontObject("GameFontHighlightSmall")
-  ep_otherBox:SetPoint("TOPLEFT", ep_otherLabel, "BOTTOMLEFT", 15, 0);
-
-  local ep_valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  ep_valueLabel:SetText(L["Value"])
-  ep_valueLabel:SetPoint("LEFT", ep_otherLabel)
-  ep_valueLabel:SetPoint("TOP", ep_otherBox, "BOTTOM")
-
-  local ep_valueBox = CreateFrame("EditBox", "$parentEPValueBox", f, "InputBoxTemplate")
-  ep_valueBox:SetWidth(90);
-  ep_valueBox:SetHeight(24);
-  ep_valueBox:SetAutoFocus(false);
-  ep_valueBox:SetFontObject("GameFontHighlightSmall")
-  ep_valueBox:SetPoint("TOPLEFT", ep_valueLabel, "BOTTOMLEFT", 15, 0);
-
-  local aep = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-  aep:SetHeight(BUTTON_HEIGHT)
-  aep:SetPoint("LEFT", ep_valueBox, "RIGHT", 8, 0)
-  aep:SetText(L["Award EPs"])
-  aep:SetWidth(cgp:GetTextWidth() + BUTTON_TEXT_PADDING)
-
-  f:SetScript("OnShow", function(self) 
-                          gp_valueBox:SetText("")
-                          ep_valueBox:SetText("")
-                          ep_otherBox:SetText("")
-                          UIDropDownMenu_ClearAll(gpDropdown)
-                          UIDropDownMenu_ClearAll(epDropdown)
-                          ep_otherLabel:SetAlpha(0.25)
-                          ep_otherBox:SetAlpha(0.25)
-                          ep_otherBox:EnableKeyboard(false)
-                          ep_otherBox:EnableMouse(false)
-                          htxt:SetText(self.row.name)
-                        end)
-
-  f:SetScript("OnHide", function(self)
-                          self.row:UnlockHighlight()
-                        end)
-
+  f:SetScript("OnHide",
+              function(self)
+                self.row:UnlockHighlight()
+              end)
 end
 
 
