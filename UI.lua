@@ -456,24 +456,26 @@ local function CreateEPGPSideFrame(self)
 
   local gp_valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   gp_valueLabel:SetText(L["Value"])
-  gp_valueLabel:SetPoint("TOPLEFT", gp_reasonLabel, "BOTTOMLEFT", 0, -30)
+  gp_valueLabel:SetPoint("LEFT", gp_reasonLabel)
+  gp_valueLabel:SetPoint("TOP", gpDropdown, "BOTTOM")
 
   local gp_valueBox = CreateFrame("EditBox", "$parentGPValueBox", f, "InputBoxTemplate")
   gp_valueBox:SetWidth(90);
   gp_valueBox:SetHeight(24);
   gp_valueBox:SetAutoFocus(false);
   gp_valueBox:SetFontObject("GameFontHighlightSmall")
-  gp_valueBox:SetPoint("TOPLEFT", gp_valueLabel, "BOTTOMLEFT", 15, -5);
+  gp_valueBox:SetPoint("TOPLEFT", gp_valueLabel, "BOTTOMLEFT", 15, 0);
 
   local cgp = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   cgp:SetHeight(BUTTON_HEIGHT)
-  cgp:SetPoint("TOPLEFT", gp_valueBox, "TOPRIGHT", 8, -1)
+  cgp:SetPoint("LEFT", gp_valueBox, "RIGHT", 8, 0)
   cgp:SetText(L["Credit GPs"])
   cgp:SetWidth(cgp:GetTextWidth() + BUTTON_TEXT_PADDING)
     
   local ep_reasonLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   ep_reasonLabel:SetText(L["EP Reason"])
-  ep_reasonLabel:SetPoint("TOPLEFT", gp_valueLabel, "TOPLEFT", 0, -45)
+  ep_reasonLabel:SetPoint("LEFT", gp_valueLabel)
+  ep_reasonLabel:SetPoint("TOP", gp_valueBox, "BOTTOM", 0, -15)
   
   local epDropdown = CreateFrame("Frame", "$parentEPDropDown", f, "UIDropDownMenuTemplate")
   epDropdown:EnableMouse(true)
@@ -485,29 +487,31 @@ local function CreateEPGPSideFrame(self)
   
   local ep_otherLabel = f:CreateFontString("$parentEPOtherLabel", "ARTWORK", "GameFontHighlightSmall")
   ep_otherLabel:SetText(L["Other"])
-  ep_otherLabel:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", 0, -30)
+  ep_otherLabel:SetPoint("LEFT", ep_reasonLabel)
+  ep_otherLabel:SetPoint("TOP", epDropdown, "BOTTOM")
 
   local ep_otherBox = CreateFrame("EditBox", "$parentEPOtherBox", f, "InputBoxTemplate")
   ep_otherBox:SetWidth(170);
   ep_otherBox:SetHeight(24);
   ep_otherBox:SetAutoFocus(false);
   ep_otherBox:SetFontObject("GameFontHighlightSmall")
-  ep_otherBox:SetPoint("TOPLEFT", ep_otherLabel, "BOTTOMLEFT", 15, -5);
+  ep_otherBox:SetPoint("TOPLEFT", ep_otherLabel, "BOTTOMLEFT", 15, 0);
 
   local ep_valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   ep_valueLabel:SetText(L["Value"])
-  ep_valueLabel:SetPoint("TOPLEFT", ep_otherLabel, "BOTTOMLEFT", 0, -30)
+  ep_valueLabel:SetPoint("LEFT", ep_otherLabel)
+  ep_valueLabel:SetPoint("TOP", ep_otherBox, "BOTTOM")
 
   local ep_valueBox = CreateFrame("EditBox", "$parentEPValueBox", f, "InputBoxTemplate")
   ep_valueBox:SetWidth(90);
   ep_valueBox:SetHeight(24);
   ep_valueBox:SetAutoFocus(false);
   ep_valueBox:SetFontObject("GameFontHighlightSmall")
-  ep_valueBox:SetPoint("TOPLEFT", ep_valueLabel, "BOTTOMLEFT", 15, -5);
+  ep_valueBox:SetPoint("TOPLEFT", ep_valueLabel, "BOTTOMLEFT", 15, 0);
 
   local aep = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   aep:SetHeight(BUTTON_HEIGHT)
-  aep:SetPoint("TOPLEFT", ep_valueBox, "TOPRIGHT", 8, -1)
+  aep:SetPoint("LEFT", ep_valueBox, "RIGHT", 8, 0)
   aep:SetText(L["Award EPs"])
   aep:SetWidth(cgp:GetTextWidth() + BUTTON_TEXT_PADDING)
 
