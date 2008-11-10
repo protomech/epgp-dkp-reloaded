@@ -348,15 +348,21 @@ local function CreateEPGPLogFrame()
                       end)
 end
 
-local function SideFrameGPDropDown_Initialize()
+local function EPGPSideFrameGPDropDown_Initialize(dropDown)
+  local parent = dropDown:GetParent()
   local info = UIDropDownMenu_CreateInfo()
   for i=1,GPTooltip:GetNumRecentItems() do
     local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
     info.text = itemLink
     info.func = function(self)
-                  UIDropDownMenu_SetSelectedID(SideFrameGPDropDown, self:GetID())
-                  local editbox = getglobal("SideFrameGPValueBox")
-                  editbox:SetText(GPTooltip:GetGPValue(itemLink))
+                  UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
+                  local editbox = getglobal(parent:GetName().."GPValueBox")
+                  local value = GPTooltip:GetGPValue(itemLink)
+                  if value then
+                    editbox:SetText(value)
+                  else
+                    editbox:SetText("")
+                  end
                   editbox:SetFocus()
                   editbox:HighlightText()
                 end
@@ -365,7 +371,10 @@ local function SideFrameGPDropDown_Initialize()
   end
 end
 
-local function SideFrameEPDropDown_Initialize()
+local function EPGPSideFrameEPDropDown_Initialize(dropDown)
+  local parent = dropDown:GetParent()
+  local other_label = getglobal(parent:GetName().."EPOtherLabel")
+  local other_editbox = getglobal(parent:GetName().."EPOtherBox")
   local info = UIDropDownMenu_CreateInfo()
   local dungeons = {CalendarEventGetTextures(1)}
   local total_dungeons = #dungeons / 3
@@ -373,9 +382,8 @@ local function SideFrameEPDropDown_Initialize()
     if dungeons[i*3 + 3] == 2 then
       info.text = dungeons[i*3 + 1]
       info.func = function(self)
-                    UIDropDownMenu_SetSelectedID(SideFrameEPDropDown, self:GetID())
-                    getglobal("SideFrameEPOtherLabel"):SetAlpha(0.25)
-                    local other_editbox = getglobal("SideFrameEPOtherBox")
+                    UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
+                    other_label:SetAlpha(0.25)
                     other_editbox:SetAlpha(0.25)
                     other_editbox:EnableKeyboard(false)
                     other_editbox:EnableMouse(false)
@@ -388,9 +396,8 @@ local function SideFrameEPDropDown_Initialize()
   
   info.text = L["Other"]
   info.func = function(self)
-                UIDropDownMenu_SetSelectedID(SideFrameEPDropDown, self:GetID())
-                getglobal("SideFrameEPOtherLabel"):SetAlpha(1)
-                local other_editbox = getglobal("SideFrameEPOtherBox")
+                UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
+                other_label:SetAlpha(1)
                 other_editbox:SetAlpha(1)
                 other_editbox:EnableKeyboard(true)
                 other_editbox:EnableMouse(true)
@@ -439,23 +446,19 @@ local function CreateEPGPSideFrame(self)
   gp_reasonLabel:SetText(L["GP Reason"])
   gp_reasonLabel:SetPoint("TOPLEFT", 16, -35)
 
-  local gpDropdown = CreateFrame("Frame", "SideFrameGPDropDown", f, "UIDropDownMenuTemplate")
+  local gpDropdown = CreateFrame("Frame", "$parentGPDropDown", f, "UIDropDownMenuTemplate")
   gpDropdown:EnableMouse(true)
-  gpDropdown:SetPoint("TOPLEFT", gp_reasonLabel, "BOTTOMLEFT", -8, -10)
-  UIDropDownMenu_Initialize(gpDropdown, SideFrameGPDropDown_Initialize)
+  gpDropdown:SetPoint("TOPLEFT", gp_reasonLabel, "BOTTOMLEFT", -8, 0)
+  UIDropDownMenu_Initialize(gpDropdown, EPGPSideFrameGPDropDown_Initialize)
   UIDropDownMenu_SetSelectedValue(gpDropdown, 1)
   UIDropDownMenu_SetWidth(gpDropdown, 160)
   UIDropDownMenu_JustifyText(gpDropdown, "LEFT")
-  SideFrameGPDropDownLeft:SetHeight(50)
-  SideFrameGPDropDownMiddle:SetHeight(50)
-  SideFrameGPDropDownRight:SetHeight(50)
-  SideFrameGPDropDownButton:SetPoint("TOPRIGHT", SideFrameGPDropDownRight, "TOPRIGHT", -16, -12)
 
   local gp_valueLabel = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   gp_valueLabel:SetText(L["Value"])
   gp_valueLabel:SetPoint("TOPLEFT", gp_reasonLabel, "BOTTOMLEFT", 0, -30)
 
-  local gp_valueBox = CreateFrame("EditBox", "SideFrameGPValueBox", f, "InputBoxTemplate")
+  local gp_valueBox = CreateFrame("EditBox", "$parentGPValueBox", f, "InputBoxTemplate")
   gp_valueBox:SetWidth(90);
   gp_valueBox:SetHeight(24);
   gp_valueBox:SetAutoFocus(false);
@@ -472,23 +475,19 @@ local function CreateEPGPSideFrame(self)
   ep_reasonLabel:SetText(L["EP Reason"])
   ep_reasonLabel:SetPoint("TOPLEFT", gp_valueLabel, "TOPLEFT", 0, -45)
   
-  local epDropdown = CreateFrame("Frame", "SideFrameEPDropDown", f, "UIDropDownMenuTemplate")
+  local epDropdown = CreateFrame("Frame", "$parentEPDropDown", f, "UIDropDownMenuTemplate")
   epDropdown:EnableMouse(true)
-  epDropdown:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", -8, -10)
-  UIDropDownMenu_Initialize(epDropdown, SideFrameEPDropDown_Initialize)
+  epDropdown:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", -8, 0)
+  UIDropDownMenu_Initialize(epDropdown, EPGPSideFrameEPDropDown_Initialize)
   UIDropDownMenu_SetSelectedValue(epDropdown, 1)
   UIDropDownMenu_SetWidth(epDropdown, 160)
   UIDropDownMenu_JustifyText(epDropdown, "LEFT")
-  SideFrameEPDropDownLeft:SetHeight(50)
-  SideFrameEPDropDownMiddle:SetHeight(50)
-  SideFrameEPDropDownRight:SetHeight(50)
-  SideFrameEPDropDownButton:SetPoint("TOPRIGHT", SideFrameEPDropDownRight, "TOPRIGHT", -16, -12)
   
-  local ep_otherLabel = f:CreateFontString("SideFrameEPOtherLabel", "ARTWORK", "GameFontHighlightSmall")
+  local ep_otherLabel = f:CreateFontString("$parentEPOtherLabel", "ARTWORK", "GameFontHighlightSmall")
   ep_otherLabel:SetText(L["Other"])
   ep_otherLabel:SetPoint("TOPLEFT", ep_reasonLabel, "BOTTOMLEFT", 0, -30)
 
-  local ep_otherBox = CreateFrame("EditBox", "SideFrameEPOtherBox", f, "InputBoxTemplate")
+  local ep_otherBox = CreateFrame("EditBox", "$parentEPOtherBox", f, "InputBoxTemplate")
   ep_otherBox:SetWidth(170);
   ep_otherBox:SetHeight(24);
   ep_otherBox:SetAutoFocus(false);
@@ -499,7 +498,7 @@ local function CreateEPGPSideFrame(self)
   ep_valueLabel:SetText(L["Value"])
   ep_valueLabel:SetPoint("TOPLEFT", ep_otherLabel, "BOTTOMLEFT", 0, -30)
 
-  local ep_valueBox = CreateFrame("EditBox", "SideFrameEPValueBox", f, "InputBoxTemplate")
+  local ep_valueBox = CreateFrame("EditBox", "$parentEPValueBox", f, "InputBoxTemplate")
   ep_valueBox:SetWidth(90);
   ep_valueBox:SetHeight(24);
   ep_valueBox:SetAutoFocus(false);
