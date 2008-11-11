@@ -339,6 +339,14 @@ local function CreateEPGPLogFrame()
                       end)
 end
 
+local function GP_Validation(parent)
+  if EPGP:CanIncGPBy(UIDropDownMenu_GetText(parent.dropDown), parent.editBox:GetNumber()) then 
+    parent.button:Enable()
+  else 
+    parent.button:Disable()
+  end
+end
+
 local function EPGPSideFrameGPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
   local info = UIDropDownMenu_CreateInfo()
@@ -355,6 +363,7 @@ local function EPGPSideFrameGPDropDown_Initialize(dropDown)
                   end
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()
+                  GP_Validation(parent)
                 end
     info.checked = false
     UIDropDownMenu_AddButton(info)
@@ -397,6 +406,7 @@ local function AddGPControls(frame)
   editBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   editBox:SetPoint("RIGHT", button, "LEFT")
   editBox:SetPoint("TOP", label, "BOTTOM")
+  editBox:SetScript("OnTextChanged", function(self) GP_Validation(frame) end)
 
   frame:SetHeight(
     reasonLabel:GetHeight() +
@@ -409,6 +419,22 @@ local function AddGPControls(frame)
   frame.label = label
   frame.button = button
   frame.editBox = editBox
+end
+
+local function EP_Validation(parent)
+  if UIDropDownMenu_GetText(parent.dropDown) == L["Other"] then
+    if EPGP:CanIncEPBy(parent.otherEditBox:GetText(), parent.editBox:GetNumber()) then 
+      parent.button:Enable()
+    else 
+      parent.button:Disable()
+    end
+  else
+    if EPGP:CanIncEPBy(UIDropDownMenu_GetText(parent.dropDown), parent.editBox:GetNumber()) then 
+      parent.button:Enable()
+    else 
+      parent.button:Disable()
+    end  
+  end
 end
 
 local function EPGPSideFrameEPDropDown_Initialize(dropDown)
@@ -425,6 +451,7 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                     parent.otherEditBox:EnableKeyboard(false)
                     parent.otherEditBox:EnableMouse(false)
                     parent.otherEditBox:ClearFocus()
+                    EP_Validation(parent)
                   end
       info.checked = false
       UIDropDownMenu_AddButton(info)
@@ -439,6 +466,7 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                 parent.otherEditBox:EnableKeyboard(true)
                 parent.otherEditBox:EnableMouse(true)
                 parent.otherEditBox:SetFocus()
+                EP_Validation(parent)
               end
   info.checked = false
   UIDropDownMenu_AddButton(info)
@@ -473,6 +501,7 @@ local function AddEPControls(frame)
   otherEditBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   otherEditBox:SetPoint("RIGHT", frame, "RIGHT", -15, 0)
   otherEditBox:SetPoint("TOP", otherLabel, "BOTTOM")
+  otherEditBox:SetScript("OnTextChanged", function(self) EP_Validation(frame) end)
 
   local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   label:SetText(L["Value"])
@@ -494,6 +523,7 @@ local function AddEPControls(frame)
   editBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   editBox:SetPoint("RIGHT", button, "LEFT")
   editBox:SetPoint("TOP", label, "BOTTOM")
+  editBox:SetScript("OnTextChanged", function(self) EP_Validation(frame) end)
 
   frame:SetHeight(
     reasonLabel:GetHeight() +
