@@ -38,7 +38,7 @@
 -- IncEPBy(name, reason, amount): Increases the EP of member <name> by
 -- <amount>. It uses <reason> to log into the log.
 --
--- CanIncGPBy(name, reason, amount): Return true if reason and amount
+-- CanIncGPBy(reason, amount): Return true if reason and amount
 -- are reasonable values for IncGPBy.
 --
 -- IncGPBy(name, reason, amount): Increases the GP of member <name> by
@@ -459,7 +459,8 @@ end
 
 function EPGP:IncEPBy(name, reason, amount)
   assert(CheckDB())
-  assert(CanIncEPBy(name, reason, amount))
+  assert(CanIncEPBy(reason, amount))
+  assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
   assert(ep + amount >= 0, "Resulting EP should be positive")
@@ -480,7 +481,8 @@ end
 
 function EPGP:IncGPBy(name, reason, amount)
   assert(CheckDB())
-  assert(CanIncGPBy(name, reason, amount)
+  assert(CanIncGPBy(reason, amount))
+  assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
   assert(gp + amount >= 0, "Resulting GP should be positive")
