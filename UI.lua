@@ -398,11 +398,12 @@ local function AddGPControls(frame)
   button:SetPoint("RIGHT", dropDown, "RIGHT", -15, 0)
   button:SetPoint("TOP", label, "BOTTOM")
 
-  local editBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+  local editBox = CreateFrame("EditBox", "$parentGPControlEditBox",
+                              frame, "InputBoxTemplate")
   editBox:SetHeight(24)
   editBox:SetAutoFocus(false)
   editBox:SetFontObject("GameFontHighlightSmall")
-  editBox:SetPoint("LEFT", dropDown, "LEFT", 25, 0)
+  editBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   editBox:SetPoint("RIGHT", button, "LEFT")
   editBox:SetPoint("TOP", label, "BOTTOM")
 
@@ -473,12 +474,13 @@ local function AddEPControls(frame)
   otherLabel:SetPoint("LEFT", reasonLabel)
   otherLabel:SetPoint("TOP", dropDown, "BOTTOM")
 
-  local otherEditBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+  local otherEditBox = CreateFrame("EditBox", "$parentEPControlOtherEditBox",
+                                   frame, "InputBoxTemplate")
   otherEditBox:SetHeight(24)
   otherEditBox:SetAutoFocus(false)
   otherEditBox:SetFontObject("GameFontHighlightSmall")
-  otherEditBox:SetPoint("LEFT", dropDown, "LEFT", 25, 0)
-  otherEditBox:SetPoint("RIGHT", dropDown, "RIGHT", -15, 0)
+  otherEditBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
+  otherEditBox:SetPoint("RIGHT", frame, "RIGHT", -15, 0)
   otherEditBox:SetPoint("TOP", otherLabel, "BOTTOM")
 
   local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -493,11 +495,12 @@ local function AddEPControls(frame)
   button:SetPoint("RIGHT", otherEditBox, "RIGHT")
   button:SetPoint("TOP", label, "BOTTOM")
 
-  local editBox = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+  local editBox = CreateFrame("EditBox", "$parentEPControlEditBox",
+                              frame, "InputBoxTemplate")
   editBox:SetHeight(24)
   editBox:SetAutoFocus(false)
   editBox:SetFontObject("GameFontHighlightSmall")
-  editBox:SetPoint("LEFT", dropDown, "LEFT", 25, 0)
+  editBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   editBox:SetPoint("RIGHT", button, "LEFT")
   editBox:SetPoint("TOP", label, "BOTTOM")
 
