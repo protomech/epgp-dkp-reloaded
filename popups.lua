@@ -5,8 +5,7 @@ local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
 StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   text = L["Credit GP to %s"],
-  button1 = L["Full"],
-  button3 = L["Offspec"],
+  button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
   whileDead = 1,
@@ -16,8 +15,8 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   hasItemFrame = 1,
   
   OnAccept = function(self)
-               local parent = self:GetParent()
-               EPGP:IncGPBy(parent.name, parent.itemFrame.link, parent.editBox:GetNumber())
+               EPGP:IncGPBy(self.name, self.itemFrame.link,
+                            self.editBox:GetNumber())
              end,
   
   OnCancel = function(self)
@@ -30,10 +29,11 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              local editBox = getglobal(self:GetName().."EditBox")
              local button1 = getglobal(self:GetName().."Button1")
 
-             itemFrame:SetPoint("TOPLEFT", 55, -35)
+             itemFrame:SetPoint("TOPLEFT", 35, -35)
              editBox:SetPoint("TOPLEFT", itemFrame, "TOPRIGHT", 150, -10)
-             button1:SetPoint("TOPRIGHT", itemFrame, "BOTTOMLEFT", 94, -6)		
-             
+             editBox:SetPoint("RIGHT", -35, 0)
+             button1:SetPoint("TOPRIGHT", itemFrame, "BOTTOMRIGHT", 85, -6)
+
              editBox:SetText(GPTooltip:GetGPValue(itemFrame.link))
              editBox:HighlightText()
            end,
@@ -89,19 +89,19 @@ local function Debug(fmt, ...)
 end
 
 function mod:OnInitialize()
-  --   local playername = "Knucklehead"
-  --   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541) 
-  --   local r, g, b = GetItemQualityColor(itemRarity);
+--   local playername = UnitName("player")
+--   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541) 
+--   local r, g, b = GetItemQualityColor(itemRarity);
 
-  --   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",
-  --         itemName, itemLink, itemRarity, itemTexture)
-  --   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", playername, "", {
-  --                      texture = itemTexture,
-  --                      name = itemName,
-  --                      color = {r, g, b, 1},
-  --                      link = itemLink
-  --                    })
-  --   if dialog then
-  --     dialog.name = playername
-  --   end
+--   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",
+--         itemName, itemLink, itemRarity, itemTexture)
+--   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", playername, "", {
+--                                     texture = itemTexture,
+--                                     name = itemName,
+--                                     color = {r, g, b, 1},
+--                                     link = itemLink
+--                                   })
+--   if dialog then
+--     dialog.name = playername
+--   end
 end
