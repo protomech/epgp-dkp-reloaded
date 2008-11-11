@@ -15,12 +15,13 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   hasEditBox = 1,
   hasItemFrame = 1,
   
-  OnAccept = function()
-               -- Todo : hook it!
+  OnAccept = function(self)
+               local parent = self:GetParent()
+               EPGP:IncGPBy(parent.name, parent.itemFrame.link, parent.editBox:GetNumber())
              end,
   
-  OnCancel = function()
-               self:GetParent():Hide();
+  OnCancel = function(self)
+               self:Hide();
                ClearCursor();
              end,
   
@@ -43,24 +44,27 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              end
            end,
   
-  EditBoxOnEnterPressed = function() 
-                            -- Todo : hook it!
+  EditBoxOnEnterPressed = function(self)
+                            local parent = self:GetParent()
+                            if EPGP:CanIncGPBy(parent.itemFrame.link, parent.editBox:GetNumber()) then
+                              EPGP:IncGPBy(parent.name, parent.itemFrame.link, parent.editBox:GetNumber())
+                            end
                           end,
   
   EditBoxOnTextChanged = function(self)
-                           local parent = self:GetParent();
-                           if parent.editBox:GetNumber() > 0 then
-                             parent.button1:Enable();
-                             parent.button3:Enable();
+                           local parent = self:GetParent()
+                           if EPGP:CanIncGPBy(parent.itemFrame.link, parent.editBox:GetNumber()) then
+                             parent.button1:Enable()
+                             parent.button3:Enable()
                            else
-                             parent.button1:Disable();
-                             parent.button3:Disable();
+                             parent.button1:Disable()
+                             parent.button3:Disable()
                            end
                          end,
   
   EditBoxOnEscapePressed = function(self)
-                             self:GetParent():Hide();
-                             ClearCursor();
+                             self:GetParent():Hide()
+                             ClearCursor()
                            end
 }
 StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
@@ -80,22 +84,24 @@ StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
              end
 }
 
-
 local function Debug(fmt, ...)
   DEFAULT_CHAT_FRAME:AddMessage(string.format(fmt, ...))
 end
 
 function mod:OnInitialize()
+  --   local playername = "Knucklehead"
   --   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541) 
   --   local r, g, b = GetItemQualityColor(itemRarity);
 
   --   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",
   --         itemName, itemLink, itemRarity, itemTexture)
-  --   StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", "Lane", "", {
+  --   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", playername, "", {
   --                      texture = itemTexture,
   --                      name = itemName,
   --                      color = {r, g, b, 1},
   --                      link = itemLink
   --                    })
-  --	StaticPopup_Show("EPGP_DECAY_EPGP", 7)
+  --   if dialog then
+  --     dialog.name = playername
+  --   end
 end
