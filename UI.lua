@@ -401,14 +401,17 @@ local function AddGPControls(frame)
   UIDropDownMenu_SetWidth(dropDown, 150)
   UIDropDownMenu_JustifyText(dropDown, "LEFT")
   dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
-  dropDown:SetScript("OnEnter", 
-                     function(self)
-                       GameTooltip_SetDefaultAnchor(GameTooltip, self)
-                       GameTooltip:AddLine(L["This Menu displays items\nrecently seen by your client"])
-                       GameTooltip:ClearAllPoints()
-                       GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
-                       GameTooltip:Show() 
-                     end)
+  getglobal(dropDown:GetName().."Button"):SetScript(
+    "OnEnter", 
+    function(self)
+      GameTooltip_SetDefaultAnchor(GameTooltip, self)
+      GameTooltip:AddLine(
+        L["This menu displays items recently seen by your client"],
+        NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, true)
+      GameTooltip:ClearAllPoints()
+      GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
+      GameTooltip:Show() 
+    end)
   dropDown:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
   local label =

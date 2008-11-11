@@ -20,5 +20,5 @@ if L then
   L["Show Everyone"] = true
   L["Decay"] = true
   L["Alts"] = true
-  L["This Menu displays items\nrecently seen by your client"] = true
+  L["This menu displays items recently seen by your client"] = true
 end
