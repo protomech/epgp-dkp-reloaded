@@ -92,6 +92,8 @@ local function CreateEPGPFrame()
 
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -8)
+
+  f:SetScript("OnHide", ToggleOnlySideFrame)
 end
 
 local function CreateTableHeader(parent)
