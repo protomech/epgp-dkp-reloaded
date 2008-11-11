@@ -459,7 +459,7 @@ end
 
 function EPGP:IncEPBy(name, reason, amount)
   assert(CheckDB())
-  assert(CanIncEPBy(reason, amount))
+  assert(EPGP:CanIncEPBy(reason, amount))
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
@@ -479,7 +479,7 @@ end
 
 function EPGP:IncGPBy(name, reason, amount)
   assert(CheckDB())
-  assert(CanIncGPBy(reason, amount))
+  assert(EPGP:CanIncGPBy(reason, amount))
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
