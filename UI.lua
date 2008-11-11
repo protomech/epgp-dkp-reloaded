@@ -401,6 +401,15 @@ local function AddGPControls(frame)
   UIDropDownMenu_SetWidth(dropDown, 150)
   UIDropDownMenu_JustifyText(dropDown, "LEFT")
   dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
+  dropDown:SetScript("OnEnter", 
+                     function(self)
+                       GameTooltip_SetDefaultAnchor(GameTooltip, self)
+                       GameTooltip:AddLine(L["This Menu displays items\nrecently seen by your client"])
+                       GameTooltip:ClearAllPoints()
+                       GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
+                       GameTooltip:Show() 
+                     end)
+  dropDown:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
   local label =
     frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -849,7 +858,7 @@ local function CreateEPGPFrameStandings()
               {"Name", "EP", "GP", "PR"},
               {0, 64, 64, 64},
               {"LEFT", "RIGHT", "RIGHT", "RIGHT"})
-
+  
   -- Make all our rows have a check on them and setup the OnClick
   -- handler for each row.
   for i,r in ipairs(tabl.rows) do
@@ -877,6 +886,21 @@ local function CreateEPGPFrameStandings()
                     ToggleOnlySideFrame(EPGPSideFrame)
                   end
                 end)
+    
+    r:SetScript("OnEnter", 
+                function(self)
+                  if EPGP:GetNumAlts(self.name) > 0 then
+                    GameTooltip_SetDefaultAnchor(GameTooltip, self)
+                    GameTooltip:AddLine(L["Alts"])
+                    for i=1,EPGP:GetNumAlts(self.name) do
+                      GameTooltip:AddLine(EPGP:GetAlt(self.name, i), 1, 1, 1)
+                    end
+                    GameTooltip:ClearAllPoints()
+                    GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
+                    GameTooltip:Show()
+                  end
+                end)
+    r:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end
 
   -- Hook up the headers

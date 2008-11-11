@@ -19,4 +19,6 @@ if L then
   L["Undo"] = true
   L["Show Everyone"] = true
   L["Decay"] = true
+  L["Alts"] = true
+  L["This Menu displays items\nrecently seen by your client"] = true
 end
