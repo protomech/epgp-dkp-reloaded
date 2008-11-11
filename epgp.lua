@@ -451,7 +451,7 @@ function EPGP:CanIncEPBy(reason, amount)
   if type(reason) ~= "string" or type(amount) ~= "number" then
     return false
   end
-  if amount < -99999 or amount > 99999 then
+  if amount < -99999 or amount > 99999 or amount == 0 then
     return false
   end
   return true
@@ -471,7 +471,7 @@ function EPGP:CanIncGPBy(reason, amount)
   if type(reason) ~= "string" or type(amount) ~= "number" then
     return false
   end
-  if amount < -99999 or amount > 99999 then
+  if amount < -99999 or amount > 99999 or amount == 0 then
     return false
   end
   return true
