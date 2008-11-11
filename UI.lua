@@ -93,7 +93,7 @@ local function CreateEPGPFrame()
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -8)
 
-  f:SetScript("OnHide", ToggleOnlySideFrame)
+  f:SetScript("OnShow", ToggleOnlySideFrame)
 end
 
 local function CreateTableHeader(parent)
@@ -349,13 +349,6 @@ local function CreateEPGPLogFrame()
                           self, value, recordHeight, UpdateLog)
                       end)
   EPGP:RegisterCallback("LogChanged", UpdateLog)
-
-  -- Make sure when the parent shows we are hidden
-  EPGPFrame:SetScript("OnShow",
-                      function(self)
-                        EPGPLogFrame:Hide()
-                        EPGPSideFrame:Hide()
-                      end)
 end
 
 local function GP_Validation(parent)
@@ -605,8 +598,8 @@ local function CreateEPGPSideFrame(self)
   h:SetHeight(68)
   h:SetPoint("TOP", -9, 12)
   
-  local htxt = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-  htxt:SetPoint("TOP", h, "TOP", 0, -15)
+  f.title = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+  f.title:SetPoint("TOP", h, "TOP", 0, -15)
   
   local t = f:CreateTexture(nil, "OVERLAY")
   t:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Corner")
@@ -651,13 +644,12 @@ local function CreateEPGPSideFrame(self)
 
   f:SetScript("OnShow",
               function(self)
-                htxt:SetText(self.row.name)
+                self.title:SetText(self.row.name)
               end)
 
   f:SetScript("OnHide",
               function(self)
                 self.row:UnlockHighlight()
-                self.row = nil
               end)
 end
 
@@ -927,14 +919,14 @@ local function CreateEPGPFrameStandings()
                             end)
 
   -- Install the update function
-  local function UpdateStandings()
-    if not tabl:IsVisible() then
+  local function UpdateStandings(self)
+    if not self:IsVisible() then
       return
     end
     Debug("Updating standings")
     local numMembers = EPGP:GetNumMembers()
-    for i=1,#tabl.rows do
-      local row = tabl.rows[i]
+    for i=1,#self.rows do
+      local row = self.rows[i]
       if i <= numMembers then
         row.name = EPGP:GetMember(i)
         row.cells[1]:SetText(row.name)
@@ -957,10 +949,17 @@ local function CreateEPGPFrameStandings()
       else
         row:Hide()
       end
+      -- Fix the highlighting of the rows
+      if row.name == EPGPSideFrame.title:GetText() then
+        row:LockHighlight()
+        EPGPSideFrame.row = row
+      else
+        row:UnlockHighlight()
+      end
     end
   end
 
-  EPGP:RegisterCallback("StandingsChanged", UpdateStandings)
+  EPGP:RegisterCallback("StandingsChanged", UpdateStandings, tabl)
   tabl:SetScript("OnShow", UpdateStandings)
 end
 
