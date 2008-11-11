@@ -16,6 +16,10 @@
 -- GetMember(i): Returns the ith member in the standings based on the
 -- current sort.
 --
+-- GetNumAlts(name): Returns the number of alts for this member.
+--
+-- GetAlt(name, i): Returns the ith alt for this member.
+--
 -- StandingsAddExtraMember(name): Add member to the standings. Returns true
 -- if the member was added, false otherwise.
 --
@@ -111,6 +115,7 @@ local base_gp = 1
 local ep_data = {}
 local gp_data = {}
 local main_data = {}
+local alt_data = {}
 local player
 local db
 local standings = {}
@@ -270,6 +275,10 @@ local function ParseGuildNote(callback, name, note)
     gp_data[name] = 0
   elseif note:match("%u%l+") then
     main_data[name] = note
+    if not alt_data[note] then
+      alt_data[note] = {}
+    end
+    table.insert(alt_data[note], name)
     ep_data[name] = nil
     gp_data[name] = nil
   else
@@ -370,6 +379,19 @@ function EPGP:GetMember(i)
   end
 
   return standings[i]
+end
+
+function EPGP:GetNumAlts(name)
+  local alts = alt_data[name]
+  if not alts then
+    return 0
+  else
+    return #alts
+  end
+end
+
+function EPGP:GetAlt(name, i)
+  return alt_data[name][i]
 end
 
 function EPGP:StandingsAddExtra(name)
