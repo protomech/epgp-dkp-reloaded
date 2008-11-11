@@ -448,7 +448,7 @@ function EPGP:GetClass(name)
 end
 
 function EPGP:CanIncEPBy(reason, amount)
-  if type(reason) ~= "string" or type(amount) ~= "number" then
+  if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
     return false
   end
   if amount < -99999 or amount > 99999 or amount == 0 then
@@ -468,7 +468,7 @@ function EPGP:IncEPBy(name, reason, amount)
 end
 
 function EPGP:CanIncGPBy(reason, amount)
-  if type(reason) ~= "string" or type(amount) ~= "number" then
+  if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
     return false
   end
   if amount < -99999 or amount > 99999 or amount == 0 then
