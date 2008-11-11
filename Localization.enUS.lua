@@ -16,4 +16,7 @@ if L then
   L["Credit GPs"] = true
   L["Award EPs"] = true
   L["Other"] = true
+  L["Undo"] = true
+  L["Show Everyone"] = true
+  L["Decay"] = true
 end

@@ -4,20 +4,11 @@ local mod = EPGP:NewModule("EPGP_UI", "AceEvent-3.0")
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
-local CURRENT_VERSION = GetAddOnMetadata('EPGP_UI', 'Version')
+local CURRENT_VERSION = GetAddOnMetadata('EPGP', 'Version')
 
 local BUTTON_TEXT_PADDING = 20
 local BUTTON_HEIGHT = 22
 local ROW_TEXT_PADDING = 5
-
-EPGP_TEXT_STANDINGS = "Standings"
-EPGP_TEXT_LOG = "Logs"
-EPGP_TEXT_SHOWALTS = "Show Alts"
-EPGP_TEXT_ADD = "Add EPs"
-EPGP_TEXT_RECURRING = "Add Recurring EPs"
-EPGP_TEXT_UNDO = "Undo"
-EPGP_TEXT_RECURRING_EP = "Recurring EPs"
-EPGP_TEXT_TITLE = "EPGP v5.0"
 
 local function Debug(fmt, ...)
   DEFAULT_CHAT_FRAME:AddMessage(string.format(fmt, ...))
@@ -82,7 +73,7 @@ local function CreateEPGPFrame()
   t:SetWidth(250)
   t:SetHeight(16)
   t:SetPoint("TOP", f, "TOP", 3, -16)
-  t:SetText(EPGP_TEXT_TITLE)
+  t:SetText("EPGP "..CURRENT_VERSION)
 
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -8)
@@ -247,7 +238,7 @@ local function CreateEPGPLogFrame()
 
   local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   undo:SetHeight(BUTTON_HEIGHT)
-  undo:SetText("Undo")
+  undo:SetText(L["Undo"])
   undo:SetWidth(undo:GetTextWidth() + BUTTON_TEXT_PADDING)
   undo:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -9, 13)
   undo:GetNormalFontObject():SetFontObject("GameFontNormalSmall")
@@ -526,7 +517,7 @@ local function CreateEPGPSideFrame(self)
   f:Hide()
   f:SetWidth(225)
   f:SetHeight(255)
-  f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -33, -28)
+  f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -33, -20)
   
   local h = f:CreateTexture(nil, "ARTWORK")
   h:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
@@ -598,7 +589,6 @@ local function CreateEPGPSideFrame(self)
               end)
 end
 
-
 local function CreateEPGPFrameStandings()
   -- Make the show everyone checkbox
   local f = CreateFrame("Frame", nil, EPGPFrame)
@@ -639,7 +629,7 @@ local function CreateEPGPFrameStandings()
                  EPGP:StandingsShowEveryone(not not self:GetChecked())
                end)
   local t = cb:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  t:SetText("Show everyone")
+  t:SetText(L["Show everyone"])
   t:SetPoint("RIGHT", cb, "LEFT", 0, 2)
   f:SetWidth(t:GetStringWidth() + 4 * tl:GetWidth() + cb:GetWidth())
 
@@ -648,7 +638,7 @@ local function CreateEPGPFrameStandings()
   
   -- Make the side frame
   CreateEPGPSideFrame()
-  
+
   -- Make the main frame
   local main = CreateFrame("Frame", nil, EPGPFrame)
   main:SetWidth(322)
@@ -664,28 +654,19 @@ local function CreateEPGPFrameStandings()
     end
   end
 
-  local once = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
-  once:SetHeight(BUTTON_HEIGHT)
-  once:SetPoint("BOTTOMLEFT")
-  once:SetText("Once")
-  once:SetWidth(once:GetTextWidth() + BUTTON_TEXT_PADDING)
-  once:SetScript("OnEvent", DisableWhileNotInRaid)
-  once:SetScript("OnShow", DisableWhileNotInRaid)
-  once:RegisterEvent("RAID_ROSTER_UPDATE")
-
-  local recur = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
-  recur:SetHeight(BUTTON_HEIGHT)
-  recur:SetPoint("LEFT", once, "RIGHT", 0, 0)
-  recur:SetText("Recurring")
-  recur:SetWidth(recur:GetTextWidth() + BUTTON_TEXT_PADDING)
-  recur:SetScript("OnShow", DisableWhileNotInRaid)
-  recur:SetScript("OnEvent", DisableWhileNotInRaid)
-  recur:RegisterEvent("RAID_ROSTER_UPDATE")
+  local award = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
+  award:SetHeight(BUTTON_HEIGHT)
+  award:SetPoint("BOTTOMLEFT")
+  award:SetText(L["Award"])
+  award:SetWidth(once:GetTextWidth() + BUTTON_TEXT_PADDING)
+  award:SetScript("OnEvent", DisableWhileNotInRaid)
+  award:SetScript("OnShow", DisableWhileNotInRaid)
+  award:RegisterEvent("RAID_ROSTER_UPDATE")
 
   local log = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   log:SetHeight(BUTTON_HEIGHT)
   log:SetPoint("BOTTOMRIGHT")
-  log:SetText("Log")
+  log:SetText(GUILD_BANK_LOG)
   log:SetWidth(log:GetTextWidth() + BUTTON_TEXT_PADDING)
   log:SetScript("OnClick",
                 function(self, button, down)
@@ -694,7 +675,7 @@ local function CreateEPGPFrameStandings()
   local decay = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   decay:SetHeight(BUTTON_HEIGHT)
   decay:SetPoint("RIGHT", log, "LEFT")
-  decay:SetText("Decay")
+  decay:SetText(L["Decay"])
   decay:SetWidth(decay:GetTextWidth() + BUTTON_TEXT_PADDING)
   decay:SetScript("OnClick",
                   function(self, button, down)
