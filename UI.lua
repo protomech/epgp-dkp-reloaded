@@ -1,6 +1,6 @@
 --[[ EPGP User Interface ]]--
 
-local mod = EPGP:NewModule("EPGP_UI", "AceEvent-3.0")
+local mod = EPGP:NewModule("EPGP_UI")
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
@@ -436,6 +436,12 @@ local function AddGPControls(frame)
   frame.label = label
   frame.button = button
   frame.editBox = editBox
+
+  frame:SetScript("OnShow",
+                  function(self)
+                    self.editBox:SetText("")
+                    UIDropDownMenu_ClearAll(self.dropDown)
+                  end)
 end
 
 local function EP_Validation(parent)
@@ -557,6 +563,17 @@ local function AddEPControls(frame)
   frame.label = label
   frame.editBox = editBox
   frame.button = button
+
+  frame:SetScript("OnShow",
+                  function(self)
+                    self.editBox:SetText("")
+                    self.otherEditBox:SetText("")
+                    UIDropDownMenu_ClearAll(self.dropDown)
+                    self.otherLabel:SetAlpha(0.25)
+                    self.otherEditBox:SetAlpha(0.25)
+                    self.otherEditBox:EnableKeyboard(false)
+                    self.otherEditBox:EnableMouse(false)
+                  end)
 end
 
 local function CreateEPGPSideFrame(self)
@@ -619,16 +636,7 @@ local function CreateEPGPSideFrame(self)
                            end)
 
   f:SetScript("OnShow",
-              function(self) 
-                gpFrame.editBox:SetText("")
-                epFrame.editBox:SetText("")
-                epFrame.otherEditBox:SetText("")
-                UIDropDownMenu_ClearAll(gpFrame.dropDown)
-                UIDropDownMenu_ClearAll(epFrame.dropDown)
-                epFrame.otherLabel:SetAlpha(0.25)
-                epFrame.otherEditBox:SetAlpha(0.25)
-                epFrame.otherEditBox:EnableKeyboard(false)
-                epFrame.otherEditBox:EnableMouse(false)
+              function(self)
                 htxt:SetText(self.row.name)
               end)
 
