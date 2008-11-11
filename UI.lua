@@ -139,8 +139,7 @@ local function CreateTableRow(parent, rowHeight, widths, justifiesH)
 
   row.cells = {}
   for i,w in ipairs(widths) do
-    local c =
-      row:CreateFontString("$parentName", "ARTWORK", "GameFontHighlightSmall")
+    local c = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
     c:SetHeight(rowHeight)
     c:SetWidth(w - (2 * ROW_TEXT_PADDING))
     c:SetJustifyH(justifiesH[i])
@@ -156,11 +155,11 @@ local function CreateTableRow(parent, rowHeight, widths, justifiesH)
   return row
 end
 
-local function CreateTable(parent, texts, widths, justfiesH)
+local function CreateTable(parent, texts, widths, justfiesH, rightPadding)
   assert(#texts == #widths and #texts == #justfiesH,
          "All specification tables must be the same size")
   -- Compute widths
-  local totalFixedWidths = 0
+  local totalFixedWidths = rightPadding or 0
   local numDynamicWidths = 0
   for i,w in ipairs(widths) do
     if w > 0 then
@@ -202,24 +201,29 @@ local function CreateTable(parent, texts, widths, justfiesH)
     table.insert(parent.headers, h)
   end
 
+  -- Make a frame for the rows
+  local rowFrame = CreateFrame("Frame", nil, parent)
+  rowFrame:SetPoint("TOP", parent.headers[#parent.headers], "BOTTOM")
+  rowFrame:SetPoint("BOTTOMLEFT")
+  rowFrame:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -rightPadding, 0)
+  parent.rowFrame = rowFrame
+
   -- Compute number of rows
-  local leftoverHeight =
-    parent:GetHeight() - parent.headers[#parent.headers]:GetHeight()
   local fontHeight = select(2, GameFontNormalSmall:GetFont())
   local rowHeight = fontHeight + 4
-
-  local numRows = math.floor(leftoverHeight / rowHeight)
+  rowFrame.rowHeight = rowHeight
+  local numRows = math.floor(rowFrame:GetHeight() / rowHeight)
 
   -- Make rows
-  parent.rows = {}
+  rowFrame.rows = {}
   for i=1,numRows do
-    local r = CreateTableRow(parent, rowHeight, widths, justfiesH)
-    if #parent.rows == 0 then
-      r:SetPoint("TOP", parent.headers[#parent.headers], "BOTTOM")
+    local r = CreateTableRow(rowFrame, rowHeight, widths, justfiesH)
+    if #rowFrame.rows == 0 then
+      r:SetPoint("TOP")
     else
-      r:SetPoint("TOP", parent.rows[#parent.rows], "BOTTOM")
+      r:SetPoint("TOP", rowFrame.rows[#rowFrame.rows], "BOTTOM")
     end
-    table.insert(parent.rows, r)
+    table.insert(rowFrame.rows, r)
   end
 end
 
@@ -310,7 +314,7 @@ local function CreateEPGPLogFrame()
   end
 
   local scrollBar = CreateFrame("ScrollFrame", "EPGPLogRecordScrollFrame",
-                                scrollParent, "FauxScrollFrameTemplate")
+                                scrollParent, "FauxScrollFrameTemplateLight")
   scrollBar:SetWidth(scrollParent:GetWidth() - 35)
   scrollBar:SetHeight(scrollParent:GetHeight() - 10)
   scrollBar:SetPoint("TOPRIGHT", scrollParent, "TOPRIGHT", -28, -6)
@@ -807,7 +811,7 @@ local function CreateEPGPFrameStandings()
 
   -- Make the main frame
   local main = CreateFrame("Frame", nil, EPGPFrame)
-  main:SetWidth(322)
+  main:SetWidth(325)
   main:SetHeight(358)
   main:SetPoint("TOPLEFT", EPGPFrame, 19, -72)
 
@@ -862,11 +866,20 @@ local function CreateEPGPFrameStandings()
   CreateTable(tabl,
               {"Name", "EP", "GP", "PR"},
               {0, 64, 64, 64},
-              {"LEFT", "RIGHT", "RIGHT", "RIGHT"})
+              {"LEFT", "RIGHT", "RIGHT", "RIGHT"},
+              27)  -- The scrollBarWidth
   
+  -- Make the scrollbar
+  local rowFrame = tabl.rowFrame
+  local scrollBar = CreateFrame("ScrollFrame", "EPGPScrollFrame",
+                                rowFrame, "FauxScrollFrameTemplateLight")
+  scrollBar:SetWidth(rowFrame:GetWidth())
+  scrollBar:SetPoint("TOPRIGHT", rowFrame, "TOPRIGHT", 0, -2)
+  scrollBar:SetPoint("BOTTOMRIGHT")
+
   -- Make all our rows have a check on them and setup the OnClick
   -- handler for each row.
-  for i,r in ipairs(tabl.rows) do
+  for i,r in ipairs(rowFrame.rows) do
     r.check = r:CreateTexture(nil, "BACKGROUND")
     r.check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
     r.check:SetWidth(r:GetHeight())
@@ -927,16 +940,19 @@ local function CreateEPGPFrameStandings()
                             end)
 
   -- Install the update function
-  local function UpdateStandings(self)
-    if not self:IsVisible() then
+  local function UpdateStandings()
+    if not rowFrame:IsVisible() then
       return
     end
     Debug("Updating standings")
+    local offset = FauxScrollFrame_GetOffset(EPGPScrollFrame)
     local numMembers = EPGP:GetNumMembers()
-    for i=1,#self.rows do
-      local row = self.rows[i]
-      if i <= numMembers then
-        row.name = EPGP:GetMember(i)
+    local numDisplayedMembers = math.min(#rowFrame.rows, numMembers - offset)
+    for i=1,#rowFrame.rows do
+      local row = rowFrame.rows[i]
+      local j = i + offset
+      if j <= numMembers then
+        row.name = EPGP:GetMember(j)
         row.cells[1]:SetText(row.name)
         local c = RAID_CLASS_COLORS[EPGP:GetClass(row.name)]
         row.cells[1]:SetTextColor(c.r, c.g, c.b)
@@ -965,10 +981,18 @@ local function CreateEPGPFrameStandings()
         row:UnlockHighlight()
       end
     end
+    FauxScrollFrame_Update(EPGPScrollFrame, numMembers, numDisplayedMembers,
+                           rowFrame.rowHeight, nil, nil, nil, nil,
+                           nil, nil, true)
   end
 
-  EPGP:RegisterCallback("StandingsChanged", UpdateStandings, tabl)
-  tabl:SetScript("OnShow", UpdateStandings)
+  EPGP:RegisterCallback("StandingsChanged", UpdateStandings)
+  rowFrame:SetScript("OnShow", UpdateStandings)
+  scrollBar:SetScript("OnVerticalScroll",
+                      function(self, value)
+                        FauxScrollFrame_OnVerticalScroll(
+                          self, value, rowFrame.rowHeight, UpdateStandings)
+                      end)
 end
 
 function mod:OnInitialize()
