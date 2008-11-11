@@ -32,8 +32,14 @@
 -- DecayEPGP(): Decays all EP and GP by the configured decay percent
 -- (GetDecayPercent()).
 --
+-- CanIncEPBy(name, reason, amount): Return true if a call to
+-- IncEPBy(name, reason, amount) can be completed successfully.
+--
 -- IncEPBy(name, reason, amount): Increases the EP of member <name> by
 -- <amount>. It uses <reason> to log into the log.
+--
+-- CanIncGPBy(name, reason, amount): Return true if a call to
+-- IncGPBy(name, reason, amount) can be completed successfully.
 --
 -- IncGPBy(name, reason, amount): Increases the GP of member <name> by
 -- <amount>. It uses <reason to log into the log.
@@ -441,9 +447,20 @@ function EPGP:GetClass(name)
   return GS:GetClass(name)
 end
 
+function EPGP:CanIncEPBy(name, reason, amount)
+  if type(name) ~= type(reason) ~= "string" or type(amount) ~= "number" then
+    return false
+  end
+  local ep, gp, main = self:GetEPGP(name)
+  if ep + amount < 0 or ep + amount > 999999 then
+    return false
+  end
+  return true
+end
+
 function EPGP:IncEPBy(name, reason, amount)
   assert(CheckDB())
-  assert(reason, "reason cannot be an empty string")
+  assert(CanIncEPBy(name, reason, amount))
 
   local ep, gp, main = self:GetEPGP(name)
   assert(ep + amount >= 0, "Resulting EP should be positive")
@@ -452,8 +469,20 @@ function EPGP:IncEPBy(name, reason, amount)
   AppendLog(GetTimestamp(), "EP", name, reason, amount)
 end
 
+function EPGP:CanIncGPBy(name, reason, amount)
+  if type(name) ~= type(reason) ~= "string" or type(amount) ~= "number" then
+    return false
+  end
+  local ep, gp, main = self:GetEPGP(name)
+  if gp + amount < base_gp  or gp + amount > 999999 then
+    return false
+  end
+  return true
+end
+
 function EPGP:IncGPBy(name, reason, amount)
   assert(CheckDB())
+  assert(CanIncGPBy(name, reason, amount)
 
   local ep, gp, main = self:GetEPGP(name)
   assert(gp + amount >= 0, "Resulting GP should be positive")
