@@ -658,7 +658,7 @@ local function CreateEPGPFrameStandings()
   award:SetHeight(BUTTON_HEIGHT)
   award:SetPoint("BOTTOMLEFT")
   award:SetText(L["Award"])
-  award:SetWidth(once:GetTextWidth() + BUTTON_TEXT_PADDING)
+  award:SetWidth(award:GetTextWidth() + BUTTON_TEXT_PADDING)
   award:SetScript("OnEvent", DisableWhileNotInRaid)
   award:SetScript("OnShow", DisableWhileNotInRaid)
   award:RegisterEvent("RAID_ROSTER_UPDATE")
@@ -686,7 +686,7 @@ local function CreateEPGPFrameStandings()
   local tabl = CreateFrame("Frame", nil, main)
   tabl:SetPoint("TOPLEFT")
   tabl:SetPoint("TOPRIGHT")
-  tabl:SetPoint("BOTTOM", once, "TOP")
+  tabl:SetPoint("BOTTOM", award, "TOP")
 
   -- Populate the table
   CreateTable(tabl,
