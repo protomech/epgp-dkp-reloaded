@@ -20,8 +20,8 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              end,
   
   OnCancel = function(self)
-               self:Hide();
-               ClearCursor();
+               self:Hide()
+               ClearCursor()
              end,
   
   OnShow = function(self)
@@ -40,7 +40,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   
   OnHide = function()
              if ChatFrameEditBox:IsShown() then
-               ChatFrameEditBox:SetFocus();
+               ChatFrameEditBox:SetFocus()
              end
            end,
   
@@ -48,6 +48,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
                             local parent = self:GetParent()
                             if EPGP:CanIncGPBy(parent.itemFrame.link, parent.editBox:GetNumber()) then
                               EPGP:IncGPBy(parent.name, parent.itemFrame.link, parent.editBox:GetNumber())
+                              parent:Hide()
                             end
                           end,
   
