@@ -451,7 +451,7 @@ function EPGP:CanIncEPBy(reason, amount)
   if type(reason) ~= "string" or type(amount) ~= "number" then
     return false
   end
-  if amount < 99999 or amount > 99999 then
+  if amount < -99999 or amount > 99999 then
     return false
   end
   return true
@@ -463,8 +463,6 @@ function EPGP:IncEPBy(name, reason, amount)
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
-  assert(ep + amount >= 0, "Resulting EP should be positive")
-
   GS:SetNote(main or name, EncodeNote(ep + amount, gp))
   AppendLog(GetTimestamp(), "EP", name, reason, amount)
 end
@@ -473,7 +471,7 @@ function EPGP:CanIncGPBy(reason, amount)
   if type(reason) ~= "string" or type(amount) ~= "number" then
     return false
   end
-  if amount < 99999  or gp > 99999 then
+  if amount < -99999 or amount > 99999 then
     return false
   end
   return true
@@ -485,8 +483,6 @@ function EPGP:IncGPBy(name, reason, amount)
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
-  assert(gp + amount >= 0, "Resulting GP should be positive")
-
   GS:SetNote(main or name, EncodeNote(ep, gp + amount))
   AppendLog(GetTimestamp(), "GP", name, reason, amount)
 end
