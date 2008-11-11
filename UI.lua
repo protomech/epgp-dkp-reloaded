@@ -679,6 +679,14 @@ local function CreateEPGPSideFrame2()
   epFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -15)
   epFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -15)
   AddEPControls(epFrame)
+  epFrame.button:SetScript("OnClick", 
+                           function(self)
+                             if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
+                               EPGP:IncStandingsEPBy(epFrame.otherEditBox:GetText(), epFrame.editBox:GetNumber())
+                             else
+                               EPGP:IncStandingsEPBy(UIDropDownMenu_GetText(epFrame.dropDown), epFrame.editBox:GetNumber())
+                             end
+                           end)
 
   local recurring = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
   recurring:SetWidth(20)

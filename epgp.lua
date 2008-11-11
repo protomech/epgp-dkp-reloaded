@@ -40,13 +40,18 @@
 -- reasonable values for IncEPBy.
 --
 -- IncEPBy(name, reason, amount): Increases the EP of member <name> by
--- <amount>. It uses <reason> to log into the log.
+-- <amount>. It uses <reason> to log into the log. Returns the member's
+-- main character name.
 --
 -- CanIncGPBy(reason, amount): Return true if reason and amount
 -- are reasonable values for IncGPBy.
 --
 -- IncGPBy(name, reason, amount): Increases the GP of member <name> by
--- <amount>. It uses <reason to log into the log.
+-- <amount>. It uses <reason to log into the log. Returns the member's 
+-- main character name.
+--
+-- IncStandingsEPBy(reason, amount): Increases the EP of all members
+-- currently in the standings.
 --
 -- GetDecayPercent(): Returns the decay percent configured in guild info.
 --
@@ -487,6 +492,8 @@ function EPGP:IncEPBy(name, reason, amount)
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep + amount, gp))
   AppendLog(GetTimestamp(), "EP", name, reason, amount)
+  
+  return main or name
 end
 
 function EPGP:CanIncGPBy(reason, amount)
@@ -507,6 +514,8 @@ function EPGP:IncGPBy(name, reason, amount)
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep, gp + amount))
   AppendLog(GetTimestamp(), "GP", name, reason, amount)
+  
+  return main or name
 end
 
 function EPGP:GetDecayPercent()
@@ -606,4 +615,14 @@ function EPGP:OnInitialize()
   GS:RegisterCallback("GuildInfoChanged", ParseGuildInfo)
   GS:RegisterCallback("GuildNoteChanged", ParseGuildNote)
   self:RegisterEvent("RAID_ROSTER_UPDATE")
+end
+
+function EPGP:IncStandingsEPBy(reason, amount)
+  local awarded = {}
+  for i=1,EPGP:GetNumMembers() do
+    local player = EPGP:GetMember(i) 
+    if not awarded[player] then
+      awarded[EPGP:IncEPBy(player, reason, amount)] = true
+    end
+  end
 end
