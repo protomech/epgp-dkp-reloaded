@@ -588,7 +588,7 @@ function EPGP:RAID_ROSTER_UPDATE()
   DestroyStandings()
   -- Make sure no member of the raid is in extras
   for name,_ in pairs(extras) do
-    if not UnitInRaid(name) then
+    if UnitInRaid(name) then
       extras[name] = nil
     end
   end
