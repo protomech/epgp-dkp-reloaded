@@ -560,21 +560,23 @@ local function CreateEPGPSideFrame(self)
   gpFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -30)
   gpFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -30)
   AddGPControls(gpFrame)
-  gpFrame.button:SetScript("OnClick", function(self)
-                                        EPGP:IncGPBy(f.row.name, 
-                                                     UIDropDownMenu_GetText(gpFrame.dropDown),
-                                                     gpFrame.editBox:GetNumber())
-                                      end)
+  gpFrame.button:SetScript("OnClick", 
+                           function(self)
+                             EPGP:IncGPBy(f.row.name, UIDropDownMenu_GetText(gpFrame.dropDown), gpFrame.editBox:GetNumber())
+                           end)
 
   local epFrame = CreateFrame("Frame", nil, f)
   epFrame:SetPoint("TOPLEFT", gpFrame, "BOTTOMLEFT", 0, -15)
   epFrame:SetPoint("TOPRIGHT", gpFrame, "BOTTOMRIGHT", 0, -15)
   AddEPControls(epFrame)
-  epFrame.button:SetScript("OnClick", function(self)
-                                        EPGP:IncEPBy(f.row.name, 
-                                                     UIDropDownMenu_GetText(epFrame.dropDown),
-                                                     epFrame.editBox:GetNumber())
-                                      end)
+  epFrame.button:SetScript("OnClick", 
+                           function(self)
+                             if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
+                               EPGP:IncEPBy(f.row.name, epFrame.otherEditBox:GetText(), epFrame.editBox:GetNumber())
+                             else
+                               EPGP:IncEPBy(f.row.name, UIDropDownMenu_GetText(epFrame.dropDown), epFrame.editBox:GetNumber())
+                             end
+                           end)
 
   f:SetScript("OnShow",
               function(self) 
