@@ -20,6 +20,21 @@ local function DebugFrame(frame, r, g, b)
   t:SetTexture(r or 0, g or 1, b or 0, 0.05)
 end
 
+local SIDEFRAMES = {}
+local function ToggleOnlySideFrame(frame)
+  for _,f in ipairs(SIDEFRAMES) do
+    if f == frame then
+      if f:IsShown() then
+        f:Hide()
+      else
+        f:Show()
+      end
+    else
+      f:Hide()
+    end
+  end
+end
+
 local function CreateEPGPFrame()
   -- EPGPFrame
   local f = CreateFrame("Frame", "EPGPFrame", UIParent)
@@ -208,6 +223,8 @@ end
 
 local function CreateEPGPLogFrame()
   local f = CreateFrame("Frame", "EPGPLogFrame", EPGPFrame)
+  table.insert(SIDEFRAMES, f)
+
   f:Hide()
   f:SetWidth(450)
   f:SetHeight(435)
@@ -544,6 +561,8 @@ end
 
 local function CreateEPGPSideFrame(self)
   local f = CreateFrame("Frame", "EPGPSideFrame", EPGPFrame)
+  table.insert(SIDEFRAMES, f)
+
   f:Hide()
   f:SetWidth(225)
   f:SetHeight(255)
@@ -616,7 +635,99 @@ local function CreateEPGPSideFrame(self)
   f:SetScript("OnHide",
               function(self)
                 self.row:UnlockHighlight()
+                self.row = nil
               end)
+end
+
+local function CreateEPGPSideFrame2()
+  local f = CreateFrame("Frame", "EPGPSideFrame2", EPGPFrame)
+  table.insert(SIDEFRAMES, f)
+
+  f:Hide()
+  f:SetWidth(225)
+  f:SetHeight(165)
+  f:SetPoint("BOTTOMLEFT", EPGPFrame, "BOTTOMRIGHT", -33, 72)
+
+  f:SetBackdrop(
+    {
+      bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+      edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+      tile = true,
+      tileSize = 32,
+      edgeSize = 32,
+      insets = { left=11, right=12, top=12, bottom=11 }
+    })
+
+  local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
+  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
+
+  local epFrame = CreateFrame("Frame", nil, f)
+  epFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -15)
+  epFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -15)
+  AddEPControls(epFrame)
+
+  local recurring = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
+  recurring:SetWidth(20)
+  recurring:SetHeight(20)
+  recurring:SetPoint("TOPLEFT", epFrame, "BOTTOMLEFT", 0, -10)
+
+  local label = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  label:SetText(L["Recurring"])
+  label:SetPoint("LEFT", recurring, "RIGHT")
+
+  -- Make the time control
+  local timePeriod =
+    f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+  timePeriod:SetJustifyH("RIGHT")
+  timePeriod.minutes = 1
+
+  local incButton = CreateFrame("Button", nil, f)
+  incButton:SetNormalTexture(
+    "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Up")
+  incButton:SetPushedTexture(
+    "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Down")
+  incButton:SetDisabledTexture(
+    "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Disabled")
+  incButton:SetWidth(24)
+  incButton:SetHeight(24)
+
+  local decButton = CreateFrame("Button", nil, f)
+  decButton:SetNormalTexture(
+    "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Up")
+  decButton:SetPushedTexture(
+    "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Down")
+  decButton:SetDisabledTexture(
+    "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Disabled")
+  decButton:SetWidth(24)
+  decButton:SetHeight(24)
+
+  decButton:SetPoint("RIGHT", -15, 0)
+  decButton:SetPoint("TOP", recurring, "TOP")
+  incButton:SetPoint("RIGHT", decButton, "LEFT", 8, 0)
+  timePeriod:SetPoint("RIGHT", incButton, "LEFT")
+
+  local function UpdateTimeControls()
+    local fmt, val = SecondsToTimeAbbrev(timePeriod.minutes * 60)
+    timePeriod:SetText(fmt:format(val))
+    if timePeriod.minutes == 1 then
+      decButton:Disable()
+    else
+      decButton:Enable()
+    end
+  end    
+
+  incButton:SetScript("OnClick",
+                      function()
+                        timePeriod.minutes = timePeriod.minutes + 1
+                        UpdateTimeControls()
+                      end)
+  
+  decButton:SetScript("OnClick",
+                      function()
+                        timePeriod.minutes = timePeriod.minutes - 1
+                        UpdateTimeControls()
+                      end)
+  UpdateTimeControls()
 end
 
 local function CreateEPGPFrameStandings()
@@ -669,6 +780,9 @@ local function CreateEPGPFrameStandings()
   -- Make the side frame
   CreateEPGPSideFrame()
 
+  -- Make the second side frame
+  CreateEPGPSideFrame2()
+
   -- Make the main frame
   local main = CreateFrame("Frame", nil, EPGPFrame)
   main:SetWidth(322)
@@ -692,6 +806,10 @@ local function CreateEPGPFrameStandings()
   award:SetScript("OnEvent", DisableWhileNotInRaid)
   award:SetScript("OnShow", DisableWhileNotInRaid)
   award:RegisterEvent("RAID_ROSTER_UPDATE")
+  award:SetScript("OnClick",
+                  function()
+                    ToggleOnlySideFrame(EPGPSideFrame2)
+                  end)
 
   local log = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   log:SetHeight(BUTTON_HEIGHT)
@@ -700,7 +818,7 @@ local function CreateEPGPFrameStandings()
   log:SetWidth(log:GetTextWidth() + BUTTON_TEXT_PADDING)
   log:SetScript("OnClick",
                 function(self, button, down)
-                  EPGPLogFrame:Show()
+                  ToggleOnlySideFrame(EPGPLogFrame)
                 end)
   local decay = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   decay:SetHeight(BUTTON_HEIGHT)
@@ -743,18 +861,12 @@ local function CreateEPGPFrameStandings()
                       EPGP:StandingsAddExtra(self.name)
                     end
                   else
-                    if EPGPSideFrame.row == self then
-                      if EPGPSideFrame:IsShown() then 
-                        EPGPSideFrame:Hide()
-                      else 
-                        EPGPSideFrame:Show()
-                      end
-                    else
+                    if EPGPSideFrame.row ~= self then
                       EPGPSideFrame:Hide()
                       self:LockHighlight()
                       EPGPSideFrame.row = self 
-                      EPGPSideFrame:Show()
                     end
+                    ToggleOnlySideFrame(EPGPSideFrame)
                   end
                 end)
   end
