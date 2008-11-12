@@ -16,6 +16,8 @@
 -- GetMember(i): Returns the ith member in the standings based on the
 -- current sort.
 --
+-- GetMain(name): Returns the main character for this member. 
+--
 -- GetNumAlts(name): Returns the number of alts for this member.
 --
 -- GetAlt(name, i): Returns the ith alt for this member.
@@ -617,12 +619,17 @@ function EPGP:OnInitialize()
   self:RegisterEvent("RAID_ROSTER_UPDATE")
 end
 
+function EPGP:GetMain(name)
+  return main_data[name] or name
+end
+
 function EPGP:IncStandingsEPBy(reason, amount)
   local awarded = {}
   for i=1,EPGP:GetNumMembers() do
-    local player = EPGP:GetMember(i) 
-    if not awarded[player] then
-      awarded[EPGP:IncEPBy(player, reason, amount)] = true
+    local name = EPGP:GetMember(i)
+    local main = EPGP:GetMain(name)
+    if not awarded[main] then
+      awarded[EPGP:IncEPBy(name, reason, amount)] = true
     end
   end
 end
