@@ -7,24 +7,25 @@
 ## X-Category: Guild
 ## X-Website: http://code.google.com/p/epgp/
 
-Libs\LibStub\LibStub.lua
-Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
-Libs\AceAddon-3.0\AceAddon-3.0.xml
-Libs\AceConsole-3.0\AceConsole-3.0.xml
-Libs\AceDB-3.0\AceDB-3.0.xml
-Libs\AceEvent-3.0\AceEvent-3.0.xml
-Libs\AceHook-3.0\AceHook-3.0.xml
-Libs\AceLocale-3.0\AceLocale-3.0.xml
-Libs\AceTimer-3.0\AceTimer-3.0.xml
-Libs\Deformat-2.0\Deformat-2.0.lua
-Libs\LibBabble-Boss-3.0\lib.xml
-Libs\LibBabble-Class-3.0\lib.xml
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceConsole-3.0\AceConsole-3.0.xml
+libs\AceDB-3.0\AceDB-3.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+libs\AceHook-3.0\AceHook-3.0.xml
+libs\AceLocale-3.0\AceLocale-3.0.xml
+libs\AceTimer-3.0\AceTimer-3.0.xml
+libs\Deformat-2.0\Deformat-2.0.lua
+libs\LibBabble-Boss-3.0\lib.xml
+libs\LibBabble-Class-3.0\lib.xml
 
 LibGuildStorage-1.0.lua
-Localization.enUS.lua
+localization.enUS.lua
 epgp.lua
-GPTooltip.lua
-OfficerNoteWarning.lua
-Loot.lua
-UI.lua
+gptooltip.lua
+officernotewarning.lua
+loot.lua
+ui.lua
 popups.lua
+
