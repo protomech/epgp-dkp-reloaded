@@ -21,4 +21,7 @@ if L then
   L["Decay"] = true
   L["Alts"] = true
   L["This menu displays items recently seen by your client"] = true
+  L["Show everyone"] = true
+  L["Recurring"] = true
+  L["Award"] = true
 end
