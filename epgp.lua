@@ -7,7 +7,7 @@
 -- parameter it returns the current value.
 --
 -- StandingsShowEveryone(val): Sets listing everyone or not in the
--- standings. If there is no paramter it returns the current
+-- standings. If there is no parameter it returns the current
 -- value. Not showing everyone means no alts when not in raid and only
 -- raid members when in raid.
 --
@@ -55,6 +55,12 @@
 -- IncStandingsEPBy(reason, amount): Increases the EP of all members
 -- currently in the standings.
 --
+-- RecurringEP(val): Sets recurring EP to true/false. If val is nil it
+-- returns the current value.
+--
+-- RecurringEPPeriodMinutes(val): Sets the recurring EP period in
+-- minutes. If val is nil it returns the current value.
+--
 -- GetDecayPercent(): Returns the decay percent configured in guild info.
 --
 -- GetBaseGP(): Returns the base GP configured in guild info.
@@ -81,12 +87,6 @@
 --
 -- GetClass(name): Returns the class of member <name>. It returns nil
 -- if the class is unknown.
---
--- GetDecayPercent(): Returns the decay % configured in GuildInfo.
---
--- GetBaseGP(): Retuns the base GP configured in GuildInfo.
---
--- GetMinEP(): Retuns the min EP configured in GuildInfo.
 --
 -- The library also fires the following messages, which you can
 -- register for through RegisterCallback and unregister through
@@ -520,6 +520,22 @@ function EPGP:IncGPBy(name, reason, amount)
   return main or name
 end
 
+function EPGP:RecurringEP(val)
+  assert(CheckDB())
+  if val == nil then
+    return db.profile.recurring_ep
+  end
+  db.profile.recurring_ep = not not val
+end
+
+function EPGP:RecurringEPPeriodMinutes(val)
+  assert(CheckDB())
+  if val == nil then
+    return db.profile.recurring_ep_period_mins
+  end
+  db.profile.recurring_ep_period_mins = val
+end
+
 function EPGP:GetDecayPercent()
   return decay_p
 end
@@ -612,6 +628,8 @@ function EPGP:OnInitialize()
                      log = {},
                      show_everyone = false,
                      sort_order = "PR",
+                     recurring_ep_period_mins = 15,
+                     recurring_ep = false,
                    }
                  })
   GS:RegisterCallback("GuildInfoChanged", ParseGuildInfo)

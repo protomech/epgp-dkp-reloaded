@@ -705,7 +705,6 @@ local function CreateEPGPSideFrame2()
   local timePeriod =
     f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   timePeriod:SetJustifyH("RIGHT")
-  timePeriod.minutes = 1
 
   local incButton = CreateFrame("Button", nil, f)
   incButton:SetNormalTexture(
@@ -733,24 +732,33 @@ local function CreateEPGPSideFrame2()
   timePeriod:SetPoint("RIGHT", incButton, "LEFT")
 
   local function UpdateTimeControls()
-    local fmt, val = SecondsToTimeAbbrev(timePeriod.minutes * 60)
+    local period_mins = EPGP:RecurringEPPeriodMinutes()
+    local fmt, val = SecondsToTimeAbbrev(period_mins * 60)
     timePeriod:SetText(fmt:format(val))
-    if timePeriod.minutes == 1 then
+    recurring:SetChecked(EPGP:RecurringEP())
+    if period_mins == 1 then
       decButton:Disable()
     else
       decButton:Enable()
     end
-  end    
+  end
+
+  recurring:SetScript("OnClick",
+                      function(self)
+                        EPGP:RecurringEP(not not self:GetChecked())
+                      end)
 
   incButton:SetScript("OnClick",
                       function()
-                        timePeriod.minutes = timePeriod.minutes + 1
+                        local period_mins = EPGP:RecurringEPPeriodMinutes()
+                        EPGP:RecurringEPPeriodMinutes(period_mins + 1)
                         UpdateTimeControls()
                       end)
   
   decButton:SetScript("OnClick",
                       function()
-                        timePeriod.minutes = timePeriod.minutes - 1
+                        local period_mins = EPGP:RecurringEPPeriodMinutes()
+                        EPGP:RecurringEPPeriodMinutes(period_mins - 1)
                         UpdateTimeControls()
                       end)
   UpdateTimeControls()
