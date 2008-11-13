@@ -868,6 +868,17 @@ local function CreateEPGPFrameStandings()
                   function(self, button, down)
                     StaticPopup_Show("EPGP_DECAY_EPGP")
                   end)
+  local function OnDecayPercentChanged(self)
+    Debug("DecayPercentChanged")
+    if EPGP:GetDecayPercent() == 0 then
+      self:Disable()
+    else
+      self:Enable()
+    end
+  end
+
+  decay:SetScript("OnShow", OnDecayPercentChanged)
+  EPGP:RegisterCallback("DecayPercentChanged", OnDecayPercentChanged, decay)
 
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)

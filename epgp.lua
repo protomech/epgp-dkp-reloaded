@@ -112,6 +112,13 @@
 --
 -- GPAward(name, reason, amount): Fired when a GP award is made.
 --
+-- DecayPercentChanged(v): Fired when decay percent changes. v is the
+-- new value.
+--
+-- BaseGPChanged(v): Fired when base gp changes. v is the new value.
+--
+-- MinEPChanged(v): Fired when min ep changes. v is the new value.
+--
 
 EPGP = LibStub:GetLibrary("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0")
@@ -130,9 +137,14 @@ local function debug(...)
   ChatFrame1:AddMessage(table.concat({...}, ""))
 end
 
-local decay_p = 0
-local min_ep = 0
-local base_gp = 1
+local DEFAULT_DECAY_P = 0
+local DEFAULT_MIN_EP = 0
+local DEFAULT_BASE_GP = 1
+
+local decay_p = DEFAULT_DECAY_P
+local min_ep = DEFAULT_MIN_EP
+local base_gp = DEFAULT_BASE_GP
+
 local ep_data = {}
 local gp_data = {}
 local main_data = {}
@@ -253,9 +265,6 @@ end
 -- @MIN_EP:<number>
 -- @BASE_GP:<number>
 local function ParseGuildInfo(callback, info)
-  decay_p = 0
-  min_ep = 0
-  base_gp = 1
   local lines = {string.split("\n", info)}
   local in_block = false
 
@@ -264,39 +273,38 @@ local function ParseGuildInfo(callback, info)
       in_block = not in_block
     elseif in_block then
       -- Decay percent
-      local dp = tonumber(line:match("@DECAY_P:(%d+)"))
-      if dp then
-        if dp >= 0 and dp <= 100 then
+      local dp = tonumber(line:match("@DECAY_P:(%d+)")) or DEFAULT_DECAY_P
+      if dp >= 0 and dp <= 100 then
+        if decay_p ~= dp then
           decay_p = dp
-        else
-          EPGP:Print(L["Decay Percent should be a number between 0 and 100"])
+          callbacks:Fire("DecayPercentChanged", dp)
         end
+      else
+        EPGP:Print(L["Decay Percent should be a number between 0 and 100"])
       end
 
       -- Min EP
-      local mep = tonumber(line:match("@MIN_EP:(%d+)"))
-      if mep then
-        if mep >= 0 then
-          if min_ep ~= mep then
-            min_ep = mep
-            DestroyStandings()
-          end
-        else
-          EPGP:Print(L["Min EP should be a positive number"])
+      local mep = tonumber(line:match("@MIN_EP:(%d+)")) or DEFAULT_MIN_EP
+      if mep >= 0 then
+        if min_ep ~= mep then
+          min_ep = mep
+          callbacks:Fire("MinEPChanged", mep)
+          DestroyStandings()
         end
+      else
+        EPGP:Print(L["Min EP should be a positive number"])
       end
 
       -- Base GP
-      local bgp = tonumber(line:match("BASE_GP:(%d+)"))
-      if bgp then
-        if bgp >= 0 then
-          if base_gp ~= bgp then
-            base_gp = bgp
-            DestroyStandings()
-          end
-        else
-          EPGP:Print(L["Base GP should be a positive number"])
+      local bgp = tonumber(line:match("BASE_GP:(%d+)")) or DEFAULT_BASE_GP
+      if bgp >= 0 then
+        if base_gp ~= bgp then
+          base_gp = bgp
+          callbacks:Fire("BaseGPChanged", bgp)
+          DestroyStandings()
         end
+      else
+        EPGP:Print(L["Base GP should be a positive number"])
       end
     end
   end
