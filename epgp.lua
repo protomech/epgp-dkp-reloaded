@@ -657,7 +657,6 @@ function EPGP:GetLogRecord(i)
 end
 
 function EPGP:RAID_ROSTER_UPDATE()
-  DestroyStandings()
   if UnitInRaid("player") then
     -- If we are in a raid, make sure no member of the raid is
     -- selected
@@ -675,6 +674,7 @@ function EPGP:RAID_ROSTER_UPDATE()
     end
     selected._count = 0
   end
+  DestroyStandings()
 end
 
 function EPGP:OnInitialize()

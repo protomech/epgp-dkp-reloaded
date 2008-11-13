@@ -987,7 +987,14 @@ local function CreateEPGPFrameStandings()
             row.check:Show()
           end
         end
-        row:SetAlpha(EPGP:IsMemberInExtrasList(row.name) and 0.6 or 1)
+        local alpha = 1
+        if not EPGP:IsMemberInAwardList(row.name) then
+          alpha = 0.6
+        end
+        if EPGP:IsMemberInExtrasList(row.name) then
+          alpha = 0.6
+        end
+        row:SetAlpha(alpha)
         row:Show()
       else
         row:Hide()
