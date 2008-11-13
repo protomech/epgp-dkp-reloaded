@@ -1,6 +1,6 @@
 local mod = EPGP:NewModule("EPGP_GPTooltip", "AceHook-3.0")
 
-local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 -- This is the high price equipslot multiplier.
 local EQUIPSLOT_MULTIPLIER_1 = {

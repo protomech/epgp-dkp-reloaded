@@ -1,9 +1,9 @@
 local mod = EPGP:NewModule("EPGP_Loot", "AceEvent-3.0", "AceTimer-3.0")
 
-local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
-local deformat = LibStub:GetLibrary("Deformat-2.0")
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
+local deformat = LibStub("Deformat-2.0")
 
-local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0")
+local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not mod.callbacks then
   mod.callbacks = CallbackHandler:New(mod)
 end

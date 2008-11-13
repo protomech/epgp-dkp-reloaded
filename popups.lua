@@ -1,6 +1,6 @@
 local mod = EPGP:NewModule("EPGP_Popups")
 
-local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
 StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {

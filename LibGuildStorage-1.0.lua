@@ -35,7 +35,7 @@ local function debug(...)
 end
 
 
-local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0")
+local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not lib.callbacks then
   lib.callbacks = CallbackHandler:New(lib)
 end

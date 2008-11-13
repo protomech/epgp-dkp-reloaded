@@ -120,18 +120,17 @@
 -- MinEPChanged(v): Fired when min ep changes. v is the new value.
 --
 
-EPGP = LibStub:GetLibrary("AceAddon-3.0"):NewAddon(
+EPGP = LibStub("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0")
 local EPGP = EPGP
-local GS = LibStub:GetLibrary("LibGuildStorage-1.0")
-local AceDB = LibStub:GetLibrary("AceDB-3.0")
-local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0")
+local GS = LibStub("LibGuildStorage-1.0")
+local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not EPGP.callbacks then
   EPGP.callbacks = CallbackHandler:New(EPGP)
 end
 local callbacks = EPGP.callbacks
 
-local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local function debug(...)
   ChatFrame1:AddMessage(table.concat({...}, ""))

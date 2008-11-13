@@ -1,6 +1,6 @@
 local mod = EPGP:NewModule("EPGP_Announce")
 
-local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local function Announce(fmt, ...)
   local medium = EPGP.db.profile.announce_medium

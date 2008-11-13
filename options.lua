@@ -1,6 +1,6 @@
 local mod = EPGP:NewModule("EPGP_Options")
 
-local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 function mod:OnEnable()
   local options = {
