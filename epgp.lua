@@ -106,6 +106,12 @@
 --
 -- StandingsChanged: Fired when the standings have changed.
 --
+-- EPAward(name, reason, amount): Fired when an EP award is made.
+--
+-- MassEPAward(names, reason, amount): Fired when a mass EP award is made.
+--
+-- GPAward(name, reason, amount): Fired when a GP award is made.
+--
 
 EPGP = LibStub:GetLibrary("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0")
@@ -503,7 +509,9 @@ function EPGP:DecayEPGP()
     GS:SetNote(name, EncodeNote(math.max(ep - decay_ep, 0),
                                 math.max(gp - decay_gp, 0)))
     AppendLog(timestamp, "EP", name, reason, -decay_ep)
+    callbacks:Fire("EPAward", name, reason, -decay_ep)
     AppendLog(timestamp, "GP", name, reason, -decay_gp)
+    callbacks:Fire("GPAward", name, reason, -decay_gp)
   end
 end
 
@@ -529,7 +537,7 @@ function EPGP:CanIncEPBy(reason, amount)
   return true
 end
 
-function EPGP:IncEPBy(name, reason, amount)
+function EPGP:IncEPBy(name, reason, amount, noCallback)
   assert(CheckDB())
   assert(EPGP:CanIncEPBy(reason, amount))
   assert(type(name) == "string")
@@ -537,7 +545,9 @@ function EPGP:IncEPBy(name, reason, amount)
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep + amount, gp))
   AppendLog(GetTimestamp(), "EP", name, reason, amount)
-  
+  if not noCallback then
+    callbacks:Fire("EPAward", name, reason, amount)
+  end
   return main or name
 end
 
@@ -559,7 +569,8 @@ function EPGP:IncGPBy(name, reason, amount)
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep, gp + amount))
   AppendLog(GetTimestamp(), "GP", name, reason, amount)
-  
+  callbacks:Fire("GPAward", name, reason, amount)
+
   return main or name
 end
 
@@ -702,8 +713,9 @@ function EPGP:IncMassEPBy(reason, amount)
     if EPGP:IsMemberInAwardList(name) then
       local main = EPGP:GetMain(name)
       if not awarded[main] then
-        awarded[EPGP:IncEPBy(name, reason, amount)] = true
+        awarded[EPGP:IncEPBy(name, reason, amount, true)] = true
       end
     end
   end
+  callbacks:Fire("MassEPAward", awarded, reason, amount)
 end
