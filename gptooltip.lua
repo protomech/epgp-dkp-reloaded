@@ -186,6 +186,8 @@ function mod:OnTooltipSetItem(tooltip, ...)
   self.hooks[tooltip]["OnTooltipSetItem"](tooltip, ...)
   local gp1, gp2, ilvl = self:GetGPValue(itemlink)
 
+  if not EPGP.db.profile.gp_on_tooltips then return end
+
   if gp1 then
     if gp2 then
       tooltip:AddLine(
@@ -197,10 +199,6 @@ function mod:OnTooltipSetItem(tooltip, ...)
         NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
     end
   end
-end
-
-function mod:OnInitialize()
-  -- TODO(alkis): Use db to persist enabled/disabled state.
 end
 
 function mod:OnEnable()

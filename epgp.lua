@@ -705,6 +705,7 @@ function EPGP:OnInitialize()
                      recurring_ep = false,
                    }
                  })
+  self.db = db
   GS:RegisterCallback("GuildInfoChanged", ParseGuildInfo)
   GS:RegisterCallback("GuildNoteChanged", ParseGuildNote)
   self:RegisterEvent("RAID_ROSTER_UPDATE")

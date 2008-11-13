@@ -1,43 +1,36 @@
-local mod = EPGP:NewModule("EPGP_Report", "AceEvent-3.0")
+local mod = EPGP:NewModule("EPGP_Report")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 
 local function Report(fmt, ...)
-  local report_channel = "GUILD"
-  local report_custom_channel = "epgp_testing"
+  local medium = EPGP.db.profile.announce_medium
+  local channel = EPGP.db.profile.announce_channel or 0
 
   local msg = string.format(fmt, ...)
   local str = "EPGP:"
   for _,s in pairs({strsplit(" ", msg)}) do
     if #str + #s >= 250 then
-      if report_channel == "CHANNEL" then
-        SendChatMessage(str, report_channel, nil,
-                        GetChannelName(report_custom_channel))
-      else
-        SendChatMessage(str, report_channel)
-      end
+      SendChatMessage(str, medium, nil, GetChannelName(channel))
       str = "EPGP:"
     end
     str = str .. " " .. s
   end
 
-  if report_channel == "CHANNEL" then
-    SendChatMessage(str, report_channel, nil,
-                    GetChannelName(report_custom_channel))
-  else
-    SendChatMessage(str, report_channel)
-  end
+  SendChatMessage(str, medium, nil, GetChannelName(channel))
 end
 
 local function ReportEPAward(event_name, name, reason, amount)
+  if not EPGP.db.profile.announce then return end
   Report(L["Awarded %d EP to %s for %s"], amount, name, reason)
 end
 
 local function ReportGPAward(event_name, name, reason, amount)
+  if not EPGP.db.profile.announce then return end
   Report(L["Credited %d GP to %s for %s"], amount, name, reason)
 end
 
 local function ReportMassEPAward(event_name, names, reason, amount)
+  if not EPGP.db.profile.announce then return end
   local first = true
   local awarded
 
@@ -51,10 +44,6 @@ local function ReportMassEPAward(event_name, names, reason, amount)
   end
 
   Report(L["Mass award of %d EP for %s to: %s."], amount, reason, awarded)
-end
-
-function mod:OnInitialize()
-  -- TODO(alkis): Use db to persist enabled/disabled state.
 end
 
 function mod:OnEnable()

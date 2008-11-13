@@ -68,6 +68,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
                              ClearCursor()
                            end
 }
+
 StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
   text = "",
   button1 = ACCEPT,
@@ -82,6 +83,18 @@ StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
            end,
   OnAccept = function()
                EPGP:DecayEPGP()
+             end
+}
+
+StaticPopupDialogs["EPGP_RESET_EPGP"] = {
+  text = L["Reset all main toons' EP and GP to 0?"],
+  button1 = ACCEPT,
+  button2 = CANCEL,
+  timeout = 0,
+  hideOnEscape = 1,
+  whileDead = 1,
+  OnAccept = function()
+               EPGP:ResetEPGP()
              end
 }
 
