@@ -1,7 +1,13 @@
-local mod = EPGP:NewModule("EPGP_Loot", "AceEvent-3.0")
+local mod = EPGP:NewModule("EPGP_Loot", "AceEvent-3.0", "AceTimer-3.0")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 local deformat = LibStub:GetLibrary("Deformat-2.0")
+
+local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0")
+if not mod.callbacks then
+  mod.callbacks = CallbackHandler:New(mod)
+end
+local callbacks = mod.callbacks
 
 local ignored_items = {
   [20725] = true, -- Nexus Crystal
@@ -17,6 +23,10 @@ local ignored_items = {
   [30319] = true, -- Nether Spikes
   [30320] = true, -- Bundle of Nether Spikes
 }
+
+local in_combat = false
+local loot_queue = {}
+local timer
 
 local function IsRLorML()
   if UnitInRaid("player") then
@@ -72,6 +82,65 @@ function mod:CHAT_MSG_LOOT(msg)
   self:SendMessage("LootReceived", player, item_link, quantity)
 end
 
+function mod:PopLootQueue()
+  if in_combat then return end
+
+  if #loot_queue == 0 then
+    if timer then 
+      self:CancelTimer(timer, true)
+      timer = nil 
+    end
+    return 
+  end
+  
+  local player, itemLink = loot_queue[1][1], loot_queue[1][2]
+
+  -- In theory this should never happen.
+  if not player or not itemLink then
+    tremove(loot_queue, 1)
+    return 
+  end
+
+  -- User is busy with other popup.
+  if StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") then 
+    return
+  end
+
+  tremove(loot_queue, 1)
+  
+  local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(itemLink) 
+  local r, g, b = GetItemQualityColor(itemRarity);
+
+  local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
+                                  texture = itemTexture,
+                                  name = itemName,
+                                  color = {r, g, b, 1},
+                                  link = itemLink
+                                  })
+   if dialog then
+     dialog.name = player
+   end
+end
+
+local function Loot_Received(event_name, player, itemLink, quantity)
+  tinsert(loot_queue, {player, itemLink, quantity})
+  if not timer then
+    timer = mod:ScheduleRepeatingTimer("PopLootQueue", 1)
+  end
+end
+
+function mod:PLAYER_REGEN_DISABLED()
+  in_combat = true
+end
+
+function mod:PLAYER_REGEN_ENABLED()
+  in_combat = false
+end
+
+function mod:DebugLootQueue()
+  local _, itemLink = GetItemInfo(34541) 
+  callbacks:Fire("LootReceived", "Knucklehead", itemLink, 1)
+end
 
 function mod:OnInitialize()
   -- TODO(alkis): Use db to persist enabled/disabled state.
@@ -79,4 +148,7 @@ end
 
 function mod:OnEnable()
   self:RegisterEvent("RAID_ROSTER_UPDATE")
+  self:RegisterEvent("PLAYER_REGEN_DISABLED")
+  self:RegisterEvent("PLAYER_REGEN_ENABLED")
+  self:RegisterCallback("LootReceived", Loot_Received)
 end
