@@ -232,9 +232,7 @@ local function RefreshStandings(order, showEveryone)
   else
     -- If we are not in raid, show all mains
     for n in pairs(ep_data) do
-      if showEveryone or UnitInRaid(n) then
-        table.insert(standings, n)
-      end
+      table.insert(standings, n)
     end
   end
 
