@@ -19,14 +19,14 @@ local function Announce(fmt, ...)
   SendChatMessage(str, medium, nil, GetChannelName(channel))
 end
 
-local function AnnounceEPAward(event_name, name, reason, amount)
-  if not EPGP.db.profile.announce then return end
-  Announce(L["Awarded %d EP to %s for %s"], amount, name, reason)
+local function AnnounceEPAward(event_name, name, reason, amount, mass)
+  if mass or not EPGP.db.profile.announce then return end
+  Announce(L["%+d EP [%s] to %s"], amount, reason, name)
 end
 
-local function AnnounceGPAward(event_name, name, reason, amount)
-  if not EPGP.db.profile.announce then return end
-  Announce(L["Credited %d GP to %s for %s"], amount, name, reason)
+local function AnnounceGPAward(event_name, name, reason, amount, mass)
+  if mass or not EPGP.db.profile.announce then return end
+  Announce(L["%+d GP [%s] to %s"], amount, reason, name)
 end
 
 local function AnnounceMassEPAward(event_name, names, reason, amount)
@@ -43,11 +43,16 @@ local function AnnounceMassEPAward(event_name, names, reason, amount)
     end
   end
 
-  Announce(L["Mass award of %d EP for %s to: %s."], amount, reason, awarded)
+  Announce(L["%+d EP [%s] to %s"], amount, reason, awarded)
+end
+
+local function AnnounceDecay(event_name, decay_p)
+  Announce(L["Decay of EP/GP by %d%%."], decay_p)
 end
 
 function mod:OnEnable()
   EPGP:RegisterCallback("EPAward", AnnounceEPAward)
   EPGP:RegisterCallback("MassEPAward", AnnounceMassEPAward)
   EPGP:RegisterCallback("GPAward", AnnounceGPAward)
+  EPGP:RegisterCallback("Decay", AnnounceDecay)
 end

@@ -103,11 +103,15 @@
 --
 -- StandingsChanged: Fired when the standings have changed.
 --
--- EPAward(name, reason, amount): Fired when an EP award is made.
+-- EPAward(name, reason, amount, mass): Fired when an EP award is
+-- made.  mass is set to true if this is a mass award or decay.
 --
 -- MassEPAward(names, reason, amount): Fired when a mass EP award is made.
 --
--- GPAward(name, reason, amount): Fired when a GP award is made.
+-- GPAward(name, reason, amount, mass): Fired when a GP award is
+-- made. mass is set to true if this is a mass award or decay.
+--
+-- Decay(percent): Fired when a decay happens.
 --
 -- DecayPercentChanged(v): Fired when decay percent changes. v is the
 -- new value.
@@ -510,13 +514,16 @@ function EPGP:DecayEPGP()
     assert(main == nil, "Corrupt alt data!")
     local decay_ep = math.floor(ep * decay)
     local decay_gp = math.floor(gp * decay)
-    GS:SetNote(name, EncodeNote(math.max(ep - decay_ep, 0),
-                                math.max(gp - decay_gp, 0)))
-    AppendLog(timestamp, "EP", name, reason, -decay_ep)
-    callbacks:Fire("EPAward", name, reason, -decay_ep)
-    AppendLog(timestamp, "GP", name, reason, -decay_gp)
-    callbacks:Fire("GPAward", name, reason, -decay_gp)
+    if decay_ep ~= 0 then
+      AppendLog(timestamp, "EP", name, reason, -decay_ep)
+      EPGP:IncEPBy(name, reason, -decay_ep, true)
+    end
+    if decay_gp ~= 0 then
+      AppendLog(timestamp, "GP", name, reason, -decay_gp)
+      EPGP:IncGPBy(name, reason, -decay_gp, true)
+    end
   end
+  callbacks:Fire("Decay", decay_p)
 end
 
 function EPGP:GetEPGP(name)
@@ -541,7 +548,7 @@ function EPGP:CanIncEPBy(reason, amount)
   return true
 end
 
-function EPGP:IncEPBy(name, reason, amount, noCallback)
+function EPGP:IncEPBy(name, reason, amount, mass)
   assert(CheckDB())
   assert(EPGP:CanIncEPBy(reason, amount))
   assert(type(name) == "string")
@@ -549,9 +556,7 @@ function EPGP:IncEPBy(name, reason, amount, noCallback)
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep + amount, gp))
   AppendLog(GetTimestamp(), "EP", name, reason, amount)
-  if not noCallback then
-    callbacks:Fire("EPAward", name, reason, amount)
-  end
+  callbacks:Fire("EPAward", name, reason, amount, mass)
   return main or name
 end
 
@@ -565,7 +570,7 @@ function EPGP:CanIncGPBy(reason, amount)
   return true
 end
 
-function EPGP:IncGPBy(name, reason, amount)
+function EPGP:IncGPBy(name, reason, amount, mass)
   assert(CheckDB())
   assert(EPGP:CanIncGPBy(reason, amount))
   assert(type(name) == "string")
@@ -573,7 +578,7 @@ function EPGP:IncGPBy(name, reason, amount)
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep, gp + amount))
   AppendLog(GetTimestamp(), "GP", name, reason, amount)
-  callbacks:Fire("GPAward", name, reason, amount)
+  callbacks:Fire("GPAward", name, reason, amount, mass)
 
   return main or name
 end
