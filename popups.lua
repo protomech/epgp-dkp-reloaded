@@ -13,17 +13,17 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   hideOnEscape = 1,
   hasEditBox = 1,
   hasItemFrame = 1,
-  
+
   OnAccept = function(self)
                EPGP:IncGPBy(self.name, self.itemFrame.link,
                             self.editBox:GetNumber())
              end,
-  
+
   OnCancel = function(self)
                self:Hide()
                ClearCursor()
              end,
-  
+
   OnShow = function(self)
              local itemFrame = getglobal(self:GetName().."ItemFrame")
              local editBox = getglobal(self:GetName().."EditBox")
@@ -37,13 +37,13 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              editBox:SetText(GPTooltip:GetGPValue(itemFrame.link))
              editBox:HighlightText()
            end,
-  
+
   OnHide = function()
              if ChatFrameEditBox:IsShown() then
                ChatFrameEditBox:SetFocus()
              end
            end,
-  
+
   EditBoxOnEnterPressed = function(self)
                             local parent = self:GetParent()
                             if EPGP:CanIncGPBy(parent.itemFrame.link, parent.editBox:GetNumber()) then
@@ -51,7 +51,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
                               parent:Hide()
                             end
                           end,
-  
+
   EditBoxOnTextChanged = function(self)
                            local parent = self:GetParent()
                            if EPGP:CanIncGPBy(parent.itemFrame.link, parent.editBox:GetNumber()) then
@@ -62,7 +62,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
                              parent.button3:Disable()
                            end
                          end,
-  
+
   EditBoxOnEscapePressed = function(self)
                              self:GetParent():Hide()
                              ClearCursor()
@@ -91,7 +91,7 @@ end
 
 function mod:OnInitialize()
 --   local playername = UnitName("player")
---   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541) 
+--   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541)
 --   local r, g, b = GetItemQualityColor(itemRarity);
 
 --   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",

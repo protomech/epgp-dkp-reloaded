@@ -74,7 +74,7 @@ local CUSTOM_ITEM_DATA = {
   ["30248"] = { 4, 133, "INVTYPE_SHOULDER" },
   ["30249"] = { 4, 133, "INVTYPE_SHOULDER" },
   ["30250"] = { 4, 133, "INVTYPE_SHOULDER" },
-  
+
   -- Tier 5 - BoE recipes - BoP crafts
   ["30282"] = { 4, 128, "INVTYPE_BOOTS" },
   ["30283"] = { 4, 128, "INVTYPE_BOOTS" },
@@ -110,7 +110,7 @@ local CUSTOM_ITEM_DATA = {
   ["34856"] = { 4, 154, "INVTYPE_FEET" },
   ["34857"] = { 4, 154, "INVTYPE_FEET" },
   ["34858"] = { 4, 154, "INVTYPE_FEET" },
-  
+
   -- Tier 6 - BoE recipes - BoP crafts
   ["32737"] = { 4, 141, "INVTYPE_SHOULDER" },
   ["32739"] = { 4, 141, "INVTYPE_SHOULDER" },
@@ -126,7 +126,7 @@ local CUSTOM_ITEM_DATA = {
   ["32386"] = { 4, 125, "INVTYPE_FINGER" },
 
   -- Kael'thas' Sphere
-  ["32405"] = { 4, 138, "INVTYPE_NECK" },  
+  ["32405"] = { 4, 138, "INVTYPE_NECK" },
 }
 
 local recent_items = {}

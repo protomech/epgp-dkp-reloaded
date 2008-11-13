@@ -15,7 +15,7 @@
 -- GetMember(i): Returns the ith member in the standings based on the
 -- current sort.
 --
--- GetMain(name): Returns the main character for this member. 
+-- GetMain(name): Returns the main character for this member.
 --
 -- GetNumAlts(name): Returns the number of alts for this member.
 --
@@ -57,7 +57,7 @@
 -- are reasonable values for IncGPBy.
 --
 -- IncGPBy(name, reason, amount): Increases the GP of member <name> by
--- <amount>. It uses <reason to log into the log. Returns the member's 
+-- <amount>. It uses <reason to log into the log. Returns the member's
 -- main character name.
 --
 -- IncMassEPBy(reason, amount): Increases the EP of all members

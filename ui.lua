@@ -41,7 +41,7 @@ local function CreateEPGPFrame()
   f:Hide()
   f:SetToplevel(true)
   f:EnableMouse(true)
-  f:SetMovable(true) 
+  f:SetMovable(true)
   f:SetAttribute("UIPanelLayout-defined", true)
   f:SetAttribute("UIPanelLayout-enabled", true)
   f:SetAttribute("UIPanelLayout-area", "left")
@@ -257,7 +257,7 @@ local function CreateEPGPLogFrame()
     })
 
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
+  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3)
 
   local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   undo:SetHeight(BUTTON_HEIGHT)
@@ -270,7 +270,7 @@ local function CreateEPGPLogFrame()
   undo:SetScript("OnClick",
                  function (self, value)
                    EPGP:UndoLastAction()
-                 end)                   
+                 end)
 
   local scrollParent = CreateFrame("Frame", nil, f)
   scrollParent:SetWidth(f:GetWidth() - 20)
@@ -356,9 +356,9 @@ local function CreateEPGPLogFrame()
 end
 
 local function GP_Validation(parent)
-  if EPGP:CanIncGPBy(UIDropDownMenu_GetText(parent.dropDown), parent.editBox:GetNumber()) then 
+  if EPGP:CanIncGPBy(UIDropDownMenu_GetText(parent.dropDown), parent.editBox:GetNumber()) then
     parent.button:Enable()
-  else 
+  else
     parent.button:Disable()
   end
 end
@@ -401,7 +401,7 @@ local function AddGPControls(frame)
   UIDropDownMenu_JustifyText(dropDown, "LEFT")
   dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
   getglobal(dropDown:GetName().."Button"):SetScript(
-    "OnEnter", 
+    "OnEnter",
     function(self)
       GameTooltip_SetDefaultAnchor(GameTooltip, self)
       GameTooltip:AddLine(
@@ -409,7 +409,7 @@ local function AddGPControls(frame)
         NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, true)
       GameTooltip:ClearAllPoints()
       GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
-      GameTooltip:Show() 
+      GameTooltip:Show()
     end)
   dropDown:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
@@ -457,17 +457,17 @@ end
 
 local function EP_Validation(parent)
   if UIDropDownMenu_GetText(parent.dropDown) == L["Other"] then
-    if EPGP:CanIncEPBy(parent.otherEditBox:GetText(), parent.editBox:GetNumber()) then 
+    if EPGP:CanIncEPBy(parent.otherEditBox:GetText(), parent.editBox:GetNumber()) then
       parent.button:Enable()
-    else 
+    else
       parent.button:Disable()
     end
   else
-    if EPGP:CanIncEPBy(UIDropDownMenu_GetText(parent.dropDown), parent.editBox:GetNumber()) then 
+    if EPGP:CanIncEPBy(UIDropDownMenu_GetText(parent.dropDown), parent.editBox:GetNumber()) then
       parent.button:Enable()
-    else 
+    else
       parent.button:Disable()
-    end  
+    end
   end
 end
 
@@ -491,7 +491,7 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
       UIDropDownMenu_AddButton(info)
     end
   end
-  
+
   info.text = L["Other"]
   info.func = function(self)
                 UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
@@ -511,7 +511,7 @@ local function AddEPControls(frame)
     frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   reasonLabel:SetText(L["EP Reason"])
   reasonLabel:SetPoint("TOPLEFT")
-  
+
   local dropDown = CreateFrame("Frame", "$parentEPControlDropDown",
                                frame, "UIDropDownMenuTemplate")
   dropDown:EnableMouse(true)
@@ -520,7 +520,7 @@ local function AddEPControls(frame)
   UIDropDownMenu_SetWidth(dropDown, 150)
   UIDropDownMenu_JustifyText(dropDown, "LEFT")
   dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
-  
+
   local otherLabel =
     frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   otherLabel:SetText(L["Other"])
@@ -595,22 +595,22 @@ local function CreateEPGPSideFrame(self)
   f:SetWidth(225)
   f:SetHeight(255)
   f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -33, -20)
-  
+
   local h = f:CreateTexture(nil, "ARTWORK")
   h:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
   h:SetWidth(300)
   h:SetHeight(68)
   h:SetPoint("TOP", -9, 12)
-  
+
   f.title = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
   f.title:SetPoint("TOP", h, "TOP", 0, -15)
-  
+
   local t = f:CreateTexture(nil, "OVERLAY")
   t:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Corner")
   t:SetWidth(32)
   t:SetHeight(32)
   t:SetPoint("TOPRIGHT", f, "TOPRIGHT", -6, -7)
-  
+
   f:SetBackdrop(
     {
       bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -620,15 +620,15 @@ local function CreateEPGPSideFrame(self)
       edgeSize = 32,
       insets = { left=11, right=12, top=12, bottom=11 }
     })
-  
+
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
+  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3)
 
   local gpFrame = CreateFrame("Frame", nil, f)
   gpFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -30)
   gpFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -30)
   AddGPControls(gpFrame)
-  gpFrame.button:SetScript("OnClick", 
+  gpFrame.button:SetScript("OnClick",
                            function(self)
                              EPGP:IncGPBy(f.row.name, UIDropDownMenu_GetText(gpFrame.dropDown), gpFrame.editBox:GetNumber())
                            end)
@@ -637,7 +637,7 @@ local function CreateEPGPSideFrame(self)
   epFrame:SetPoint("TOPLEFT", gpFrame, "BOTTOMLEFT", 0, -15)
   epFrame:SetPoint("TOPRIGHT", gpFrame, "BOTTOMRIGHT", 0, -15)
   AddEPControls(epFrame)
-  epFrame.button:SetScript("OnClick", 
+  epFrame.button:SetScript("OnClick",
                            function(self)
                              if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
                                EPGP:IncEPBy(f.row.name, epFrame.otherEditBox:GetText(), epFrame.editBox:GetNumber())
@@ -677,13 +677,13 @@ local function CreateEPGPSideFrame2()
     })
 
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3) 
+  cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3)
 
   local epFrame = CreateFrame("Frame", nil, f)
   epFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -15)
   epFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -15)
   AddEPControls(epFrame)
-  epFrame.button:SetScript("OnClick", 
+  epFrame.button:SetScript("OnClick",
                            function(self)
                              if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
                                EPGP:IncMassEPBy(
@@ -758,7 +758,7 @@ local function CreateEPGPSideFrame2()
                         EPGP:RecurringEPPeriodMinutes(period_mins + 1)
                         UpdateTimeControls()
                       end)
-  
+
   decButton:SetScript("OnClick",
                       function()
                         local period_mins = EPGP:RecurringEPPeriodMinutes()
@@ -826,7 +826,7 @@ local function CreateEPGPFrameStandings()
 
   -- Make the log frame
   CreateEPGPLogFrame()
-  
+
   -- Make the side frame
   CreateEPGPSideFrame()
 
@@ -892,7 +892,7 @@ local function CreateEPGPFrameStandings()
               {0, 64, 64, 64},
               {"LEFT", "RIGHT", "RIGHT", "RIGHT"},
               27)  -- The scrollBarWidth
-  
+
   -- Make the scrollbar
   local rowFrame = tabl.rowFrame
   local scrollBar = CreateFrame("ScrollFrame", "EPGPScrollFrame",
@@ -923,13 +923,13 @@ local function CreateEPGPFrameStandings()
                     if EPGPSideFrame.row ~= self then
                       EPGPSideFrame:Hide()
                       self:LockHighlight()
-                      EPGPSideFrame.row = self 
+                      EPGPSideFrame.row = self
                     end
                     ToggleOnlySideFrame(EPGPSideFrame)
                   end
                 end)
-    
-    r:SetScript("OnEnter", 
+
+    r:SetScript("OnEnter",
                 function(self)
                   if EPGP:GetNumAlts(self.name) > 0 then
                     GameTooltip_SetDefaultAnchor(GameTooltip, self)

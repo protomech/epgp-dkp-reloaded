@@ -97,7 +97,7 @@ local function UpdateGuildRoster()
 end
 
 frame:SetScript("OnUpdate", UpdateGuildRoster)
-                
+
 frame:RegisterEvent("PLAYER_GUILD_UPDATE")
 frame:RegisterEvent("GUILD_ROSTER_UPDATE")
 
@@ -121,7 +121,7 @@ function lib:GUILD_ROSTER_UPDATE(loc)
   next_index = 1
   frame:Show()
 end
-      
+
 function lib:GetNote(name)
   local entry = cache[name]
   if not entry then

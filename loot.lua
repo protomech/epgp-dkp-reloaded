@@ -56,7 +56,7 @@ local function ParseLootMessage(msg)
   if item then
     return player, item, tonumber(quantity)
   end
-  
+
   player, item, quantity = deformat(msg, LOOT_ITEM_MULTIPLE)
   if player and item and quantity then
     return player, item, tonumber(quantity)
@@ -86,29 +86,29 @@ function mod:PopLootQueue()
   if in_combat then return end
 
   if #loot_queue == 0 then
-    if timer then 
+    if timer then
       self:CancelTimer(timer, true)
-      timer = nil 
+      timer = nil
     end
-    return 
+    return
   end
-  
+
   local player, itemLink = loot_queue[1][1], loot_queue[1][2]
 
   -- In theory this should never happen.
   if not player or not itemLink then
     tremove(loot_queue, 1)
-    return 
+    return
   end
 
   -- User is busy with other popup.
-  if StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") then 
+  if StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") then
     return
   end
 
   tremove(loot_queue, 1)
-  
-  local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(itemLink) 
+
+  local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(itemLink)
   local r, g, b = GetItemQualityColor(itemRarity);
 
   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
@@ -138,7 +138,7 @@ function mod:PLAYER_REGEN_ENABLED()
 end
 
 function mod:DebugLootQueue()
-  local _, itemLink = GetItemInfo(34541) 
+  local _, itemLink = GetItemInfo(34541)
   callbacks:Fire("LootReceived", "Knucklehead", itemLink, 1)
 end
 
