@@ -22,11 +22,13 @@ libs\Deformat-2.0\Deformat-2.0.lua
 
 LibGuildStorage-1.0.lua
 localization.enUS.lua
+
 epgp.lua
+
+announce.lua
 gptooltip.lua
 officernotewarning.lua
 loot.lua
 ui.lua
 options.lua
 popups.lua
-report.lua

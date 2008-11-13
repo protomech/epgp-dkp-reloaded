@@ -1,8 +1,8 @@
-local mod = EPGP:NewModule("EPGP_Report")
+local mod = EPGP:NewModule("EPGP_Announce")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 
-local function Report(fmt, ...)
+local function Announce(fmt, ...)
   local medium = EPGP.db.profile.announce_medium
   local channel = EPGP.db.profile.announce_channel or 0
 
@@ -19,17 +19,17 @@ local function Report(fmt, ...)
   SendChatMessage(str, medium, nil, GetChannelName(channel))
 end
 
-local function ReportEPAward(event_name, name, reason, amount)
+local function AnnounceEPAward(event_name, name, reason, amount)
   if not EPGP.db.profile.announce then return end
-  Report(L["Awarded %d EP to %s for %s"], amount, name, reason)
+  Announce(L["Awarded %d EP to %s for %s"], amount, name, reason)
 end
 
-local function ReportGPAward(event_name, name, reason, amount)
+local function AnnounceGPAward(event_name, name, reason, amount)
   if not EPGP.db.profile.announce then return end
-  Report(L["Credited %d GP to %s for %s"], amount, name, reason)
+  Announce(L["Credited %d GP to %s for %s"], amount, name, reason)
 end
 
-local function ReportMassEPAward(event_name, names, reason, amount)
+local function AnnounceMassEPAward(event_name, names, reason, amount)
   if not EPGP.db.profile.announce then return end
   local first = true
   local awarded
@@ -43,11 +43,11 @@ local function ReportMassEPAward(event_name, names, reason, amount)
     end
   end
 
-  Report(L["Mass award of %d EP for %s to: %s."], amount, reason, awarded)
+  Announce(L["Mass award of %d EP for %s to: %s."], amount, reason, awarded)
 end
 
 function mod:OnEnable()
-  EPGP:RegisterCallback("EPAward", ReportEPAward)
-  EPGP:RegisterCallback("MassEPAward", ReportMassEPAward)
-  EPGP:RegisterCallback("GPAward", ReportGPAward)
+  EPGP:RegisterCallback("EPAward", AnnounceEPAward)
+  EPGP:RegisterCallback("MassEPAward", AnnounceMassEPAward)
+  EPGP:RegisterCallback("GPAward", AnnounceGPAward)
 end
