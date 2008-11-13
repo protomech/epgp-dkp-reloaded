@@ -696,16 +696,13 @@ end
 
 function EPGP:OnInitialize()
   player = UnitName("player")
-  db = AceDB:New("EPGP_DB", {
-                   profile = {
-                     log = {},
-                     show_everyone = false,
-                     sort_order = "PR",
-                     recurring_ep_period_mins = 15,
-                     recurring_ep = false,
-                   }
-                 })
+  db = LibStub("AceDB-3.0"):New("EPGP_DB")
+end
+
+function EPGP:OnEnable()
+  -- This is for modules
   self.db = db
+
   GS:RegisterCallback("GuildInfoChanged", ParseGuildInfo)
   GS:RegisterCallback("GuildNoteChanged", ParseGuildNote)
   self:RegisterEvent("RAID_ROSTER_UPDATE")

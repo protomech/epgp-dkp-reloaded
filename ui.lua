@@ -765,7 +765,7 @@ local function CreateEPGPSideFrame2()
                         EPGP:RecurringEPPeriodMinutes(period_mins - 1)
                         UpdateTimeControls()
                       end)
-  UpdateTimeControls()
+  f:SetScript("OnShow", UpdateTimeControls)
 end
 
 local function CreateEPGPFrameStandings()
@@ -1037,4 +1037,5 @@ function mod:OnInitialize()
   CreateEPGPFrameStandings()
 
   HideUIPanel(EPGPFrame)
+  EPGPFrame:SetScript("OnShow", GuildRoster)
 end
