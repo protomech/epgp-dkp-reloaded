@@ -82,9 +82,6 @@
 -- ExportLog(): Returns a string with the data of the exported log for
 -- import into the web application.
 --
--- ImportLog(str): Takes a log export from the web application and
--- imports it into the current log. THIS REPLACES THE CURRENT LOG.
---
 -- UndoLastAction(): Removes the last entry from the log and undoes
 -- its action. The undone action is not logged.
 --
@@ -618,15 +615,6 @@ function EPGP:ExportLog()
   end
   debug("ExportLog: ", unpack(t))
   return table.concat(t, "\n")
-end
-
-function EPGP:ImportLog(str)
-  assert(CheckDB())
-
-  local records = strsplit(str, "\n")
-  for record in records do
-    -- TODO(alkis)
-  end
 end
 
 function EPGP:UndoLastAction()
