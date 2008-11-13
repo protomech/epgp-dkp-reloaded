@@ -24,4 +24,7 @@ if L then
   L["Show everyone"] = true
   L["Recurring"] = true
   L["Award"] = true
+  L["Awarded %d EP to %s for %s"] = true
+  L["Credited %d GP to %s for %s"] = true
+  L["Mass award of %d EP for %s to: %s."] = true
 end
