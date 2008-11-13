@@ -686,9 +686,13 @@ local function CreateEPGPSideFrame2()
   epFrame.button:SetScript("OnClick", 
                            function(self)
                              if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
-                               EPGP:IncStandingsEPBy(epFrame.otherEditBox:GetText(), epFrame.editBox:GetNumber())
+                               EPGP:IncMassEPBy(
+                                 epFrame.otherEditBox:GetText(),
+                                 epFrame.editBox:GetNumber())
                              else
-                               EPGP:IncStandingsEPBy(UIDropDownMenu_GetText(epFrame.dropDown), epFrame.editBox:GetNumber())
+                               EPGP:IncMassEPBy(
+                                 UIDropDownMenu_GetText(epFrame.dropDown),
+                                 epFrame.editBox:GetNumber())
                              end
                            end)
 
@@ -808,6 +812,18 @@ local function CreateEPGPFrameStandings()
   t:SetPoint("RIGHT", cb, "LEFT", 0, 2)
   f:SetWidth(t:GetStringWidth() + 4 * tl:GetWidth() + cb:GetWidth())
 
+  local function HideWhileNotInRaid(self)
+    if UnitInRaid("player") then
+      self:Show()
+    else
+      self:Hide()
+    end
+  end
+
+  f:RegisterEvent("RAID_ROSTER_UPDATE")
+  f:SetScript("OnEvent", HideWhileNotInRaid)
+  f:SetScript("OnShow", HideWhileNotInRaid)
+
   -- Make the log frame
   CreateEPGPLogFrame()
   
@@ -823,22 +839,11 @@ local function CreateEPGPFrameStandings()
   main:SetHeight(358)
   main:SetPoint("TOPLEFT", EPGPFrame, 19, -72)
 
-  -- Make the buttons
-  local function DisableWhileNotInRaid(self)
-    if UnitInRaid("player") then
-      self:Enable()
-    else
-      self:Disable()
-    end
-  end
-
   local award = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   award:SetHeight(BUTTON_HEIGHT)
   award:SetPoint("BOTTOMLEFT")
   award:SetText(L["Award"])
   award:SetWidth(award:GetTextWidth() + BUTTON_TEXT_PADDING)
-  award:SetScript("OnEvent", DisableWhileNotInRaid)
-  award:SetScript("OnShow", DisableWhileNotInRaid)
   award:RegisterEvent("RAID_ROSTER_UPDATE")
   award:SetScript("OnClick",
                   function()
@@ -899,9 +904,9 @@ local function CreateEPGPFrameStandings()
                 function(self, value)
                   if IsModifiedClick("QUESTWATCHTOGGLE") then
                     if self.check:IsShown() then
-                      EPGP:StandingsRemoveExtra(self.name)
+                      EPGP:DeSelectMember(self.name)
                     else
-                      EPGP:StandingsAddExtra(self.name)
+                      EPGP:SelectMember(self.name)
                     end
                   else
                     if EPGPSideFrame.row ~= self then
@@ -973,10 +978,16 @@ local function CreateEPGPFrameStandings()
           row.cells[4]:SetText(0)
         end
         row.check:Hide()
-        if UnitInRaid("player") and EPGP:StandingsShowEveryone() and EPGP:IsMemberInStandings(row.name) then
-          row.check:Show()
+        if UnitInRaid("player") and EPGP:StandingsShowEveryone() then
+          if EPGP:IsMemberInAwardList(row.name) then
+            row.check:Show()
+          end
+        elseif EPGP:IsAnyMemberInExtrasList() then
+          if EPGP:IsMemberInAwardList(row.name) then
+            row.check:Show()
+          end
         end
-        row:SetAlpha(EPGP:IsMemberInStandingsExtra(row.name) and 0.6 or 1)
+        row:SetAlpha(EPGP:IsMemberInExtrasList(row.name) and 0.6 or 1)
         row:Show()
       else
         row:Hide()

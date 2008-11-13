@@ -3,13 +3,12 @@
 -- functions:
 --
 -- StandingsSort(order): Sorts the standings list using the specified
--- sort order. Valid values are: NAME, EP, GP, PR. If there is no
--- parameter it returns the current value.
+-- sort order. Valid values are: NAME, EP, GP, PR. If order is nil it
+-- returns the current value.
 --
 -- StandingsShowEveryone(val): Sets listing everyone or not in the
--- standings. If there is no parameter it returns the current
--- value. Not showing everyone means no alts when not in raid and only
--- raid members when in raid.
+-- standings when in raid. If val is nil it returns the current
+-- value.
 --
 -- GetNumMembers(): Returns the number of members in the standings.
 --
@@ -22,16 +21,25 @@
 --
 -- GetAlt(name, i): Returns the ith alt for this member.
 --
--- StandingsAddExtraMember(name): Add member to the standings. Returns true
--- if the member was added, false otherwise.
+-- SelectMember(name): Select the member for award. Returns true if
+-- the member was added, false otherwise.
 --
--- StandingsRemoveExtraMember(name): Remove member from the
--- standings. Returns true if the member was added, false otherwise.
+-- DeSelectMember(name): Deselect member for award. Returns true if
+-- the member was added, false otherwise.
 --
--- IsMemberInStandings(name): Returns true if member is in standings.
+-- IsMemberInAwardList(name): Returns true if member is in the award
+-- list. When in a raid, this returns true for members in the raid and
+-- members selected. When not in raid this returns true for everyone
+-- if noone is selected or true if at least one member is selected and
+-- the member is selected as well.
 --
--- IsMemberInStandingsExtra(name): Returns true if member is in
--- standings as an extra.
+-- IsMemberInExtrasList(name): Returns true if member is in the award
+-- list as an extra. When in a raid, this returns true if the member
+-- is not in raid but is selected. When not in raid, this returns
+-- false.
+--
+-- IsAnyMemberInExtrasList(name): Returns true if there is any member
+-- in the award list as an extra.
 --
 -- ResetEPGP(): Resets all EP and GP to 0.
 --
@@ -52,8 +60,8 @@
 -- <amount>. It uses <reason to log into the log. Returns the member's 
 -- main character name.
 --
--- IncStandingsEPBy(reason, amount): Increases the EP of all members
--- currently in the standings.
+-- IncMassEPBy(reason, amount): Increases the EP of all members
+-- in the award list. See description of IsMemberInAwardList.
 --
 -- RecurringEP(val): Sets recurring EP to true/false. If val is nil it
 -- returns the current value.
@@ -126,7 +134,8 @@ local alt_data = {}
 local player
 local db
 local standings = {}
-local extras = {}
+local selected = {}
+selected._count = 0  -- This is safe since _ is not allowed in names
 
 local function DecodeNote(note)
   local ep, gp = string.match(note, "^(%d+),(%d+)$")
@@ -141,21 +150,23 @@ local function EncodeNote(ep, gp)
   return string.format("%d,%d", math.max(ep, 0), math.max(gp - base_gp, 0))
 end
 
--- A wrapper function to handle sort logic for extras and min_ep
+-- A wrapper function to handle sort logic for selected
 local function ComparatorWrapper(f)
   return function(a, b)
-           if db.profile.show_everyone then
-             return f(a, b)
+           local a_in_raid = not not UnitInRaid(a)
+           local b_in_raid = not not UnitInRaid(b)
+           if a_in_raid ~= b_in_raid then
+             return not b_in_raid
            end
 
-           local a_extra = extras[a]
-           local b_extra = extras[b]
+           local a_selected = selected[a]
+           local b_selected = selected[b]
 
-           if a_extra == b_extra then
-             return f(a, b)
-           else
-             return b_extra
+           if a_selected ~= b_selected then
+             return not b_selected
            end
+
+           return f(a, b)
          end
 end
 
@@ -202,19 +213,31 @@ local function DestroyStandings()
 end
 
 local function RefreshStandings(order, showEveryone)
-  -- Add all mains
-  for n in pairs(ep_data) do
-    if showEveryone or EPGP:IsMemberInStandings(n) then
-      table.insert(standings, n)
+  if UnitInRaid("player") then
+    -- If we are in raid:
+    ---  showEveryone = true: show all in raid (including alts) and
+    ---  all leftover mains
+    ---  showEveryone = false: show all in raid (including alts) and
+    ---  all selected members
+    for n in pairs(ep_data) do
+      if showEveryone or UnitInRaid(n) or selected[n] then
+        table.insert(standings, n)
+      end
+    end
+    for n in pairs(main_data) do
+      if UnitInRaid(n) or selected[n] then
+        table.insert(standings, n)
+      end
+    end
+  else
+    -- If we are not in raid, show all mains
+    for n in pairs(ep_data) do
+      if showEveryone or UnitInRaid(n) then
+        table.insert(standings, n)
+      end
     end
   end
 
-  -- Add alts if we are not in raid view
-  if showEveryone and not UnitInRaid("player") then
-    for n in pairs(main_data) do
-      table.insert(standings, n)
-    end
-  end
   -- Sort
   table.sort(standings, comparators[order])
 end
@@ -401,34 +424,56 @@ function EPGP:GetAlt(name, i)
   return alt_data[name][i]
 end
 
-function EPGP:StandingsAddExtra(name)
+function EPGP:SelectMember(name)
   if UnitInRaid("player") then
-    if not UnitInRaid(name) then
-      extras[name] = true
-      DestroyStandings()
-      return true
+    -- Only allow selecting members that are not in raid when in raid.
+    if UnitInRaid(name) then
+      return false
     end
   end
-  return false
+  selected[name] = true
+  selected._count = selected._count + 1
+  DestroyStandings()
+  return true
 end
 
-function EPGP:StandingsRemoveExtra(name)
+function EPGP:DeSelectMember(name)
   if UnitInRaid("player") then
-    if not UnitInRaid(name) and extras[name] then
-      extras[name] = nil
-      DestroyStandings()
-      return true
+    -- Only allow deselecting members that are not in raid when in raid.
+    if UnitInRaid(name) then
+      return false
     end
   end
-  return false
+  if not selected[name] then
+    return false
+  end
+  selected[name] = nil
+  selected._count = selected._count - 1
+  DestroyStandings()
+  return true
 end
 
-function EPGP:IsMemberInStandings(name)
-  return not UnitInRaid("player") or UnitInRaid(name) or extras[name]
+function EPGP:IsMemberInAwardList(name)
+  if UnitInRaid("player") then
+    -- If we are in raid the member is in the award list if it is in
+    -- the raid or the selected list.
+    return UnitInRaid(name) or selected[name]
+  else
+    -- If we are not in raid and there is noone selected everyone will
+    -- get an award.
+    if selected._count == 0 then
+      return true
+    end
+    return selected[name]
+  end
 end
 
-function EPGP:IsMemberInStandingsExtra(name)
-  return extras[name]
+function EPGP:IsMemberInExtrasList(name)
+  return UnitInRaid("player") and selected[name]
+end
+
+function EPGP:IsAnyMemberInExtrasList()
+  return selected._count ~= 0
 end
 
 function EPGP:ResetEPGP()
@@ -613,11 +658,22 @@ end
 
 function EPGP:RAID_ROSTER_UPDATE()
   DestroyStandings()
-  -- Make sure no member of the raid is in extras
-  for name,_ in pairs(extras) do
-    if UnitInRaid(name) then
-      extras[name] = nil
+  if UnitInRaid("player") then
+    -- If we are in a raid, make sure no member of the raid is
+    -- selected
+    for name,_ in pairs(selected) do
+      if UnitInRaid(name) then
+        selected[name] = nil
+        selected._count = selected._count - 1
+      end
     end
+  else
+    -- If we are not in a raid, this means we just left so remove
+    -- everyone from the selected list.
+    for name,_ in pairs(selected) do
+      selected[name] = nil
+    end
+    selected._count = 0
   end
 end
 
@@ -641,13 +697,15 @@ function EPGP:GetMain(name)
   return main_data[name] or name
 end
 
-function EPGP:IncStandingsEPBy(reason, amount)
+function EPGP:IncMassEPBy(reason, amount)
   local awarded = {}
   for i=1,EPGP:GetNumMembers() do
     local name = EPGP:GetMember(i)
-    local main = EPGP:GetMain(name)
-    if not awarded[main] then
-      awarded[EPGP:IncEPBy(name, reason, amount)] = true
+    if EPGP:IsMemberInAwardList(name) then
+      local main = EPGP:GetMain(name)
+      if not awarded[main] then
+        awarded[EPGP:IncEPBy(name, reason, amount)] = true
+      end
     end
   end
 end
