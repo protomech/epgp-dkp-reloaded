@@ -108,8 +108,9 @@
 
 EPGP = LibStub("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
-
 local EPGP = EPGP
+EPGP:SetDefaultModuleState(false)
+
 local GS = LibStub("LibGuildStorage-1.0")
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not EPGP.callbacks then
