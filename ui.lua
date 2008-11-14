@@ -1034,8 +1034,10 @@ local function CreateEPGPFrameStandings()
 end
 
 function mod:OnEnable()
-  CreateEPGPFrame()
-  CreateEPGPFrameStandings()
+  if not EPGPFrame then
+    CreateEPGPFrame()
+    CreateEPGPFrameStandings()
+  end
 
   HideUIPanel(EPGPFrame)
   EPGPFrame:SetScript("OnShow", GuildRoster)
