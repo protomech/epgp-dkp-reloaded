@@ -30,11 +30,6 @@ local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) or 0
 local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local function debug(...)
-  ChatFrame1:AddMessage(table.concat({...}, ""))
-end
-
-
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not lib.callbacks then
   lib.callbacks = CallbackHandler:New(lib)
@@ -61,8 +56,6 @@ local guild_info = ""
 
 local next_index = 1
 local function UpdateGuildRoster()
-  debug("Calling UpdateGuildRoster next_index=", next_index,
-        " #members=", GetNumGuildMembers(true))
   if next_index == 1 then
     local new_guild_info = GetGuildInfoText() or ""
     if new_guild_info ~= guild_info then
@@ -85,7 +78,6 @@ local function UpdateGuildRoster()
       t.class = class
       if t.note ~= note then
         t.note = note
-        debug("name=", name, " note=", note, " class=", class)
         callbacks:Fire("GuildNoteChanged", name, note)
       end
     end
@@ -102,7 +94,6 @@ frame:RegisterEvent("PLAYER_GUILD_UPDATE")
 frame:RegisterEvent("GUILD_ROSTER_UPDATE")
 
 function lib:PLAYER_GUILD_UPDATE()
-  debug("Got PLAYER_GUILD_UPDATE")
   -- Hide the frame to stop OnUpdate from reading guild information
   if frame:IsShown() and not IsInGuild() then
     frame:Hide()
@@ -117,7 +108,6 @@ function lib:GUILD_ROSTER_UPDATE(loc)
   end
 
   -- Show the frame to make the OnUpdate handler to be called
-  debug("Got GUILD_ROSTER_UPDATE")
   next_index = 1
   frame:Show()
 end
@@ -137,8 +127,7 @@ function lib:SetNote(name, note)
   end
   -- We do not update the note here. We are going to wait until the
   -- next GUILD_ROSTER_UPDATE and fire a GuildNoteChanged callback.
-  debug("Setting officer note for ",
-        name, "(", entry.index, ") to ", note)
+
   -- TODO(alkis): Investigate performance issues in case we want to
   -- verify if this is the right index or not.
   GuildRosterSetOfficerNote(entry.index, note)
