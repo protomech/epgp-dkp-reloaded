@@ -3,12 +3,6 @@ local mod = EPGP:NewModule("EPGP_Loot", "AceEvent-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local deformat = LibStub("Deformat-2.0")
 
-local CallbackHandler = LibStub("CallbackHandler-1.0")
-if not mod.callbacks then
-  mod.callbacks = CallbackHandler:New(mod)
-end
-local callbacks = mod.callbacks
-
 local ignored_items = {
   [20725] = true, -- Nexus Crystal
   [22450] = true, -- Void Crystal
@@ -122,7 +116,7 @@ function mod:PopLootQueue()
    end
 end
 
-local function Loot_Received(event_name, player, itemLink, quantity)
+local function LootReceived(event_name, player, itemLink, quantity)
   tinsert(loot_queue, {player, itemLink, quantity})
   if not timer then
     timer = mod:ScheduleRepeatingTimer("PopLootQueue", 1)
@@ -150,5 +144,5 @@ function mod:OnEnable()
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
-  self:RegisterCallback("LootReceived", Loot_Received)
+  self:RegisterMessage("LootReceived", LootReceived)
 end
