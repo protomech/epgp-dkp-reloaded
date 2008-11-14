@@ -21,12 +21,12 @@ end
 
 local function AnnounceEPAward(event_name, name, reason, amount, mass)
   if mass or not EPGP.db.profile.announce then return end
-  Announce(L["%+d EP [%s] to %s"], amount, reason, name)
+  Announce(L["%+d EP (%s) to %s"], amount, reason, name)
 end
 
 local function AnnounceGPAward(event_name, name, reason, amount, mass)
   if mass or not EPGP.db.profile.announce then return end
-  Announce(L["%+d GP [%s] to %s"], amount, reason, name)
+  Announce(L["%+d GP (%s) to %s"], amount, reason, name)
 end
 
 local function AnnounceMassEPAward(event_name, names, reason, amount)
@@ -43,7 +43,7 @@ local function AnnounceMassEPAward(event_name, names, reason, amount)
     end
   end
 
-  Announce(L["%+d EP [%s] to %s"], amount, reason, awarded)
+  Announce(L["%+d EP (%s) to %s"], amount, reason, awarded)
 end
 
 local function AnnounceDecay(event_name, decay_p)
@@ -51,8 +51,8 @@ local function AnnounceDecay(event_name, decay_p)
 end
 
 function mod:OnEnable()
-  EPGP:RegisterCallback("EPAward", AnnounceEPAward)
-  EPGP:RegisterCallback("MassEPAward", AnnounceMassEPAward)
-  EPGP:RegisterCallback("GPAward", AnnounceGPAward)
-  EPGP:RegisterCallback("Decay", AnnounceDecay)
+  EPGP.RegisterCallback(self, "EPAward", AnnounceEPAward)
+  EPGP.RegisterCallback(self, "MassEPAward", AnnounceMassEPAward)
+  EPGP.RegisterCallback(self, "GPAward", AnnounceGPAward)
+  EPGP.RegisterCallback(self, "Decay", AnnounceDecay)
 end
