@@ -232,7 +232,7 @@ local function CreateEPGPLogFrame()
   table.insert(SIDEFRAMES, f)
 
   f:Hide()
-  f:SetWidth(450)
+  f:SetWidth(435)
   f:SetHeight(435)
   f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -37, -6)
 
