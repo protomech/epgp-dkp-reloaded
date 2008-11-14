@@ -63,22 +63,6 @@ function mod:OnEnable()
     },
   }
 
-  EPGP.db:RegisterDefaults(
-    {
-      profile = {
-        log = {},
-        show_everyone = false,
-        sort_order = "PR",
-        recurring_ep_period_mins = 15,
-        recurring_ep = false,
-        gp_on_tooltips = true,
-        auto_loot = true,
-        announce = true,
-        announce_medium = "GUILD",
-      }
-    })
-
-
   local config = LibStub("AceConfig-3.0")
   local dialog = LibStub("AceConfigDialog-3.0")
 

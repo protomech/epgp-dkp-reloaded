@@ -107,7 +107,8 @@
 --
 
 EPGP = LibStub("AceAddon-3.0"):NewAddon(
-  "EPGP", "AceEvent-3.0", "AceConsole-3.0")
+  "EPGP", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
+
 local EPGP = EPGP
 local GS = LibStub("LibGuildStorage-1.0")
 local CallbackHandler = LibStub("CallbackHandler-1.0")
@@ -134,7 +135,6 @@ local ep_data = {}
 local gp_data = {}
 local main_data = {}
 local alt_data = {}
-local player
 local db
 local standings = {}
 local selected = {}
@@ -315,20 +315,7 @@ local function ParseGuildNote(callback, name, note)
   DestroyStandings()
 end
 
-local function CheckDB()
-  if not db then return false end
-  if not IsInGuild() then return false end
-  local guild = GetGuildInfo("player")
-  if not guild then return false end
-  if db:GetCurrentProfile() ~= guild then
-    db:SetProfile(guild)
-  end
-  return true
-end
-
 function EPGP:StandingsSort(order)
-  assert(CheckDB())
-
   if not order then
     return db.profile.sort_order
   end
@@ -340,8 +327,6 @@ function EPGP:StandingsSort(order)
 end
 
 function EPGP:StandingsShowEveryone(val)
-  assert(CheckDB())
-
   if val == nil then
     return db.profile.show_everyone
   end
@@ -351,8 +336,6 @@ function EPGP:StandingsShowEveryone(val)
 end
 
 function EPGP:GetNumMembers()
-  assert(CheckDB())
-
   if #standings == 0 then
     RefreshStandings(db.profile.sort_order, db.profile.show_everyone)
   end
@@ -361,8 +344,6 @@ function EPGP:GetNumMembers()
 end
 
 function EPGP:GetMember(i)
-  assert(CheckDB())
-
   if #standings == 0 then
     RefreshStandings(db.profile.sort_order, db.profile.show_everyone)
   end
@@ -450,8 +431,6 @@ function EPGP:ResetEPGP()
 end
 
 function EPGP:DecayEPGP()
-  assert(CheckDB())
-
   local decay = decay_p  * 0.01
   local reason = string.format("Decay %d%%", decay_p)
   for name,_ in pairs(ep_data) do
@@ -492,7 +471,6 @@ function EPGP:CanIncEPBy(reason, amount)
 end
 
 function EPGP:IncEPBy(name, reason, amount, mass, undo)
-  assert(CheckDB())
   assert(EPGP:CanIncEPBy(reason, amount))
   assert(type(name) == "string")
 
@@ -513,7 +491,6 @@ function EPGP:CanIncGPBy(reason, amount)
 end
 
 function EPGP:IncGPBy(name, reason, amount, mass, undo)
-  assert(CheckDB())
   assert(EPGP:CanIncGPBy(reason, amount))
   assert(type(name) == "string")
 
@@ -525,7 +502,6 @@ function EPGP:IncGPBy(name, reason, amount, mass, undo)
 end
 
 function EPGP:RecurringEP(val)
-  assert(CheckDB())
   if val == nil then
     return db.profile.recurring_ep
   end
@@ -533,7 +509,6 @@ function EPGP:RecurringEP(val)
 end
 
 function EPGP:RecurringEPPeriodMinutes(val)
-  assert(CheckDB())
   if val == nil then
     return db.profile.recurring_ep_period_mins
   end
@@ -550,6 +525,44 @@ end
 
 function EPGP:GetMinEP()
   return min_ep
+end
+
+function EPGP:GetMain(name)
+  return main_data[name] or name
+end
+
+function EPGP:IncMassEPBy(reason, amount)
+  local awarded = {}
+  for i=1,EPGP:GetNumMembers() do
+    local name = EPGP:GetMember(i)
+    if EPGP:IsMemberInAwardList(name) then
+      local main = EPGP:GetMain(name)
+      if not awarded[main] then
+        awarded[EPGP:IncEPBy(name, reason, amount, true)] = true
+      end
+    end
+  end
+  callbacks:Fire("MassEPAward", awarded, reason, amount)
+end
+
+function EPGP:OnInitialize()
+  db = LibStub("AceDB-3.0"):New("EPGP_DB")
+  -- TODO(alkis): Add hooks to the modules to setup their namespaces
+  -- and handle their own defaults.
+  db:RegisterDefaults(
+    {
+      profile = {
+        log = {},
+        show_everyone = false,
+        sort_order = "PR",
+        recurring_ep_period_mins = 15,
+        recurring_ep = false,
+        gp_on_tooltips = true,
+        auto_loot = true,
+        announce = true,
+        announce_medium = "GUILD",
+      }
+    })
 end
 
 function EPGP:RAID_ROSTER_UPDATE()
@@ -573,34 +586,41 @@ function EPGP:RAID_ROSTER_UPDATE()
   DestroyStandings()
 end
 
-function EPGP:OnInitialize()
-  player = UnitName("player")
-  db = LibStub("AceDB-3.0"):New("EPGP_DB")
+function CheckForGuildInfo()
+  local guild = GetGuildInfo("player")
+  if guild then
+    if db:GetCurrentProfile() ~= guild then
+      db:SetProfile(guild)
+    end
+    EPGP.db = db
+    for name, module in EPGP:IterateModules() do
+      module:Enable()
+    end
+    EPGP:CancelTimer(EPGP.GetGuildInfoTimer)
+    EPGP.GetGuildInfoTimer = nil
+  end
+end
+
+function EPGP:GUILD_ROSTER_UPDATE()
+  if not IsInGuild() then
+    for name, module in EPGP:IterateModules() do
+      module:Disable()
+    end
+  else
+    local guild = GetGuildInfo("player")
+    if db:GetCurrentProfile() ~= guild then
+      db:SetProfile(guild)
+    end
+  end
 end
 
 function EPGP:OnEnable()
-  -- This is for modules
-  self.db = db
-
   GS.RegisterCallback(self, "GuildInfoChanged", ParseGuildInfo)
   GS.RegisterCallback(self, "GuildNoteChanged", ParseGuildNote)
   self:RegisterEvent("RAID_ROSTER_UPDATE")
-end
+  self:RegisterEvent("GUILD_ROSTER_UPDATE")
 
-function EPGP:GetMain(name)
-  return main_data[name] or name
-end
-
-function EPGP:IncMassEPBy(reason, amount)
-  local awarded = {}
-  for i=1,EPGP:GetNumMembers() do
-    local name = EPGP:GetMember(i)
-    if EPGP:IsMemberInAwardList(name) then
-      local main = EPGP:GetMain(name)
-      if not awarded[main] then
-        awarded[EPGP:IncEPBy(name, reason, amount, true)] = true
-      end
-    end
+  if IsInGuild() then
+    self.GetGuildInfoTimer = self:ScheduleRepeatingTimer(CheckForGuildInfo, 1)
   end
-  callbacks:Fire("MassEPAward", awarded, reason, amount)
 end
