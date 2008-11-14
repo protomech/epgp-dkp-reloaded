@@ -269,7 +269,7 @@ local function CreateEPGPLogFrame()
   undo:GetDisabledFontObject():SetFontObject("GameFontDisableSmall")
   undo:SetScript("OnClick",
                  function (self, value)
-                   EPGP:UndoLastAction()
+                   EPGP:GetModule("EPGP_Log"):UndoLastAction()
                  end)
 
   local scrollParent = CreateFrame("Frame", nil, f)
@@ -320,17 +320,18 @@ local function CreateEPGPLogFrame()
   scrollBar:SetPoint("TOPRIGHT", scrollParent, "TOPRIGHT", -28, -6)
 
   local function UpdateLog()
-    if false then
+    if not EPGPLogFrame:IsVisible() then
       return
     end
+    local log = EPGP:GetModule("EPGP_Log")
     local offset = FauxScrollFrame_GetOffset(EPGPLogRecordScrollFrame)
-    local numRecords = EPGP:GetNumRecords()
+    local numRecords = log:GetNumRecords()
     local numDisplayedRecords = math.min(numLogRecordFrames, numRecords - offset)
     for i=1,numLogRecordFrames do
       local record = getglobal("EPGPLogRecordFrame"..i)
       local logIndex = i + offset - 1
       if logIndex < numRecords then
-        record:SetText(EPGP:GetLogRecord(logIndex))
+        record:SetText(log:GetLogRecord(logIndex))
         record:GetFontObject():SetJustifyH("LEFT")
         record:Show()
       else
@@ -346,13 +347,14 @@ local function CreateEPGPLogFrame()
                            numRecords, numDisplayedRecords, recordHeight)
   end
 
-  scrollBar:SetScript("OnShow", UpdateLog)
+  EPGPLogFrame:SetScript("OnShow", UpdateLog)
   scrollBar:SetScript("OnVerticalScroll",
                       function(self, value)
                         FauxScrollFrame_OnVerticalScroll(
                           self, value, recordHeight, UpdateLog)
                       end)
-  EPGP:RegisterCallback("LogChanged", UpdateLog)
+  EPGP:GetModule("EPGP_Log").RegisterCallback(
+    EPGPLogFrame, "LogChanged", UpdateLog)
 end
 
 local function GP_Validation(parent)
@@ -869,7 +871,6 @@ local function CreateEPGPFrameStandings()
                     StaticPopup_Show("EPGP_DECAY_EPGP")
                   end)
   local function OnDecayPercentChanged(self)
-    Debug("DecayPercentChanged")
     if EPGP:GetDecayPercent() == 0 then
       self:Disable()
     else
@@ -878,7 +879,8 @@ local function CreateEPGPFrameStandings()
   end
 
   decay:SetScript("OnShow", OnDecayPercentChanged)
-  EPGP:RegisterCallback("DecayPercentChanged", OnDecayPercentChanged, decay)
+  EPGP.RegisterCallback(
+    decay, "DecayPercentChanged", OnDecayPercentChanged, decay)
 
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)
@@ -968,7 +970,6 @@ local function CreateEPGPFrameStandings()
     if not rowFrame:IsVisible() then
       return
     end
-    Debug("Updating standings")
     local offset = FauxScrollFrame_GetOffset(EPGPScrollFrame)
     local numMembers = EPGP:GetNumMembers()
     local numDisplayedMembers = math.min(#rowFrame.rows, numMembers - offset)
@@ -1023,7 +1024,7 @@ local function CreateEPGPFrameStandings()
                            nil, nil, true)
   end
 
-  EPGP:RegisterCallback("StandingsChanged", UpdateStandings)
+  EPGP.RegisterCallback(rowFrame, "StandingsChanged", UpdateStandings)
   rowFrame:SetScript("OnShow", UpdateStandings)
   scrollBar:SetScript("OnVerticalScroll",
                       function(self, value)
@@ -1032,7 +1033,7 @@ local function CreateEPGPFrameStandings()
                       end)
 end
 
-function mod:OnInitialize()
+function mod:OnEnable()
   CreateEPGPFrame()
   CreateEPGPFrameStandings()
 

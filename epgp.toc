@@ -28,6 +28,7 @@ epgp.lua
 announce.lua
 gptooltip.lua
 officernotewarning.lua
+log.lua
 loot.lua
 ui.lua
 options.lua

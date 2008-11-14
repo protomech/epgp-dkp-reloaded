@@ -50,15 +50,13 @@
 -- reasonable values for IncEPBy.
 --
 -- IncEPBy(name, reason, amount): Increases the EP of member <name> by
--- <amount>. It uses <reason> to log into the log. Returns the member's
--- main character name.
+-- <amount>. Returns the member's main character name.
 --
 -- CanIncGPBy(reason, amount): Return true if reason and amount
 -- are reasonable values for IncGPBy.
 --
 -- IncGPBy(name, reason, amount): Increases the GP of member <name> by
--- <amount>. It uses <reason to log into the log. Returns the member's
--- main character name.
+-- <amount>. Returns the member's main character name.
 --
 -- IncMassEPBy(reason, amount): Increases the EP of all members
 -- in the award list. See description of IsMemberInAwardList.
@@ -75,16 +73,6 @@
 --
 -- GetMinEP(): Returns the min EP configured in guild info.
 --
--- GetNumRecords(): Returns the number of log records.
---
--- GetLogRecord(i): Returns the ith log record starting 0.
---
--- ExportLog(): Returns a string with the data of the exported log for
--- import into the web application.
---
--- UndoLastAction(): Removes the last entry from the log and undoes
--- its action. The undone action is not logged.
---
 -- GetEPGP(name): Returns <ep, gp, main> for <name>. <main> will be
 -- nil if this is the main toon, otherwise it will be the name of the
 -- main toon since this is an alt. If <name> is an invalid name or the
@@ -97,9 +85,6 @@
 -- register for through RegisterCallback and unregister through
 -- UnregisterCallback. You can also unregister all messages through
 -- UnregisterAllCallbacks.
---
--- LogChanged(n): Fired when the log is changed. n is the new size of
--- the log.
 --
 -- StandingsChanged: Fired when the standings have changed.
 --
@@ -311,7 +296,6 @@ local function ParseGuildInfo(callback, info)
 end
 
 local function ParseGuildNote(callback, name, note)
-  debug("ParseGuildNote: ", name, " -> ", note)
   if not note or note == "" then
     ep_data[name] = 0
     gp_data[name] = 0
@@ -340,43 +324,6 @@ local function CheckDB()
     db:SetProfile(guild)
   end
   return true
-end
-
-local timestamp_t = {}
-local function GetTimestamp()
-  timestamp_t.month = select(2, CalendarGetDate())
-  timestamp_t.day = select(3, CalendarGetDate())
-  timestamp_t.year = select(4, CalendarGetDate())
-  timestamp_t.hour = select(1, GetGameTime())
-  timestamp_t.min = select(2, GetGameTime())
-  return time(timestamp_t)
-end
-
-local function AppendLog(timestamp, kind, dst, reason, amount)
-  assert(CheckDB())
-
-  assert(kind == "EP" or kind == "GP")
-  assert(type(dst) == "string")
-  assert(type(reason) == "string")
-  assert(type(amount) == "number")
-
-  table.insert(db.profile.log, {timestamp, kind, player, dst, reason, amount})
-  callbacks:Fire("LogChanged", #db.profile.log)
-end
-
-local function LogRecordToString(record)
-  local timestamp, kind, src, dst, reason, amount = unpack(record)
-
-  if kind == "EP" then
-    return string.format("%s: %s awards %d EP to %s for %s",
-                         date("%F %R", timestamp), src, amount, dst, reason)
-  elseif kind == "GP" then
-    return string.format("%s: %s credits %d GP to %s for %s",
-                         date("%F %R", timestamp), src, amount, dst, reason)
-  else
-    debug(tostring(timestamp), tostring(kind), tostring(src), tostring(dst), tostring(reason), tostring(amount))
-    assert(false, "Unknown record in the log")
-  end
 end
 
 function EPGP:StandingsSort(order)
@@ -490,15 +437,14 @@ end
 
 function EPGP:ResetEPGP()
   local zero_note = EncodeNote(0, 0)
-  local timestamp = GetTimestamp()
   for n,ep in pairs(ep_data) do
     GS:SetNote(n, zero_note)
     local gp = gp_data[n]
     if ep > 0 then
-      AppendLog(timestamp, "EP", n, "Reset", -ep)
+      EPGP:IncEPBy(n, "Reset", -ep, true)
     end
     if gp > 0 then
-      AppendLog(timestamp, "GP", n, "Reset", -gp)
+      EPGP:IncGPBy(n, "Reset", -gp, true)
     end
   end
 end
@@ -508,18 +454,15 @@ function EPGP:DecayEPGP()
 
   local decay = decay_p  * 0.01
   local reason = string.format("Decay %d%%", decay_p)
-  local timestamp = GetTimestamp()
   for name,_ in pairs(ep_data) do
     local ep, gp, main = self:GetEPGP(name)
     assert(main == nil, "Corrupt alt data!")
     local decay_ep = math.floor(ep * decay)
     local decay_gp = math.floor(gp * decay)
     if decay_ep ~= 0 then
-      AppendLog(timestamp, "EP", name, reason, -decay_ep)
       EPGP:IncEPBy(name, reason, -decay_ep, true)
     end
     if decay_gp ~= 0 then
-      AppendLog(timestamp, "GP", name, reason, -decay_gp)
       EPGP:IncGPBy(name, reason, -decay_gp, true)
     end
   end
@@ -548,15 +491,14 @@ function EPGP:CanIncEPBy(reason, amount)
   return true
 end
 
-function EPGP:IncEPBy(name, reason, amount, mass)
+function EPGP:IncEPBy(name, reason, amount, mass, undo)
   assert(CheckDB())
   assert(EPGP:CanIncEPBy(reason, amount))
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep + amount, gp))
-  AppendLog(GetTimestamp(), "EP", name, reason, amount)
-  callbacks:Fire("EPAward", name, reason, amount, mass)
+  callbacks:Fire("EPAward", name, reason, amount, mass, undo)
   return main or name
 end
 
@@ -570,15 +512,14 @@ function EPGP:CanIncGPBy(reason, amount)
   return true
 end
 
-function EPGP:IncGPBy(name, reason, amount, mass)
+function EPGP:IncGPBy(name, reason, amount, mass, undo)
   assert(CheckDB())
   assert(EPGP:CanIncGPBy(reason, amount))
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep, gp + amount))
-  AppendLog(GetTimestamp(), "GP", name, reason, amount)
-  callbacks:Fire("GPAward", name, reason, amount, mass)
+  callbacks:Fire("GPAward", name, reason, amount, mass, undo)
 
   return main or name
 end
@@ -611,60 +552,6 @@ function EPGP:GetMinEP()
   return min_ep
 end
 
-function EPGP:ExportLog()
-  assert(CheckDB())
-
-  local t = {}
-  for i, record in ipairs(db.profile.log) do
-    table.insert(t, table.concat(record, ","))
-  end
-  debug("ExportLog: ", unpack(t))
-  return table.concat(t, "\n")
-end
-
-function EPGP:UndoLastAction()
-  assert(CheckDB())
-  if #db.profile.log == 0 then
-    return false
-  end
-
-  local record = table.remove(db.profile.log)
-  local timestamp, kind, src, dst, reason, amount = unpack(record)
-
-  debug("Rolling back: ", LogRecordToString(record))
-  local ep, gp, main = self:GetEPGP(dst)
-  if main then
-    dst = main
-    debug("Rolling back on main toon: ", main)
-  end
-
-  if kind == "EP" then
-    GS:SetNote(dst, EncodeNote(ep - amount, gp))
-  elseif kind == "GP" then
-    GS:SetNote(dst, EncodeNote(ep, gp - amount))
-  else
-    assert(false, "Unknown record in the log")
-  end
-
-  callbacks:Fire("LogChanged", #db.profile.log)
-  return true
-end
-
-function EPGP:GetNumRecords()
-  assert(CheckDB())
-
-  return #db.profile.log
-end
-
-function EPGP:GetLogRecord(i)
-  assert(CheckDB())
-
-  local logsize = #db.profile.log
-  assert(i >= 0 and i < #db.profile.log, "Index "..i.." is out of bounds")
-
-  return LogRecordToString(db.profile.log[logsize - i])
-end
-
 function EPGP:RAID_ROSTER_UPDATE()
   if UnitInRaid("player") then
     -- If we are in a raid, make sure no member of the raid is
@@ -695,8 +582,8 @@ function EPGP:OnEnable()
   -- This is for modules
   self.db = db
 
-  GS:RegisterCallback("GuildInfoChanged", ParseGuildInfo)
-  GS:RegisterCallback("GuildNoteChanged", ParseGuildNote)
+  GS.RegisterCallback(self, "GuildInfoChanged", ParseGuildInfo)
+  GS.RegisterCallback(self, "GuildNoteChanged", ParseGuildNote)
   self:RegisterEvent("RAID_ROSTER_UPDATE")
 end
 
