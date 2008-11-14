@@ -1,30 +1,43 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "enUS", true)
-if L then
-  L["Decay Percent should be a number between 0 and 100"] = true
-  L["Min EP should be a positive number"] = true
-  L["Base GP should be a positive number"] = true
-  L["GP: %d [ItemLevel=%d]"] = true
-  L["GP: %d or %d [ItemLevel=%d]"] = true
-  L["EPGP is using Officer Notes for data storage. Do you really want to edit the Officer Note by hand?"] = true
-  L["Full"] = true
-  L["Offspec"] = true
-  L["Credit GP to %s"] = true
-  L["Decay EP and GP by %d%%?"] = true
-  L["GP Reason"] = true
-  L["EP Reason"] = true
-  L["Value"] = true
-  L["Credit GPs"] = true
-  L["Award EPs"] = true
-  L["Other"] = true
-  L["Undo"] = true
-  L["Show Everyone"] = true
-  L["Decay"] = true
-  L["Alts"] = true
-  L["This menu displays items recently seen by your client"] = true
-  L["Show everyone"] = true
-  L["Recurring"] = true
-  L["Award"] = true
-  L["Awarded %d EP to %s for %s"] = true
-  L["Credited %d GP to %s for %s"] = true
-  L["Mass award of %d EP for %s to: %s."] = true
-end
+if not L then return end
+
+L["%+d EP (%s) to %s"] = true
+L["%+d GP (%s) to %s"] = true
+L["%s: %+d EP (%s) to %s"] = true
+L["%s: %+d GP (%s) to %s"] = true
+L["Alts"] = true
+L["Award EP"] = true
+L["Award"] = true
+L["Base GP should be a positive number"] = true
+L["Credit GP to %s"] = true
+L["Credit GP"] = true
+L["Custom announce channel name"] = true
+L["Decay EP and GP by %d%%?"] = true
+L["Decay Percent should be a number between 0 and 100"] = true
+L["Decay of EP/GP by %d%%."] = true
+L["Decay"] = true
+L["EP Reason"] = true
+L["EPGP is an in game, relational loot distribution system"] = true
+L["EPGP is using Officer Notes for data storage. Do you really want to edit the Officer Note by hand?"] = true
+L["Enable GP on tooltips"] = true
+L["Enable a proposed GP value of epic quality armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."] = true
+L["Enable announce of actions"] = true
+L["Enable announcement of all EPGP actions to the specified medium."] = true
+L["Enable automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."] = true
+L["Enable automatic loot tracking"] = true
+L["GP Reason"] = true
+L["GP: %d [ItemLevel=%d]"] = true
+L["GP: %d or %d [ItemLevel=%d]"] = true
+L["Min EP should be a positive number"] = true
+L["Other"] = true
+L["Recurring"] = true
+L["Reset EPGP"] = true
+L["Reset all main toons' EP and GP to 0?"] = true
+L["Resets EP and GP of all members of the guild. This will set all main toons' EP and GP to 0. Use with care!"] = true
+L["Set the announce medium"] = true
+L["Sets the announce medium EPGP will use to announce EPGP actions."] = true
+L["Sets the custom announce channel name used to announce EPGP actions."] = true
+L["Show everyone"] = true
+L["This menu displays items recently seen by your client"] = true
+L["Undo"] = true
+L["Value"] = true
