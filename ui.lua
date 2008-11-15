@@ -244,7 +244,7 @@ local function CreateEPGPLogFrame()
 
   t = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   t:SetPoint("TOPLEFT", f, "TOPLEFT", 17, -17)
-  t:SetText(GUILD_EVENT_LOG)
+  t:SetText(L["Personal Action Log"])
 
   f:SetBackdrop(
     {
@@ -685,18 +685,16 @@ local function CreateEPGPSideFrame2()
   epFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -15)
   epFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -15)
   AddEPControls(epFrame)
-  epFrame.button:SetScript("OnClick",
-                           function(self)
-                             if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
-                               EPGP:IncMassEPBy(
-                                 epFrame.otherEditBox:GetText(),
-                                 epFrame.editBox:GetNumber())
-                             else
-                               EPGP:IncMassEPBy(
-                                 UIDropDownMenu_GetText(epFrame.dropDown),
-                                 epFrame.editBox:GetNumber())
-                             end
-                           end)
+  epFrame.button:SetScript(
+    "OnClick",
+    function(self)
+      local reason = UIDropDownMenu_GetText(epFrame.dropDown)
+      if reason == L["Other"] then
+        reason = epFrame.otherEditBox:GetText()
+      end
+      local amount = epFrame.editBox:GetNumber()
+      EPGP:IncMassEPBy(reason, amount)
+    end)
 
   local recurring = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
   recurring:SetWidth(20)

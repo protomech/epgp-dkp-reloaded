@@ -47,7 +47,16 @@ local function AnnounceMassEPAward(event_name, names, reason, amount)
 end
 
 local function AnnounceDecay(event_name, decay_p)
-  Announce(L["Decay of EP/GP by %d%%."], decay_p)
+  Announce(L["Decay of EP/GP by %d%%"], decay_p)
+end
+
+local function AnnounceStartRecurringAward(event_name, reason, amount, mins)
+  local fmt, val = SecondsToTimeAbbrev(mins * 60)
+  Announce(L["Start recurring award (%s) %d EP/%s"], reason, amount, fmt:format(val))
+end
+
+local function AnnounceStopRecurringAward(event_name)
+  Announce(L["Stop recurring award"])
 end
 
 function mod:OnEnable()
@@ -55,4 +64,7 @@ function mod:OnEnable()
   EPGP.RegisterCallback(self, "MassEPAward", AnnounceMassEPAward)
   EPGP.RegisterCallback(self, "GPAward", AnnounceGPAward)
   EPGP.RegisterCallback(self, "Decay", AnnounceDecay)
+  EPGP.RegisterCallback(self, "StartRecurringAward",
+                        AnnounceStartRecurringAward)
+  EPGP.RegisterCallback(self, "StopRecurringAward", AnnounceStopRecurringAward)
 end

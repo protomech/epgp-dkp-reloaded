@@ -14,7 +14,7 @@ L["Credit GP"] = true
 L["Custom announce channel name"] = true
 L["Decay EP and GP by %d%%?"] = true
 L["Decay Percent should be a number between 0 and 100"] = true
-L["Decay of EP/GP by %d%%."] = true
+L["Decay of EP/GP by %d%%"] = true
 L["Decay"] = true
 L["EP Reason"] = true
 L["EPGP is an in game, relational loot distribution system"] = true
@@ -30,6 +30,7 @@ L["GP: %d [ItemLevel=%d]"] = true
 L["GP: %d or %d [ItemLevel=%d]"] = true
 L["Min EP should be a positive number"] = true
 L["Other"] = true
+L["Personal Action Log"] = true
 L["Recurring"] = true
 L["Reset EPGP"] = true
 L["Reset all main toons' EP and GP to 0?"] = true
@@ -38,6 +39,8 @@ L["Set the announce medium"] = true
 L["Sets the announce medium EPGP will use to announce EPGP actions."] = true
 L["Sets the custom announce channel name used to announce EPGP actions."] = true
 L["Show everyone"] = true
+L["Start recurring award (%s) %d EP/%s"] = true
+L["Stop recurring award"] = true
 L["This menu displays items recently seen by your client"] = true
 L["Undo"] = true
 L["Value"] = true
