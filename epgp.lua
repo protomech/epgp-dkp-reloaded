@@ -646,8 +646,10 @@ function EPGP:GUILD_ROSTER_UPDATE()
     end
   else
     local guild = GetGuildInfo("player")
-    if db:GetCurrentProfile() ~= guild then
-      db:SetProfile(guild)
+    if type(guild) == "string" then
+      if db:GetCurrentProfile() ~= guild then
+        db:SetProfile(guild)
+      end
     end
   end
 end
