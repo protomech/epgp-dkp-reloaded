@@ -1019,15 +1019,15 @@ local function CreateEPGPFrameStandings()
                             end)
 
   -- Install the update function
-  function rowFrame:StandingsChanged()
-    if not self:IsVisible() then
+  function UpdateStandings()
+    if not rowFrame:IsVisible() then
       return
     end
     local offset = FauxScrollFrame_GetOffset(EPGPScrollFrame)
     local numMembers = EPGP:GetNumMembers()
-    local numDisplayedMembers = math.min(#self.rows, numMembers - offset)
-    for i=1,#self.rows do
-      local row = self.rows[i]
+    local numDisplayedMembers = math.min(#rowFrame.rows, numMembers - offset)
+    for i=1,#rowFrame.rows do
+      local row = rowFrame.rows[i]
       local j = i + offset
       if j <= numMembers then
         row.name = EPGP:GetMember(j)
@@ -1073,12 +1073,12 @@ local function CreateEPGPFrameStandings()
       end
     end
     FauxScrollFrame_Update(EPGPScrollFrame, numMembers, numDisplayedMembers,
-                           self.rowHeight, nil, nil, nil, nil,
+                           rowFrame.rowHeight, nil, nil, nil, nil,
                            nil, nil, true)
   end
 
-  EPGP.RegisterCallback(rowFrame, "StandingsChanged")
-  rowFrame:SetScript("OnShow", rowFrame.StandingsChanged)
+  EPGP.RegisterCallback(EPGPScrollFrame, "StandingsChanged", UpdateStandings)
+  rowFrame:SetScript("OnShow", UpdateStandings)
   scrollBar:SetScript("OnVerticalScroll",
                       function(self, value)
                         FauxScrollFrame_OnVerticalScroll(
