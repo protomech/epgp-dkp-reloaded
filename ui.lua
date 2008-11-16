@@ -459,17 +459,20 @@ local function AddGPControls(frame)
 end
 
 local function EP_Validation(parent)
-  if UIDropDownMenu_GetText(parent.dropDown) == L["Other"] then
-    if EPGP:CanIncEPBy(parent.otherEditBox:GetText(), parent.editBox:GetNumber()) then
-      parent.button:Enable()
-    else
-      parent.button:Disable()
+  local reason = UIDropDownMenu_GetText(parent.dropDown)
+  if reason == L["Other"] then
+    reason = parent.otherEditBox:GetText()
+  end
+  local amount = parent.editBox:GetNumber()
+  if EPGP:CanIncEPBy(reason, amount) then
+    parent.button:Enable()
+    if parent.recurring then
+      parent.recurring:Enable()
     end
   else
-    if EPGP:CanIncEPBy(UIDropDownMenu_GetText(parent.dropDown), parent.editBox:GetNumber()) then
-      parent.button:Enable()
-    else
-      parent.button:Disable()
+    parent.button:Disable()
+    if parent.recurring then
+      parent.recurring:Disable()
     end
   end
 end
@@ -509,7 +512,7 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
   UIDropDownMenu_AddButton(info)
 end
 
-local function AddEPControls(frame)
+local function AddEPControls(frame, withRecurring)
   local reasonLabel =
     frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   reasonLabel:SetText(L["EP Reason"])
@@ -562,13 +565,92 @@ local function AddEPControls(frame)
   editBox:SetPoint("TOP", label, "BOTTOM")
   editBox:SetScript("OnTextChanged", function(self) EP_Validation(frame) end)
 
+  if withRecurring then
+    local recurring =
+      CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+    recurring:SetWidth(20)
+    recurring:SetHeight(20)
+    recurring:SetPoint("TOP", editBox, "BOTTOMLEFT")
+    recurring:SetPoint("LEFT", reasonLabel)
+
+    local label =
+      frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    label:SetText(L["Recurring"])
+    label:SetPoint("LEFT", recurring, "RIGHT")
+
+    local timePeriod =
+      frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    timePeriod:SetJustifyH("RIGHT")
+
+    local incButton = CreateFrame("Button", nil, frame)
+    incButton:SetNormalTexture(
+      "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Up")
+    incButton:SetPushedTexture(
+      "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Down")
+    incButton:SetDisabledTexture(
+      "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Disabled")
+    incButton:SetWidth(24)
+    incButton:SetHeight(24)
+
+    local decButton = CreateFrame("Button", nil, frame)
+    decButton:SetNormalTexture(
+      "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Up")
+    decButton:SetPushedTexture(
+      "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Down")
+    decButton:SetDisabledTexture(
+      "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Disabled")
+    decButton:SetWidth(24)
+    decButton:SetHeight(24)
+
+    decButton:SetPoint("RIGHT", -15, 0)
+    decButton:SetPoint("TOP", recurring, "TOP")
+    incButton:SetPoint("RIGHT", decButton, "LEFT", 8, 0)
+    timePeriod:SetPoint("RIGHT", incButton, "LEFT")
+
+    function frame:UpdateTimeControls()
+      local period_mins = EPGP:RecurringEPPeriodMinutes()
+      local fmt, val = SecondsToTimeAbbrev(period_mins * 60)
+      timePeriod:SetText(fmt:format(val))
+      recurring:SetChecked(EPGP:RunningRecurringEP())
+      if period_mins == 1 or EPGP:RunningRecurringEP() then
+        decButton:Disable()
+      else
+        decButton:Enable()
+      end
+      if EPGP:RunningRecurringEP() then
+        incButton:Disable()
+      else
+        incButton:Enable()
+      end
+    end
+
+    incButton:SetScript("OnClick",
+                        function(self)
+                          local period_mins = EPGP:RecurringEPPeriodMinutes()
+                          EPGP:RecurringEPPeriodMinutes(period_mins + 1)
+                          self:GetParent():UpdateTimeControls()
+                        end)
+
+    decButton:SetScript("OnClick",
+                        function(self)
+                          local period_mins = EPGP:RecurringEPPeriodMinutes()
+                          EPGP:RecurringEPPeriodMinutes(period_mins - 1)
+                          self:GetParent():UpdateTimeControls()
+                        end)
+
+    frame.recurring = recurring
+    frame.incButton = incButton
+    frame.decButton = decButton
+  end
+
   frame:SetHeight(
     reasonLabel:GetHeight() +
     dropDown:GetHeight() +
     otherLabel:GetHeight() +
     otherEditBox:GetHeight() +
     label:GetHeight() +
-    button:GetHeight())
+    button:GetHeight() +
+    (withRecurring and frame.recurring:GetHeight() or 0))
 
   frame.reasonLabel = reasonLabel
   frame.dropDown = dropDown
@@ -587,6 +669,9 @@ local function AddEPControls(frame)
                     self.otherEditBox:SetAlpha(0.25)
                     self.otherEditBox:EnableKeyboard(false)
                     self.otherEditBox:EnableMouse(false)
+                    if self.UpdateTimeControls then
+                      self:UpdateTimeControls()
+                    end
                   end)
 end
 
@@ -685,7 +770,7 @@ local function CreateEPGPSideFrame2()
   local epFrame = CreateFrame("Frame", nil, f)
   epFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -15)
   epFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -15)
-  AddEPControls(epFrame)
+  AddEPControls(epFrame, true)
   epFrame.button:SetScript(
     "OnClick",
     function(self)
@@ -697,63 +782,7 @@ local function CreateEPGPSideFrame2()
       EPGP:IncMassEPBy(reason, amount)
     end)
 
-  local recurring = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
-  recurring:SetWidth(20)
-  recurring:SetHeight(20)
-  recurring:SetPoint("TOPLEFT", epFrame, "BOTTOMLEFT", 0, -10)
-
-  local label = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  label:SetText(L["Recurring"])
-  label:SetPoint("LEFT", recurring, "RIGHT")
-
-  -- Make the time control
-  local timePeriod =
-    f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  timePeriod:SetJustifyH("RIGHT")
-
-  local incButton = CreateFrame("Button", nil, f)
-  incButton:SetNormalTexture(
-    "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Up")
-  incButton:SetPushedTexture(
-    "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Down")
-  incButton:SetDisabledTexture(
-    "Interface\\MainMenuBar\\UI-MainMenu-ScrollUpButton-Disabled")
-  incButton:SetWidth(24)
-  incButton:SetHeight(24)
-
-  local decButton = CreateFrame("Button", nil, f)
-  decButton:SetNormalTexture(
-    "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Up")
-  decButton:SetPushedTexture(
-    "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Down")
-  decButton:SetDisabledTexture(
-    "Interface\\MainMenuBar\\UI-MainMenu-ScrollDownButton-Disabled")
-  decButton:SetWidth(24)
-  decButton:SetHeight(24)
-
-  decButton:SetPoint("RIGHT", -15, 0)
-  decButton:SetPoint("TOP", recurring, "TOP")
-  incButton:SetPoint("RIGHT", decButton, "LEFT", 8, 0)
-  timePeriod:SetPoint("RIGHT", incButton, "LEFT")
-
-  local function UpdateTimeControls()
-    local period_mins = EPGP:RecurringEPPeriodMinutes()
-    local fmt, val = SecondsToTimeAbbrev(period_mins * 60)
-    timePeriod:SetText(fmt:format(val))
-    recurring:SetChecked(EPGP:RunningRecurringEP())
-    if period_mins == 1 or EPGP:RunningRecurringEP() then
-      decButton:Disable()
-    else
-      decButton:Enable()
-    end
-    if EPGP:RunningRecurringEP() then
-      incButton:Disable()
-    else
-      incButton:Enable()
-    end
-  end
-
-  recurring:SetScript(
+  epFrame.recurring:SetScript(
     "OnClick",
     function(self)
       if not EPGP:RunningRecurringEP() then
@@ -768,21 +797,6 @@ local function CreateEPGPSideFrame2()
       end
       UpdateTimeControls()
     end)
-
-  incButton:SetScript("OnClick",
-                      function()
-                        local period_mins = EPGP:RecurringEPPeriodMinutes()
-                        EPGP:RecurringEPPeriodMinutes(period_mins + 1)
-                        UpdateTimeControls()
-                      end)
-
-  decButton:SetScript("OnClick",
-                      function()
-                        local period_mins = EPGP:RecurringEPPeriodMinutes()
-                        EPGP:RecurringEPPeriodMinutes(period_mins - 1)
-                        UpdateTimeControls()
-                      end)
-  f:SetScript("OnShow", UpdateTimeControls)
 end
 
 local function CreateEPGPFrameStandings()
