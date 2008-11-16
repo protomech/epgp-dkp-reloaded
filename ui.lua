@@ -472,7 +472,11 @@ local function EP_Validation(parent)
   else
     parent.button:Disable()
     if parent.recurring then
-      parent.recurring:Disable()
+      if EPGP:RunningRecurringEP() then
+        parent.recurring:Enable()
+      else
+        parent.recurring:Disable()
+      end
     end
   end
 end
@@ -795,7 +799,7 @@ local function CreateEPGPSideFrame2()
       else
         EPGP:StopRecurringEP()
       end
-      UpdateTimeControls()
+      self:GetParent():UpdateTimeControls()
     end)
 end
 
