@@ -10,22 +10,36 @@ if [ ! -f epgp.toc ]; then
   exit 1
 fi
 
-EPGP_DIR=$PWD
-RELEASE_ZIP="$EPGP_DIR/epgp-$1.zip"
+STAGE_DIR=$TMPDIR/epgp
+RELEASE_ZIP=$TMPDIR/epgp-$1.zip
 
-pushd ..
-zip -r "$RELEASE_ZIP" epgp -x \*/.\* -x \*/scripts/\* -x \*/wiki/\* -x \*~
+# Stage the addon
+rm -rf $STAGE_DIR $RELEASE_ZIP
+mkdir -p $STAGE_DIR
+find . \
+    \( \
+    -name '*.lua' -or \
+    -name '*.xml' -or \
+    -name 'epgp.toc' -or \
+    -regex './[A-Z]*' \
+    \) -and \
+    \( \
+    -type f -and \
+    -not -path './scripts**' \
+    \) | \
+    tar --create --file=- --files-from=- | \
+    ( cd $STAGE_DIR && tar --extract --file=- )
+# Add the version in the .toc file
+pushd $STAGE_DIR
+mv epgp.toc epgp.toc.templ
+sed -e"s/Version: (developement)/Version: $1/" epgp.toc.templ > epgp.toc
+rm epgp.toc.templ
 popd
 
-unzip "$RELEASE_ZIP"
-
-pushd epgp
-mv epgp.toc epgp.toc.template
-sed -e"s/@VERSION@/$1/" epgp.toc.template > epgp.toc
-rm epgp.toc.template
+# Make the release zip
+pushd $STAGE_DIR/..
+zip -r $RELEASE_ZIP epgp
 popd
-
-zip -u -r "$RELEASE_ZIP" epgp/epgp.toc
 
 cat <<INFO
 =============================================================================
@@ -33,9 +47,9 @@ The release file is located at:
 $RELEASE_ZIP
 
 Tag this release in svn:
-svn import "$EPGP_DIR/epgp" https://epgp.googlecode.com/svn/tags/epgp-$1
+svn import "$STAGE_DIR" https://epgp.googlecode.com/svn/tags/epgp-$1
 
 Upload release file to googlecode:
-"$EPGP_DIR/scripts/googlecode/googlecode_upload.py" -s "epgp-$1" -p epgp -u evlogimenos "$RELEASE_ZIP"
+"$PWD/scripts/googlecode/googlecode_upload.py" -s "epgp-$1" -p epgp -u evlogimenos "$RELEASE_ZIP"
 =============================================================================
 INFO
