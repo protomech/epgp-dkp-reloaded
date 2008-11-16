@@ -739,18 +739,34 @@ local function CreateEPGPSideFrame2()
     local period_mins = EPGP:RecurringEPPeriodMinutes()
     local fmt, val = SecondsToTimeAbbrev(period_mins * 60)
     timePeriod:SetText(fmt:format(val))
-    recurring:SetChecked(EPGP:RecurringEP())
-    if period_mins == 1 then
+    recurring:SetChecked(EPGP:RunningRecurringEP())
+    if period_mins == 1 or EPGP:RunningRecurringEP() then
       decButton:Disable()
     else
       decButton:Enable()
     end
+    if EPGP:RunningRecurringEP() then
+      incButton:Disable()
+    else
+      incButton:Enable()
+    end
   end
 
-  recurring:SetScript("OnClick",
-                      function(self)
-                        EPGP:RecurringEP(not not self:GetChecked())
-                      end)
+  recurring:SetScript(
+    "OnClick",
+    function(self)
+      if not EPGP:RunningRecurringEP() then
+        local reason = UIDropDownMenu_GetText(epFrame.dropDown)
+        if reason == L["Other"] then
+          reason = epFrame.otherEditBox:GetText()
+        end
+        local amount = epFrame.editBox:GetNumber()
+        EPGP:StartRecurringEP(reason, amount)
+      else
+        EPGP:StopRecurringEP()
+      end
+      UpdateTimeControls()
+    end)
 
   incButton:SetScript("OnClick",
                       function()
@@ -842,7 +858,7 @@ local function CreateEPGPFrameStandings()
   local award = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   award:SetHeight(BUTTON_HEIGHT)
   award:SetPoint("BOTTOMLEFT")
-  award:SetText(L["Award"])
+  award:SetText(L["Mass EP Award"])
   award:SetWidth(award:GetTextWidth() + BUTTON_TEXT_PADDING)
   award:RegisterEvent("RAID_ROSTER_UPDATE")
   award:SetScript("OnClick",
@@ -868,17 +884,37 @@ local function CreateEPGPFrameStandings()
                   function(self, button, down)
                     StaticPopup_Show("EPGP_DECAY_EPGP")
                   end)
-  local function OnDecayPercentChanged(self)
+  function decay:DecayPercentChanged()
     if EPGP:GetDecayPercent() == 0 then
       self:Disable()
     else
       self:Enable()
     end
   end
+  decay:SetScript("OnShow", decay.OnDecayPercentChanged)
+  EPGP.RegisterCallback(decay, "DecayPercentChanged")
 
-  decay:SetScript("OnShow", OnDecayPercentChanged)
-  EPGP.RegisterCallback(
-    decay, "DecayPercentChanged", OnDecayPercentChanged, decay)
+  local recurringTime = main:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  recurringTime:SetHeight(16)
+  recurringTime:SetJustifyH("CENTER")
+  recurringTime:SetPoint("LEFT", award, "RIGHT")
+  recurringTime:SetPoint("RIGHT", decay, "LEFT")
+  recurringTime:Hide()
+  function recurringTime:StartRecurringAward()
+    self:Show()
+  end
+  function recurringTime:StopRecurringAward()
+    self:Hide()
+  end
+  function recurringTime:RecurringAwardUpdate(
+      event_type, reason, amount, time_left)
+    local fmt, val = SecondsToTimeAbbrev(time_left)
+    self:SetFormattedText(L["Next award in "] .. fmt, val)
+  end
+
+  EPGP.RegisterCallback(recurringTime, "StartRecurringAward")
+  EPGP.RegisterCallback(recurringTime, "StopRecurringAward")
+  EPGP.RegisterCallback(recurringTime, "RecurringAwardUpdate")
 
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)

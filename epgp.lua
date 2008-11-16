@@ -502,11 +502,49 @@ function EPGP:IncGPBy(name, reason, amount, mass, undo)
   return main or name
 end
 
-function EPGP:RecurringEP(val)
-  if val == nil then
-    return db.profile.recurring_ep
+local timer
+local next_award
+
+local function RecurringTicker(arg)
+  local reason, amount = unpack(arg)
+  local now = GetTime()
+  if now > next_award then
+    EPGP:IncMassEPBy(reason, amount)
+    next_award = next_award + db.profile.recurring_ep_period_mins * 60
   end
-  db.profile.recurring_ep = not not val
+  
+  callbacks:Fire("RecurringAwardUpdate", reason, amount, next_award - now)
+end
+
+function EPGP:StartRecurringEP(reason, amount)
+  if timer then
+    return false
+  end
+
+  local arg = {reason, amount}
+  timer = self:ScheduleRepeatingTimer(RecurringTicker, 1, arg)
+  next_award = GetTime() + db.profile.recurring_ep_period_mins * 60
+
+  callbacks:Fire("StartRecurringAward", reason, amount,
+                 db.profile.recurring_ep_period_mins * 60)
+  RecurringTicker(arg)
+  return true
+end
+
+function EPGP:StopRecurringEP()
+  if not timer then
+    return false
+  end
+
+  self:CancelTimer(timer)
+  timer = nil
+
+  callbacks:Fire("StopRecurringAward")
+  return true
+end
+
+function EPGP:RunningRecurringEP()
+  return not not timer
 end
 
 function EPGP:RecurringEPPeriodMinutes(val)
@@ -557,7 +595,6 @@ function EPGP:OnInitialize()
         show_everyone = false,
         sort_order = "PR",
         recurring_ep_period_mins = 15,
-        recurring_ep = false,
         gp_on_tooltips = true,
         auto_loot = true,
         announce = true,
@@ -589,7 +626,7 @@ end
 
 function CheckForGuildInfo()
   local guild = GetGuildInfo("player")
-  if guild then
+  if type(guild) == "string" then
     if db:GetCurrentProfile() ~= guild then
       db:SetProfile(guild)
     end

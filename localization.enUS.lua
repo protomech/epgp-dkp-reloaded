@@ -7,7 +7,6 @@ L["%s: %+d EP (%s) to %s"] = true
 L["%s: %+d GP (%s) to %s"] = true
 L["Alts"] = true
 L["Award EP"] = true
-L["Award"] = true
 L["Base GP should be a positive number"] = true
 L["Credit GP to %s"] = true
 L["Credit GP"] = true
@@ -28,6 +27,7 @@ L["Enable automatic loot tracking"] = true
 L["GP Reason"] = true
 L["GP: %d [ItemLevel=%d]"] = true
 L["GP: %d or %d [ItemLevel=%d]"] = true
+L["Mass EP Award"] = true
 L["Min EP should be a positive number"] = true
 L["Other"] = true
 L["Personal Action Log"] = true
