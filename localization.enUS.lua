@@ -29,6 +29,7 @@ L["GP: %d [ItemLevel=%d]"] = true
 L["GP: %d or %d [ItemLevel=%d]"] = true
 L["Mass EP Award"] = true
 L["Min EP should be a positive number"] = true
+L["Next award in "] = true
 L["Other"] = true
 L["Personal Action Log"] = true
 L["Recurring"] = true
