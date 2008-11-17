@@ -264,9 +264,6 @@ local function CreateEPGPLogFrame()
   undo:SetText(L["Undo"])
   undo:SetWidth(undo:GetTextWidth() + BUTTON_TEXT_PADDING)
   undo:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -9, 13)
-  undo:GetNormalFontObject():SetFontObject("GameFontNormalSmall")
-  undo:GetHighlightFontObject():SetFontObject("GameFontHighlightSmall")
-  undo:GetDisabledFontObject():SetFontObject("GameFontDisableSmall")
   undo:SetScript("OnClick",
                  function (self, value)
                    EPGP:GetModule("EPGP_Log"):UndoLastAction()
@@ -292,21 +289,19 @@ local function CreateEPGPLogFrame()
                                 TOOLTIP_DEFAULT_BACKGROUND_COLOR.g,
                                 TOOLTIP_DEFAULT_BACKGROUND_COLOR.b)
 
-  local font = ChatFontSmall
-  local fontHeight = select(2, font:GetFont())
+  local font = "ChatFontSmall"
+  local fontHeight = select(2, getglobal(font):GetFont())
   local recordHeight = fontHeight + 2
   local recordWidth = scrollParent:GetWidth() - 35
   local numLogRecordFrames = math.floor(
     (scrollParent:GetHeight() - 3) / recordHeight)
-  local record = scrollParent:CreateFontString("EPGPLogRecordFrame1")
-  record:SetFontObject(font)
+  local record = scrollParent:CreateFontString("EPGPLogRecordFrame1", "OVERLAY", font)
   record:SetHeight(recordHeight)
   record:SetWidth(recordWidth)
   record:SetMultilineIndent(false)
   record:SetPoint("TOPLEFT", scrollParent, "TOPLEFT", 5, -3)
   for i=2,numLogRecordFrames do
-    record = scrollParent:CreateFontString("EPGPLogRecordFrame"..i)
-    record:SetFontObject(font)
+    record = scrollParent:CreateFontString("EPGPLogRecordFrame"..i, "OVERLAY", font)
     record:SetHeight(recordHeight)
     record:SetWidth(recordWidth)
     record:SetMultilineIndent(false)
@@ -332,7 +327,7 @@ local function CreateEPGPLogFrame()
       local logIndex = i + offset - 1
       if logIndex < numRecords then
         record:SetText(log:GetLogRecord(logIndex))
-        record:GetFontObject():SetJustifyH("LEFT")
+        record:SetJustifyH("LEFT")
         record:Show()
       else
         record:Hide()
