@@ -164,8 +164,8 @@ function mod:GetGPValue(itemLink)
   else
     _, _, rarity, level, _, _, _, _, equipLoc = GetItemInfo(itemLink)
   end
-  -- Non-epic items do not have GP value
-  if rarity and rarity < 4 then
+  -- Non-rare and above items do not have GP value
+  if rarity and rarity < 2 then
     return
   end
 
@@ -175,7 +175,7 @@ function mod:GetGPValue(itemLink)
   local slot_multiplier2 = EQUIPSLOT_MULTIPLIER_2[equipLoc]
 
   if not slot_multiplier1 then return end
-  local gp_base = 0.483 * 2 ^ (level/26)
+  local gp_base = 0.483 * 2 ^ (level/26 + (rarity - 4))
   local high = math.floor(gp_base * slot_multiplier1)
   local low = slot_multiplier2 and math.floor(gp_base * slot_multiplier2) or nil
   return high, low, level
