@@ -259,38 +259,47 @@ local function ParseGuildInfo(callback, info)
       in_block = not in_block
     elseif in_block then
       -- Decay percent
-      local dp = tonumber(line:match("@DECAY_P:(%d+)")) or DEFAULT_DECAY_P
-      if dp >= 0 and dp <= 100 then
-        if decay_p ~= dp then
-          decay_p = dp
-          callbacks:Fire("DecayPercentChanged", dp)
+      local dp = line:match("@DECAY_P:(%d+)")
+      if dp then
+        dp = tonumber(dp) or DEFAULT_DECAY_P
+        if dp >= 0 and dp <= 100 then
+          if decay_p ~= dp then
+            decay_p = dp
+            callbacks:Fire("DecayPercentChanged", dp)
+          end
+        else
+          EPGP:Print(L["Decay Percent should be a number between 0 and 100"])
         end
-      else
-        EPGP:Print(L["Decay Percent should be a number between 0 and 100"])
       end
 
       -- Min EP
-      local mep = tonumber(line:match("@MIN_EP:(%d+)")) or DEFAULT_MIN_EP
-      if mep >= 0 then
-        if min_ep ~= mep then
-          min_ep = mep
-          callbacks:Fire("MinEPChanged", mep)
-          DestroyStandings()
+      local mep = line:match("@MIN_EP:(%d+)")
+      if mep then
+        mep = tonumber(mep) or DEFAULT_MIN_EP
+        if mep >= 0 then
+          if min_ep ~= mep then
+            min_ep = mep
+            callbacks:Fire("MinEPChanged", mep)
+            DestroyStandings()
+          end
+        else
+          EPGP:Print(L["Min EP should be a positive number"])
         end
-      else
-        EPGP:Print(L["Min EP should be a positive number"])
       end
 
       -- Base GP
-      local bgp = tonumber(line:match("BASE_GP:(%d+)")) or DEFAULT_BASE_GP
-      if bgp >= 0 then
-        if base_gp ~= bgp then
-          base_gp = bgp
-          callbacks:Fire("BaseGPChanged", bgp)
-          DestroyStandings()
+      local bgp = line:match("@BASE_GP:(%d+)")
+      if bgp then
+        bgp = tonumber(bgp) or DEFAULT_BASE_GP
+        if bgp >= 0 then
+          if base_gp ~= bgp then
+            base_gp = bgp
+            callbacks:Fire("BaseGPChanged", bgp)
+            DestroyStandings()
+          end
+        else
+          EPGP:Print(L["Base GP should be a positive number"])
         end
-      else
-        EPGP:Print(L["Base GP should be a positive number"])
       end
     end
   end
