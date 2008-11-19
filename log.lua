@@ -48,10 +48,10 @@ local function LogRecordToString(record)
 
   if kind == "EP" then
     return string.format(L["%s: %+d EP (%s) to %s"],
-                         date("%F %R", timestamp), amount, reason, name)
+                         date("%Y-%m-%d %H:%M", timestamp), amount, reason, name)
   elseif kind == "GP" then
     return string.format(L["%s: %+d GP (%s) to %s"],
-                         date("%F %R", timestamp), amount, reason, name)
+                         date("%Y-%m-%d %H:%M", timestamp), amount, reason, name)
   else
     assert(false, "Unknown record in the log")
   end
