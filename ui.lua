@@ -317,12 +317,12 @@ local function CreateEPGPLogFrame()
   scrollBar:SetHeight(scrollParent:GetHeight() - 10)
   scrollBar:SetPoint("TOPRIGHT", scrollParent, "TOPRIGHT", -28, -6)
 
-  function EPGPLogRecordScrollFrame:LogChanged()
-    if not self:IsVisible() then
+  function LogChanged()
+    if not EPGPLogFrame:IsVisible() then
       return
     end
     local log = EPGP:GetModule("EPGP_Log")
-    local offset = FauxScrollFrame_GetOffset(self)
+    local offset = FauxScrollFrame_GetOffset(scrollBar)
     local numRecords = log:GetNumRecords()
     local numDisplayedRecords = math.min(numLogRecordFrames, numRecords - offset)
     for i=1,numLogRecordFrames do
@@ -341,19 +341,17 @@ local function CreateEPGPLogFrame()
     else
       undo:Disable()
     end
-    FauxScrollFrame_Update(self, numRecords, numDisplayedRecords, recordHeight)
+    FauxScrollFrame_Update(
+      scrollBar, numRecords, numDisplayedRecords, recordHeight)
   end
 
-  EPGPLogRecordScrollFrame:SetScript("OnShow",
-                                     EPGPLogRecordScrollFrame.LogChanged)
+  EPGPLogFrame:SetScript("OnShow", LogChanged)
   scrollBar:SetScript(
     "OnVerticalScroll",
     function(self, value)
-      FauxScrollFrame_OnVerticalScroll(
-        self, value, recordHeight, EPGPLogRecordScrollFrame.LogChanged)
+      FauxScrollFrame_OnVerticalScroll(scrollBar, value, recordHeight, LogChanged)
     end)
-  EPGP:GetModule("EPGP_Log").RegisterCallback(
-    EPGPLogRecordScrollFrame, "LogChanged")
+  EPGP:GetModule("EPGP_Log"):RegisterCallback("LogChanged", LogChanged)
 end
 
 local function GP_Validation(parent)
