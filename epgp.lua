@@ -535,7 +535,7 @@ function EPGP:StartRecurringEP(reason, amount)
   next_award = GetTime() + db.profile.recurring_ep_period_mins * 60
 
   callbacks:Fire("StartRecurringAward", reason, amount,
-                 db.profile.recurring_ep_period_mins * 60)
+                 db.profile.recurring_ep_period_mins)
   RecurringTicker(arg)
   return true
 end
