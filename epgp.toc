@@ -18,7 +18,6 @@ libs\AceEvent-3.0\AceEvent-3.0.xml
 libs\AceHook-3.0\AceHook-3.0.xml
 libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceTimer-3.0\AceTimer-3.0.xml
-libs\Deformat-2.0\Deformat-2.0.lua
 
 LibGuildStorage-1.0.lua
 localization.enUS.lua
