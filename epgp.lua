@@ -96,6 +96,13 @@
 -- GPAward(name, reason, amount, mass): Fired when a GP award is
 -- made. mass is set to true if this is a mass award or decay.
 --
+-- StartRecurringAward(reason, amount, mins): Fired when recurring
+-- awards are started.
+--
+-- Stop Recurring Award(): Fired when recurring awards are stopped.
+--
+-- EPGPReset(): Fired when EPGP are reset.
+--
 -- Decay(percent): Fired when a decay happens.
 --
 -- DecayPercentChanged(v): Fired when decay percent changes. v is the
