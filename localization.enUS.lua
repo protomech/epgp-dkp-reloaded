@@ -18,6 +18,7 @@ L["Decay"] = true
 L["EP Reason"] = true
 L["EPGP is an in game, relational loot distribution system"] = true
 L["EPGP is using Officer Notes for data storage. Do you really want to edit the Officer Note by hand?"] = true
+L["EP/GP are reset"] = true
 L["Enable GP on tooltips"] = true
 L["Enable a proposed GP value of epic quality armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."] = true
 L["Enable announce of actions"] = true

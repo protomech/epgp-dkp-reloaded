@@ -59,6 +59,10 @@ local function AnnounceStopRecurringAward(event_name)
   Announce(L["Stop recurring award"])
 end
 
+local function AnnounceEPGPReset(event_name)
+  Announce(L["EP/GP are reset"])
+end
+
 function mod:OnEnable()
   EPGP.RegisterCallback(self, "EPAward", AnnounceEPAward)
   EPGP.RegisterCallback(self, "MassEPAward", AnnounceMassEPAward)
@@ -67,4 +71,5 @@ function mod:OnEnable()
   EPGP.RegisterCallback(self, "StartRecurringAward",
                         AnnounceStartRecurringAward)
   EPGP.RegisterCallback(self, "StopRecurringAward", AnnounceStopRecurringAward)
+  EPGP.RegisterCallback(self, "EPGPReset", AnnounceEPGPReset)
 end

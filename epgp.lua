@@ -438,6 +438,7 @@ function EPGP:ResetEPGP()
       EPGP:IncGPBy(n, "Reset", -gp, true)
     end
   end
+  callbacks:Fire("EPGPReset")
 end
 
 function EPGP:DecayEPGP()
