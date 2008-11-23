@@ -3,7 +3,7 @@ local mod = EPGP:NewModule("EPGP_Loot", "AceEvent-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local pattern_cache = {}
-local function deformat(format, str)
+local function deformat(str, format)
   local pattern = pattern_cache[format]
   if not pattern then
     -- print(string.format("Format: %s", format))
@@ -30,7 +30,10 @@ end
 local ignored_items = {
   [20725] = true, -- Nexus Crystal
   [22450] = true, -- Void Crystal
+  [34057] = true, -- Abyss Crystal
   [29434] = true, -- Badge of Justice
+  [40752] = true, -- Emblem of Heroism
+  [40753] = true, -- Emblem of Valor
   [30311] = true, -- Warp Slicer
   [30312] = true, -- Infinity Blade
   [30313] = true, -- Staff of Disintegration
@@ -55,14 +58,6 @@ local function IsRLorML()
   return false
 end
 
-function mod:RAID_ROSTER_UPDATE()
-  if IsRLorML() then
-    self:RegisterEvent("CHAT_MSG_LOOT")
-  else
-    self:UnregisterEvent("CHAT_MSG_LOOT")
-  end
-end
-
 local function ParseLootMessage(msg)
   local player = UnitName("player")
   local item, quantity = deformat(msg, LOOT_ITEM_SELF_MULTIPLE)
@@ -85,12 +80,15 @@ local function ParseLootMessage(msg)
   return player, item, tonumber(quantity)
 end
 
-function mod:CHAT_MSG_LOOT(msg)
+function mod:CHAT_MSG_LOOT(event_type, msg)
+  if not EPGP.db.profile.auto_loot or not IsRLorML() then return end
+
   local player, item, quantity = ParseLootMessage(msg)
   if not player or not item then return end
 
   local item_name, item_link, item_rarity = GetItemInfo(item)
-  if item_rarity < 4 then return end
+  if item_rarity < EPGP.db.profile.auto_loot_threshold then return end
+
   local item_id = select(3, item_link:find("item:(%d+):"))
   if not item_id then return end
   item_id = tonumber(item_id:trim())
@@ -111,7 +109,7 @@ function mod:PopLootQueue()
     return
   end
 
-  local player, itemLink = loot_queue[1][1], loot_queue[1][2]
+  local player, itemLink = unpack(loot_queue[1])
 
   -- In theory this should never happen.
   if not player or not itemLink then
@@ -130,14 +128,14 @@ function mod:PopLootQueue()
   local r, g, b = GetItemQualityColor(itemRarity);
 
   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
-                                  texture = itemTexture,
-                                  name = itemName,
-                                  color = {r, g, b, 1},
-                                  link = itemLink
+                                    texture = itemTexture,
+                                    name = itemName,
+                                    color = {r, g, b, 1},
+                                    link = itemLink
                                   })
-   if dialog then
-     dialog.name = player
-   end
+  if dialog then
+    dialog.name = player
+  end
 end
 
 local function LootReceived(event_name, player, itemLink, quantity)
@@ -155,17 +153,8 @@ function mod:PLAYER_REGEN_ENABLED()
   in_combat = false
 end
 
-function mod:DebugLootQueue()
-  local _, itemLink = GetItemInfo(34541)
-  callbacks:Fire("LootReceived", "Knucklehead", itemLink, 1)
-end
-
-function mod:OnInitialize()
-  -- TODO(alkis): Use db to persist enabled/disabled state.
-end
-
 function mod:OnEnable()
-  self:RegisterEvent("RAID_ROSTER_UPDATE")
+  self:RegisterEvent("CHAT_MSG_LOOT")
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
   self:RegisterMessage("LootReceived", LootReceived)

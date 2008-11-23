@@ -616,6 +616,7 @@ function EPGP:OnInitialize()
         recurring_ep_period_mins = 15,
         gp_on_tooltips = true,
         auto_loot = true,
+        auto_loot_threshold = 4,  -- Epic quality items
         announce = true,
         announce_medium = "GUILD",
       }

@@ -18,7 +18,7 @@ function mod:OnEnable()
         order = 1,
         type = "toggle",
         name = L["Enable GP on tooltips"],
-        desc = L["Enable a proposed GP value of epic quality armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."],
+        desc = L["Enable a proposed GP value of armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."],
         width = "double",
       },
       auto_loot = {
@@ -28,15 +28,27 @@ function mod:OnEnable()
         desc = L["Enable automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."],
         width = "double",
       },
-      announce = {
+      auto_loot_threshold = {
         order = 3,
+        type = "select",
+        name = L["Automatic loot tracking threshold"],
+        desc = L["Sets automatic loot tracking threshold, to disable the popup on loot below this threshold quality."],
+        values = {
+          [2] = ITEM_QUALITY2_DESC,
+          [3] = ITEM_QUALITY3_DESC,
+          [4] = ITEM_QUALITY4_DESC,
+          [5] = ITEM_QUALITY5_DESC,
+        },
+      },
+      announce = {
+        order = 4,
         type = "toggle",
         name = L["Enable announce of actions"],
         desc = L["Enable announcement of all EPGP actions to the specified medium."],
         width = "double",
       },
       announce_medium = {
-        order = 4,
+        order = 5,
         type = "select",
         name = L["Set the announce medium"],
         desc = L["Sets the announce medium EPGP will use to announce EPGP actions."],
@@ -48,7 +60,7 @@ function mod:OnEnable()
         },
       },
       announce_channel = {
-        order = 5,
+        order = 6,
         type = "input",
         name = L["Custom announce channel name"],
         desc = L["Sets the custom announce channel name used to announce EPGP actions."],
