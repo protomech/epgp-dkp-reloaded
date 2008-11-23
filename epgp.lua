@@ -435,14 +435,15 @@ end
 
 function EPGP:ResetEPGP()
   local zero_note = EncodeNote(0, 0)
-  for n,ep in pairs(ep_data) do
-    GS:SetNote(n, zero_note)
-    local gp = gp_data[n]
+  for name,_ in pairs(ep_data) do
+    GS:SetNote(name, zero_note)
+    local ep, gp, main = self:GetEPGP(name)
+    assert(main == nil, "Corrupt alt data!")
     if ep > 0 then
-      EPGP:IncEPBy(n, "Reset", -ep, true)
+      callbacks:Fire("EPAward", name, "Reset", -ep, true)
     end
     if gp > 0 then
-      EPGP:IncGPBy(n, "Reset", -gp, true)
+      callbacks:Fire("GPAward", name, "Reset", -gp, true)
     end
   end
   callbacks:Fire("EPGPReset")
@@ -456,11 +457,12 @@ function EPGP:DecayEPGP()
     assert(main == nil, "Corrupt alt data!")
     local decay_ep = math.floor(ep * decay)
     local decay_gp = math.floor(gp * decay)
+    GS:SetNote(name, EncodeNote(ep - decay_ep, gp - decay_gp))
     if decay_ep ~= 0 then
-      EPGP:IncEPBy(name, reason, -decay_ep, true)
+      callbacks:Fire("EPAward", name, reason, -decay_ep, true)
     end
     if decay_gp ~= 0 then
-      EPGP:IncGPBy(name, reason, -decay_gp, true)
+      callbacks:Fire("GPAward", name, reason, -decay_gp, true)
     end
   end
   callbacks:Fire("Decay", decay_p)
