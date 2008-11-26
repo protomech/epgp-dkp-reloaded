@@ -127,6 +127,40 @@ local CUSTOM_ITEM_DATA = {
 
   -- Kael'thas' Sphere
   ["32405"] = { 4, 138, "INVTYPE_NECK" },
+
+  -- T7
+  ["40610"] = { 4, 200, "INVTYPE_CHEST" },
+  ["40611"] = { 4, 200, "INVTYPE_CHEST" },
+  ["40612"] = { 4, 200, "INVTYPE_CHEST" },
+  ["40613"] = { 4, 200, "INVTYPE_HAND" },
+  ["40614"] = { 4, 200, "INVTYPE_HAND" },
+  ["40615"] = { 4, 200, "INVTYPE_HAND" },
+  ["40616"] = { 4, 200, "INVTYPE_HEAD" },
+  ["40617"] = { 4, 200, "INVTYPE_HEAD" },
+  ["40618"] = { 4, 200, "INVTYPE_HEAD" },
+  ["40619"] = { 4, 200, "INVTYPE_LEGS" },
+  ["40620"] = { 4, 200, "INVTYPE_LEGS" },
+  ["40621"] = { 4, 200, "INVTYPE_LEGS" },
+  ["40622"] = { 4, 200, "INVTYPE_SHOULDER" },
+  ["40623"] = { 4, 200, "INVTYPE_SHOULDER" },
+  ["40624"] = { 4, 200, "INVTYPE_SHOULDER" },
+
+  -- T7 (heroic)
+  ["40625"] = { 4, 213, "INVTYPE_CHEST" },
+  ["40626"] = { 4, 213, "INVTYPE_CHEST" },
+  ["40627"] = { 4, 213, "INVTYPE_CHEST" },
+  ["40628"] = { 4, 213, "INVTYPE_HAND" },
+  ["40629"] = { 4, 213, "INVTYPE_HAND" },
+  ["40630"] = { 4, 213, "INVTYPE_HAND" },
+  ["40631"] = { 4, 213, "INVTYPE_HEAD" },
+  ["40632"] = { 4, 213, "INVTYPE_HEAD" },
+  ["40633"] = { 4, 213, "INVTYPE_HEAD" },
+  ["40634"] = { 4, 213, "INVTYPE_LEGS" },
+  ["40635"] = { 4, 213, "INVTYPE_LEGS" },
+  ["40636"] = { 4, 213, "INVTYPE_LEGS" },
+  ["40637"] = { 4, 213, "INVTYPE_SHOULDER" },
+  ["40638"] = { 4, 213, "INVTYPE_SHOULDER" },
+  ["40639"] = { 4, 213, "INVTYPE_SHOULDER" },
 }
 
 local recent_items = {}
