@@ -58,10 +58,11 @@ function mod:OnEnable()
         name = L["Set the announce medium"],
         desc = L["Sets the announce medium EPGP will use to announce EPGP actions."],
         values = {
-          ["GUILD"] = GUILD,
-          ["RAID"] = RAID,
-          ["PARTY"] = PARTY,
-          ["CHANNEL"] = CHANNEL,
+          ["GUILD"] = CHAT_MSG_GUILD,
+          ["OFFICER"] = CHAT_MSG_OFFICER,
+          ["RAID"] = CHAT_MSG_RAID,
+          ["PARTY"] = CHAT_MSG_PARTY,
+          ["CHANNEL"] = CUSTOM,
         },
       },
       announce_channel = {
