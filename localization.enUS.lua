@@ -1,6 +1,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "enUS", true)
 if not L then return end
 
+L["%d or %d"] = true
 L["%+d EP (%s) to %s"] = true
 L["%+d GP (%s) to %s"] = true
 L["%s: %+d EP (%s) to %s"] = true

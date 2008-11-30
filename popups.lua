@@ -3,6 +3,18 @@ local mod = EPGP:NewModule("EPGP_Popups")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
+local function EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
+  local link = self.itemFrame.link
+  local gp = tonumber(self.editBox:GetText())
+  if EPGP:CanIncGPBy(link, gp) then
+    self.button1:Enable()
+    self.button3:Enable()
+  else
+    self.button1:Disable()
+    self.button3:Disable()
+  end
+end
+
 StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   text = L["Credit GP to %s"],
   button1 = ACCEPT,
@@ -12,11 +24,12 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   maxLetters = 16,
   hideOnEscape = 1,
   hasEditBox = 1,
-  hasItemFrame = 1,
+  hasItemFrame = 1,                    
 
   OnAccept = function(self)
-               EPGP:IncGPBy(self.name, self.itemFrame.link,
-                            self.editBox:GetNumber())
+               local link = self.itemFrame.link
+               local gp = tonumber(self.editBox:GetText())
+               EPGP:IncGPBy(self.name, link, gp)
              end,
 
   OnCancel = function(self)
@@ -34,8 +47,16 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              editBox:SetPoint("RIGHT", -35, 0)
              button1:SetPoint("TOPRIGHT", itemFrame, "BOTTOMRIGHT", 85, -6)
 
-             editBox:SetText(GPTooltip:GetGPValue(itemFrame.link))
+             local gp1, gp2 = GPTooltip:GetGPValue(itemFrame.link)
+             if gp1 then
+               if gp2 then
+                 editBox:SetText(L["%d or %d"]:format(gp1, gp2))
+               else
+                 editBox:SetText(gp1)
+               end
+             end
              editBox:HighlightText()
+             EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
            end,
 
   OnHide = function()
@@ -46,21 +67,17 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 
   EditBoxOnEnterPressed = function(self)
                             local parent = self:GetParent()
-                            if EPGP:CanIncGPBy(parent.itemFrame.link, parent.editBox:GetNumber()) then
-                              EPGP:IncGPBy(parent.name, parent.itemFrame.link, parent.editBox:GetNumber())
+                            local link = self.itemFrame.link
+                            local gp = tonumber(self.editBox:GetText())
+                            if EPGP:CanIncGPBy(link, gp) then
+                              EPGP:IncGPBy(parent.name, link, gp)
                               parent:Hide()
                             end
                           end,
 
   EditBoxOnTextChanged = function(self)
                            local parent = self:GetParent()
-                           if EPGP:CanIncGPBy(parent.itemFrame.link, parent.editBox:GetNumber()) then
-                             parent.button1:Enable()
-                             parent.button3:Enable()
-                           else
-                             parent.button1:Disable()
-                             parent.button3:Disable()
-                           end
+                           EPGP_CONFIRM_GP_CREDIT_UpdateButtons(parent)
                          end,
 
   EditBoxOnEscapePressed = function(self)
