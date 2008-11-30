@@ -14,22 +14,27 @@ function mod:OnEnable()
         type = "description",
         name = L["EPGP is an in game, relational loot distribution system"],
       },
-      gp_on_tooltips = {
+      hint = {
         order = 1,
+        type = "description",
+        name = L["Hint: You can open these options by typing /epgp config"],
+      },
+      gp_on_tooltips = {
+        order = 11,
         type = "toggle",
         name = L["Enable GP on tooltips"],
         desc = L["Enable a proposed GP value of armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."],
         width = "double",
       },
       auto_loot = {
-        order = 2,
+        order = 12,
         type = "toggle",
         name = L["Enable automatic loot tracking"],
         desc = L["Enable automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."],
         width = "double",
       },
       auto_loot_threshold = {
-        order = 3,
+        order = 13,
         type = "select",
         name = L["Automatic loot tracking threshold"],
         desc = L["Sets automatic loot tracking threshold, to disable the popup on loot below this threshold quality."],
@@ -41,14 +46,14 @@ function mod:OnEnable()
         },
       },
       announce = {
-        order = 4,
+        order = 14,
         type = "toggle",
         name = L["Enable announce of actions"],
         desc = L["Enable announcement of all EPGP actions to the specified medium."],
         width = "double",
       },
       announce_medium = {
-        order = 5,
+        order = 15,
         type = "select",
         name = L["Set the announce medium"],
         desc = L["Sets the announce medium EPGP will use to announce EPGP actions."],
@@ -60,7 +65,7 @@ function mod:OnEnable()
         },
       },
       announce_channel = {
-        order = 6,
+        order = 16,
         type = "input",
         name = L["Custom announce channel name"],
         desc = L["Sets the custom announce channel name used to announce EPGP actions."],
@@ -83,6 +88,16 @@ function mod:OnEnable()
 
   SLASH_EPGP1 = "/epgp"
   SlashCmdList["EPGP"] = function(msg)
-                           InterfaceOptionsFrame_OpenToCategory("EPGP")
+                           if msg == "config" then
+                             InterfaceOptionsFrame_OpenToCategory("EPGP")
+                           else
+                             if EPGPFrame then
+                               if EPGPFrame:IsShown() then
+                                 HideUIPanel(EPGPFrame)
+                               else
+                                 ShowUIPanel(EPGPFrame)
+                               end
+                             end
+                           end
                          end
 end

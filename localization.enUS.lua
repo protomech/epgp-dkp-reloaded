@@ -29,6 +29,7 @@ L["Enable automatic loot tracking"] = true
 L["GP Reason"] = true
 L["GP: %d [ItemLevel=%d]"] = true
 L["GP: %d or %d [ItemLevel=%d]"] = true
+L["Hint: You can open these options by typing /epgp config"] = true
 L["Mass EP Award"] = true
 L["Min EP should be a positive number"] = true
 L["Next award in "] = true
