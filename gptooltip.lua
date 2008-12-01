@@ -161,6 +161,10 @@ local CUSTOM_ITEM_DATA = {
   ["40637"] = { 4, 213, "INVTYPE_SHOULDER" },
   ["40638"] = { 4, 213, "INVTYPE_SHOULDER" },
   ["40639"] = { 4, 213, "INVTYPE_SHOULDER" },
+
+  -- Key to the Focusing Iris
+  ["44569"] = { 4, 213, "INVTYPE_NECK" },
+  ["44577"] = { 4, 226, "INVTYPE_NECK" },
 }
 
 local recent_items = {}
