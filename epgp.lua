@@ -640,6 +640,9 @@ function EPGP:RAID_ROSTER_UPDATE()
       selected[name] = nil
     end
     selected._count = 0
+    -- We also need to stop any recurring EP since they should stop
+    -- once a raid stops.
+    self:StopRecurringEP()
   end
   DestroyStandings()
 end
