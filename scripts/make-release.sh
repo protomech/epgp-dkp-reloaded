@@ -32,7 +32,7 @@ find . \
 # Add the version in the .toc file
 pushd $STAGE_DIR
 mv epgp.toc epgp.toc.templ
-sed -e"s/Version: (developement)/Version: $1/" epgp.toc.templ > epgp.toc
+sed -e"s/Version:.*/Version: $1/" epgp.toc.templ > epgp.toc
 rm epgp.toc.templ
 popd
 

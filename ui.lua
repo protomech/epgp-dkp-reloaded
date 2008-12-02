@@ -4,7 +4,7 @@ local mod = EPGP:NewModule("EPGP_UI")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
-local CURRENT_VERSION = GetAddOnMetadata('EPGP', 'Version')
+local CURRENT_VERSION = GetAddOnMetadata('EPGP', 'Version') or "(development)"
 
 local BUTTON_TEXT_PADDING = 20
 local BUTTON_HEIGHT = 22
