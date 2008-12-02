@@ -99,7 +99,11 @@
 -- StartRecurringAward(reason, amount, mins): Fired when recurring
 -- awards are started.
 --
--- Stop Recurring Award(): Fired when recurring awards are stopped.
+-- StopRecurringAward(): Fired when recurring awards are stopped.
+--
+-- RecurringAwardUpdate(reason, amount, remainingSecs): Fired
+-- periodically between awards with the remaining seconds to award in
+-- seconds.
 --
 -- EPGPReset(): Fired when EPGP are reset.
 --
