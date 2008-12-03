@@ -219,10 +219,9 @@ function mod:GetGPValue(itemLink)
   return high, low, level
 end
 
-function mod:OnTooltipSetItem(tooltip, ...)
+function OnTooltipSetItem(tooltip, ...)
   local _, itemlink = tooltip:GetItem()
-  self.hooks[tooltip]["OnTooltipSetItem"](tooltip, ...)
-  local gp1, gp2, ilvl = self:GetGPValue(itemlink)
+  local gp1, gp2, ilvl = mod:GetGPValue(itemlink)
 
   if not EPGP.db.profile.gp_on_tooltips then return end
 
@@ -244,7 +243,7 @@ function mod:OnEnable()
   while obj do
     if obj:IsObjectType("GameTooltip") then
       assert(obj:HasScript("OnTooltipSetItem"))
-      self:HookScript(obj, "OnTooltipSetItem")
+      self:HookScript(obj, "OnTooltipSetItem", OnTooltipSetItem)
     end
     obj = EnumerateFrames(obj)
   end
