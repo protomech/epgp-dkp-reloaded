@@ -67,8 +67,8 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 
   EditBoxOnEnterPressed = function(self)
                             local parent = self:GetParent()
-                            local link = self.itemFrame.link
-                            local gp = tonumber(self.editBox:GetText())
+                            local link = parent.itemFrame.link
+                            local gp = tonumber(parent.editBox:GetText())
                             if EPGP:CanIncGPBy(link, gp) then
                               EPGP:IncGPBy(parent.name, link, gp)
                               parent:Hide()
