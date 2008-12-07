@@ -44,6 +44,9 @@ local function AnnounceMassEPAward(event_name, names, reason, amount)
   end
 
   Announce(L["%+d EP (%s) to %s"], amount, reason, awarded)
+  if EPGP.db.profile.auto_standby_whispers and UnitInRaid("player") then
+    Announce(L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"])
+  end
 end
 
 local function AnnounceDecay(event_name, decay_p)

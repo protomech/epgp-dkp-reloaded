@@ -26,9 +26,10 @@ epgp.lua
 
 announce.lua
 gptooltip.lua
-officernotewarning.lua
 log.lua
 loot.lua
-ui.lua
+officernotewarning.lua
 options.lua
 popups.lua
+ui.lua
+whisper.lua

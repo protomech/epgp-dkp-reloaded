@@ -4,6 +4,10 @@ if not L then return end
 L["%d or %d"] = true
 L["%+d EP (%s) to %s"] = true
 L["%+d GP (%s) to %s"] = true
+L["%s is added to the award list"] = true
+L["%s is already in the award list"] = true
+L["%s is not eligible for EP awards"] = true
+L["%s is now removed from the award list"] = true
 L["%s: %+d EP (%s) to %s"] = true
 L["%s: %+d GP (%s) to %s"] = true
 L["Alts"] = true
@@ -27,10 +31,13 @@ L["Enable announce of actions"] = true
 L["Enable announcement of all EPGP actions to the specified medium."] = true
 L["Enable automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."] = true
 L["Enable automatic loot tracking"] = true
+L["Enable standby whispers in raid"] = true
+L["Enable automatic handling of the standby list through whispers when in raid. When this option is selected the standby list is cleared after each reward"] = true
 L["GP Reason"] = true
 L["GP: %d [ItemLevel=%d]"] = true
 L["GP: %d or %d [ItemLevel=%d]"] = true
 L["Hint: You can open these options by typing /epgp config"] = true
+L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"] = true
 L["Mass EP Award"] = true
 L["Min EP should be a positive number"] = true
 L["Next award in "] = true

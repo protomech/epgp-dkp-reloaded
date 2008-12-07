@@ -45,15 +45,22 @@ function mod:OnEnable()
           [5] = ITEM_QUALITY5_DESC,
         },
       },
-      announce = {
+      auto_standby_whispers = {
         order = 14,
+        type = "toggle",
+        name = L["Enable standby whispers in raid"],
+        desc = L["Enable automatic handling of the standby list through whispers when in raid. When this option is selected the standby list is cleared after each reward"],
+        width = "double",
+      },
+      announce = {
+        order = 15,
         type = "toggle",
         name = L["Enable announce of actions"],
         desc = L["Enable announcement of all EPGP actions to the specified medium."],
         width = "double",
       },
       announce_medium = {
-        order = 15,
+        order = 16,
         type = "select",
         name = L["Set the announce medium"],
         desc = L["Sets the announce medium EPGP will use to announce EPGP actions."],
@@ -66,7 +73,7 @@ function mod:OnEnable()
         },
       },
       announce_channel = {
-        order = 16,
+        order = 17,
         type = "input",
         name = L["Custom announce channel name"],
         desc = L["Sets the custom announce channel name used to announce EPGP actions."],

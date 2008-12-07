@@ -75,8 +75,8 @@
 --
 -- GetEPGP(name): Returns <ep, gp, main> for <name>. <main> will be
 -- nil if this is the main toon, otherwise it will be the name of the
--- main toon since this is an alt. If <name> is an invalid name or the
--- officer note is empty it returns <0, BaseGP, nil>.
+-- main toon since this is an alt. If <name> is an invalid name it
+-- returns nil.
 --
 -- GetClass(name): Returns the class of member <name>. It returns nil
 -- if the class is unknown.
@@ -477,7 +477,9 @@ function EPGP:GetEPGP(name)
   if main then
     name = main
   end
-  return ep_data[name], gp_data[name] + base_gp, main
+  if ep_data[name] then
+    return ep_data[name], gp_data[name] + base_gp, main
+  end
 end
 
 function EPGP:GetClass(name)
