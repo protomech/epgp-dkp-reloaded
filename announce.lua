@@ -6,6 +6,13 @@ local function Announce(fmt, ...)
   local medium = EPGP.db.profile.announce_medium
   local channel = EPGP.db.profile.announce_channel or 0
 
+  -- Override raid and party if we are not grouped
+  if medium == "RAID" and not UnitInRaid("player") then
+    medium = "GUILD"
+  elseif medium == "PARTY" and not UnitInRaid("player") then
+    medium = "GUILD"
+  end
+
   local msg = string.format(fmt, ...)
   local str = "EPGP:"
   for _,s in pairs({strsplit(" ", msg)}) do
