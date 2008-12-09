@@ -153,12 +153,16 @@ local selected = {}
 selected._count = 0  -- This is safe since _ is not allowed in names
 
 local function DecodeNote(note)
-  local ep, gp = string.match(note, "^(%d+),(%d+)$")
-  if ep then
-    return tonumber(ep), tonumber(gp)
+  if note then
+    if note == "" then
+      return 0, 0
+    else
+      local ep, gp = string.match(note, "^(%d+),(%d+)$")
+      if ep then
+        return tonumber(ep), tonumber(gp)
+      end
+    end
   end
-
-  return 0, 0
 end
 
 local function EncodeNote(ep, gp)
@@ -317,10 +321,29 @@ local function ParseGuildInfo(callback, info)
 end
 
 local function ParseGuildNote(callback, name, note)
-  if not note or note == "" then
-    ep_data[name] = 0
-    gp_data[name] = 0
-  elseif note:match("%u%l+") then
+  local ep, gp = DecodeNote(note)
+  if ep then
+    -- If this is was an alt we need to fix the alts state
+    local main = main_data[name]
+    if main then
+      EPGP:Print("found main: %s for alt: %s", main, name)
+      if alt_data[main] then
+        for i,alt in ipairs(alt_data[main]) do
+          EPGP:Print("alt %d of %s: %s", i, main, alt)
+          if alt == name then
+            EPGP:Print("removing alt: %s", alt)
+            table.remove(alt_data[main], i)
+            break
+          end
+        end
+      end
+      main_data[name] = nil
+    end
+    ep_data[name] = ep
+    gp_data[name] = gp
+  else
+    -- This is an alt we need to associate with a main and also add
+    -- to the list of alts of this main
     main_data[name] = note
     if not alt_data[note] then
       alt_data[note] = {}
@@ -328,10 +351,6 @@ local function ParseGuildNote(callback, name, note)
     table.insert(alt_data[note], name)
     ep_data[name] = nil
     gp_data[name] = nil
-  else
-    local ep, gp = DecodeNote(note)
-    ep_data[name] = ep or 0
-    gp_data[name] = gp or base_gp
   end
   DestroyStandings()
 end
