@@ -59,7 +59,21 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
            end,
 
-  OnHide = function()
+  OnHide = function(self)
+             local itemFrame = getglobal(self:GetName().."ItemFrame")
+             local editBox = getglobal(self:GetName().."EditBox")
+             local button1 = getglobal(self:GetName().."Button1")
+             
+             -- Clear anchor points of frames that we modified, and revert them.
+             itemFrame:ClearAllPoints()
+             editBox:ClearAllPoints()
+             button1:ClearAllPoints()
+             
+             itemFrame:SetPoint("TOP", getglobal(self:GetName().."Text"), "BOTTOM", 0, -16)
+             itemFrame:SetPoint("LEFT", getglobal(self:GetName()), "LEFT", 82, 0)
+             editBox:SetPoint("BOTTOM", getglobal(self:GetName()), "BOTTOM", 0, 45)
+             button1:SetPoint("TOPRIGHT", getglobal(self:GetName().."EditBox"), "BOTTOM", -6, -8)
+             
              if ChatFrameEditBox:IsShown() then
                ChatFrameEditBox:SetFocus()
              end
