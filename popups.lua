@@ -15,6 +15,30 @@ local function EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
   end
 end
 
+local blizzardAnchors = {}
+
+local function savePoint(frame, i)
+  local point, relativeTo, relativePoint, x, y = frame:GetPoint(i)
+    
+  if point then
+    tinsert(blizzardAnchors, {frame, point, relativeTo, relativePoint, x, y})
+  end  
+end
+
+local function makeAnchorTable(itemFrame, editBox, button1)  
+  for i=1,itemFrame:GetNumPoints() do
+    savePoint(itemFrame, i)
+  end
+
+  for i=1,editBox:GetNumPoints() do
+    savePoint(editBox, i)
+  end
+  
+  for i=1,button1:GetNumPoints() do
+    savePoint(button1, i)
+  end
+end
+
 StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   text = L["Credit GP to %s"],
   button1 = ACCEPT,
@@ -41,6 +65,8 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              local itemFrame = getglobal(self:GetName().."ItemFrame")
              local editBox = getglobal(self:GetName().."EditBox")
              local button1 = getglobal(self:GetName().."Button1")
+
+             if #blizzardAnchors == 0 then makeAnchorTable(itemFrame, editBox, button1) end
 
              itemFrame:SetPoint("TOPLEFT", 35, -35)
              editBox:SetPoint("TOPLEFT", itemFrame, "TOPRIGHT", 150, -10)
@@ -69,11 +95,11 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              editBox:ClearAllPoints()
              button1:ClearAllPoints()
              
-             itemFrame:SetPoint("TOP", getglobal(self:GetName().."Text"), "BOTTOM", 0, -16)
-             itemFrame:SetPoint("LEFT", getglobal(self:GetName()), "LEFT", 82, 0)
-             editBox:SetPoint("BOTTOM", getglobal(self:GetName()), "BOTTOM", 0, 45)
-             button1:SetPoint("TOPRIGHT", getglobal(self:GetName().."EditBox"), "BOTTOM", -6, -8)
-             
+             for p=1,#blizzardAnchors do
+               local frame, point, relativeTo, relativePoint, x, y = unpack(blizzardAnchors[p])
+               frame:SetPoint(point, relativeTo, relativePoint, x, y)
+             end
+           
              if ChatFrameEditBox:IsShown() then
                ChatFrameEditBox:SetFocus()
              end
