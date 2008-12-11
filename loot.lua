@@ -125,7 +125,7 @@ function mod:PopLootQueue()
   tremove(loot_queue, 1)
 
   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(itemLink)
-  local r, g, b = GetItemQualityColor(itemRarity);
+  local r, g, b = GetItemQualityColor(itemRarity)
 
   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
                                     texture = itemTexture,
