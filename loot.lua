@@ -153,6 +153,10 @@ function mod:PLAYER_REGEN_ENABLED()
   in_combat = false
 end
 
+function mod:Debug()
+  LootReceived("LootReceived", UnitName("player"), "\124cffa335ee|Hitem:39235:0:0:0:0:0:0:531162426:8\124h[Bone-Framed Bracers]\124h\124r")
+end
+
 function mod:OnEnable()
   self:RegisterEvent("CHAT_MSG_LOOT")
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
