@@ -15,29 +15,26 @@ local function EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
   end
 end
 
-local blizzardAnchors = {}
-
-local function savePoint(frame, i)
-  local point, relativeTo, relativePoint, x, y = frame:GetPoint(i)
-    
-  if point then
-    tinsert(blizzardAnchors, {frame, point, relativeTo, relativePoint, x, y})
-  end  
-end
-
-local function makeAnchorTable(itemFrame, editBox, button1)  
-  for i=1,itemFrame:GetNumPoints() do
-    savePoint(itemFrame, i)
-  end
-
-  for i=1,editBox:GetNumPoints() do
-    savePoint(editBox, i)
-  end
-  
-  for i=1,button1:GetNumPoints() do
-    savePoint(button1, i)
+local function SaveAnchors(t, ...)
+  for n=1,select('#', ...) do
+    local frame = select(n, ...)
+    for i=1,frame:GetNumPoints() do
+      local point, relativeTo, relativePoint, x, y = frame:GetPoint(i)
+      if point then
+        table.insert(t, {frame, point, relativeTo, relativePoint, x, y })
+      end
+    end
   end
 end
+
+local function RestoreAnchors(t)
+  for i=1,#t do
+    local frame, point, relativeTo, relativePoint, x, y = unpack(t[i])
+    frame:SetPoint(point, relativeTo, relativePoint, x, y)
+  end
+end
+
+local blizzardPopupAnchors = {}
 
 StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   text = L["Credit GP to %s"],
@@ -66,7 +63,11 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              local editBox = getglobal(self:GetName().."EditBox")
              local button1 = getglobal(self:GetName().."Button1")
 
-             if #blizzardAnchors == 0 then makeAnchorTable(itemFrame, editBox, button1) end
+             if not blizzardPopupAnchors[self] then
+               blizzardPopupAnchors[self] = {}
+               SaveAnchors(blizzardPopupAnchors[self],
+                           itemFrame, editBox, button1)
+             end
 
              itemFrame:SetPoint("TOPLEFT", 35, -35)
              editBox:SetPoint("TOPLEFT", itemFrame, "TOPRIGHT", 150, -10)
@@ -94,11 +95,8 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              itemFrame:ClearAllPoints()
              editBox:ClearAllPoints()
              button1:ClearAllPoints()
-             
-             for p=1,#blizzardAnchors do
-               local frame, point, relativeTo, relativePoint, x, y = unpack(blizzardAnchors[p])
-               frame:SetPoint(point, relativeTo, relativePoint, x, y)
-             end
+
+             RestoreAnchors(blizzardPopupAnchors[self])
            
              if ChatFrameEditBox:IsShown() then
                ChatFrameEditBox:SetFocus()
@@ -154,25 +152,3 @@ StaticPopupDialogs["EPGP_RESET_EPGP"] = {
                EPGP:ResetEPGP()
              end
 }
-
-local function Debug(fmt, ...)
-  DEFAULT_CHAT_FRAME:AddMessage(string.format(fmt, ...))
-end
-
-function mod:OnInitialize()
---   local playername = UnitName("player")
---   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(34541)
---   local r, g, b = GetItemQualityColor(itemRarity);
-
---   Debug("ItemName: %s ItemLink: %s ItemRarity: %d ItemTexture: %s",
---         itemName, itemLink, itemRarity, itemTexture)
---   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", playername, "", {
---                                     texture = itemTexture,
---                                     name = itemName,
---                                     color = {r, g, b, 1},
---                                     link = itemLink
---                                   })
---   if dialog then
---     dialog.name = playername
---   end
-end
