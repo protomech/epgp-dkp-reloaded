@@ -264,7 +264,6 @@ local function CreateEPGPLogFrame()
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3)
 
   local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-  GS:ProtectActionButton(undo)
   undo:SetNormalFontObject("GameFontNormalSmall")
   undo:SetHighlightFontObject("GameFontHighlightSmall")
   undo:SetDisabledFontObject("GameFontDisableSmall")
@@ -277,16 +276,17 @@ local function CreateEPGPLogFrame()
                    EPGP:GetModule("EPGP_Log"):UndoLastAction()
                  end)
   function undo:SetCurrentState()
-    if EPGP:GetModule("EPGP_Log"):GetNumRecords() ~= 0 then
+    if EPGP:GetModule("EPGP_Log"):CanUndo() then
       self:Enable()
     else
       self:Disable()
     end
   end
-  EPGP:GetModule("EPGP_Log").RegisterCallback(undo, "SetCurrentState")
+  EPGP:GetModule("EPGP_Log").RegisterCallback(
+    undo, "LogChanged", "SetCurrentState")
+  GS.RegisterCallback(undo, "StateChanged", "SetCurrentState")
 
   local redo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-  GS:ProtectActionButton(redo)
   redo:SetNormalFontObject("GameFontNormalSmall")
   redo:SetHighlightFontObject("GameFontHighlightSmall")
   redo:SetDisabledFontObject("GameFontDisableSmall")
@@ -305,7 +305,9 @@ local function CreateEPGPLogFrame()
       self:Disable()
     end
   end
-  EPGP:GetModule("EPGP_Log").RegisterCallback(redo, "SetCurrentState")
+  EPGP:GetModule("EPGP_Log").RegisterCallback(
+    redo, "LogChanged", "SetCurrentState")
+  GS.RegisterCallback(redo, "StateChanged", "SetCurrentState")
 
   local scrollParent = CreateFrame("Frame", nil, f)
   scrollParent:SetWidth(f:GetWidth() - 20)
@@ -442,7 +444,6 @@ local function AddGPControls(frame)
   label:SetPoint("TOP", dropDown, "BOTTOM")
 
   local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-  GS:ProtectActionButton(button)
   button:SetNormalFontObject("GameFontNormalSmall")
   button:SetHighlightFontObject("GameFontHighlightSmall")
   button:SetDisabledFontObject("GameFontDisableSmall")
@@ -471,6 +472,7 @@ local function AddGPControls(frame)
       self:Disable()
     end
   end
+  GS.RegisterCallback(button, "StateChanged", "SetCurrentState")
 
   frame:SetHeight(
     reasonLabel:GetHeight() +
@@ -575,7 +577,6 @@ local function AddEPControls(frame, withRecurring)
   label:SetPoint("TOP", otherEditBox, "BOTTOM")
 
   local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-  GS:ProtectActionButton(button)
   button:SetNormalFontObject("GameFontNormalSmall")
   button:SetHighlightFontObject("GameFontHighlightSmall")
   button:SetDisabledFontObject("GameFontDisableSmall")
@@ -613,11 +614,11 @@ local function AddEPControls(frame, withRecurring)
       self:Disable()
     end
   end
+  GS.RegisterCallback(button, "StateChanged", "SetCurrentState")
 
   if withRecurring then
     local recurring =
       CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
-    GS:ProtectActionButton(recurring)
     recurring:SetWidth(20)
     recurring:SetHeight(20)
     recurring:SetPoint("TOP", editBox, "BOTTOMLEFT")
@@ -630,6 +631,7 @@ local function AddEPControls(frame, withRecurring)
         button.SetCurrentState(self)
       end
     end
+    GS.RegisterCallback(recurring, "StateChanged", "SetCurrentState")
 
     local label =
       frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -963,7 +965,6 @@ local function CreateEPGPFrameStandings()
                   ToggleOnlySideFrame(EPGPLogFrame)
                 end)
   local decay = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
-  GS:ProtectActionButton(decay)
   decay:SetNormalFontObject("GameFontNormalSmall")
   decay:SetHighlightFontObject("GameFontHighlightSmall")
   decay:SetDisabledFontObject("GameFontDisableSmall")
@@ -983,7 +984,8 @@ local function CreateEPGPFrameStandings()
     end
   end
   decay:SetScript("OnShow", decay.SetCurrentState)
-  EPGP.RegisterCallback(decay, "SetCurrentState")
+  EPGP.RegisterCallback(decay, "DecayPercentChanged", "SetCurrentState")
+  GS.RegisterCallback(decay, "StateChanged", "SetCurrentState")
 
   local recurringTime = main:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   recurringTime:SetHeight(16)

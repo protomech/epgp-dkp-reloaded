@@ -18,6 +18,7 @@
 local mod = EPGP:NewModule("EPGP_Log")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
+local GS = LibStub("LibGuildStorage-1.0")
 
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not mod.callbacks then
@@ -72,10 +73,15 @@ function mod:GetLogRecord(i)
   return LogRecordToString(EPGP.db.profile.log[logsize - i])
 end
 
-function mod:UndoLastAction()
-  if #EPGP.db.profile.log == 0 then
+function mod:CanUndo()
+  if not CanEditOfficerNote() or not GS:IsCurrentState() then
     return false
   end
+  return #EPGP.db.profile.log ~= 0
+end
+
+function mod:UndoLastAction()
+  assert(#EPGP.db.profile.log ~= 0)
 
   local record = table.remove(EPGP.db.profile.log)
   table.insert(EPGP.db.profile.redo, record)
@@ -97,13 +103,15 @@ function mod:UndoLastAction()
 end
 
 function mod:CanRedo()
+  if not CanEditOfficerNote() or not GS:IsCurrentState() then
+    return false
+  end
+
   return #EPGP.db.profile.redo ~= 0
 end
 
 function mod:RedoLastUndo()
-  if #EPGP.db.profile.redo == 0 then
-    return false
-  end
+  assert(#EPGP.db.profile.redo ~= 0)
 
   local record = table.remove(EPGP.db.profile.redo)
   local timestamp, kind, name, reason, amount = unpack(record)
@@ -140,7 +148,6 @@ end
 function mod:Rollback()
   assert(EPGP.db.profile.snapshot)
   local t = EPGP.db.profile.snapshot
-  local GS = LibStub("LibGuildStorage-1.0")
 
   -- Restore all notes
   for _, member_record in pairs(t.data) do

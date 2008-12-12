@@ -13,10 +13,6 @@
 --
 -- IsCurrentState(): Return true if the state of the library is current.
 --
--- ProtectActionButton(button): Enables and disables buttons
--- accordingly depending on the state of the library to avoid data
--- corruption.
---
 -- The library also fires the following messages, which you can
 -- register for through RegisterCallback and unregister through
 -- UnregisterCallback. You can also unregister all messages through
@@ -28,7 +24,10 @@
 -- GuildNoteChanged(name, note): Fired when a guild note changes. The
 --   name is the name of the member of which the note changed and the
 --   note is the new note.
-
+--
+-- StateChanged(): Fired when the state of the guild storage cache has
+-- changed.
+--
 local MAJOR_VERSION = "LibGuildStorage-1.0"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) or 0
 
@@ -52,19 +51,6 @@ local frame = lib.frame
 -- Possible states: STALE, LOCAL_PENDING, REMOTE_PENDING,
 -- REMOTE_FLUSHED, CURRENT
 local state = "STALE"
-local protected_buttons = {}
-
-local function LockActionButtons()
-  for button in pairs(protected_buttons) do
-    button:Disable()
-  end
-end
-
-local function RestoreActionButtons()
-  for button in pairs(protected_buttons) do
-    button:SetCurrentState()
-  end
-end
   
 local timers = LibStub("AceTimer-3.0")
 
@@ -120,14 +106,14 @@ local function UpdateGuildRoster()
     frame:Hide()
     if state == "STALE" then
       state = "CURRENT"
-      RestoreActionButtons()
+      callbacks:Fire("StateChanged")
     elseif state == "LOCAL_PENDING" then
       state = "CURRENT"
-      RestoreActionButtons()
+      callbacks:Fire("StateChanged")
       SendAddonMessage("EPGP", "CHANGES_FLUSHED", "GUILD")
     elseif state == "REMOTE_FLUSHED" then
       state = "CURRENT"
-      RestoreActionButtons()
+      callbacks:Fire("StateChanged")
     end
   end
 end
@@ -141,11 +127,12 @@ frame:RegisterEvent("CHAT_MSG_ADDON")
 function lib:CHAT_MSG_ADDON(prefix, msg, type, sender)
   if prefix == "EPGP" and sender ~= UnitName("player") then
     if msg == "CHANGES_PENDING" then
-      LockActionButtons()
       state = "REMOTE_PENDING"
+      callbacks:Fire("StateChanged")
     elseif msg == "CHANGES_FLUSHED" then
-      GuildRosterDelayed()
       state = "REMOTE_FLUSHED"
+      callbacks:Fire("StateChanged")
+      guildroster_timer = timers:ScheduleTimer(GuildRoster, 10)
     end
   end
 end
@@ -180,9 +167,9 @@ end
 function lib:SetNote(name, note)
   -- Also lock down all other clients as well
   if state == "CURRENT" then
-    LockActionButtons()
-    SendAddonMessage("EPGP", "CHANGES_PENDING", "GUILD")
     state = "LOCAL_PENDING"
+    callbacks:Fire("StateChanged")
+    SendAddonMessage("EPGP", "CHANGES_PENDING", "GUILD")
   end
 
   local entry = cache[name]
@@ -210,12 +197,7 @@ function lib:GetGuildInfo()
 end
 
 function lib:IsCurrentState()
-  return state == "CURRENT" or state == "LOCAL_PENDING"
-end
-
-function lib:ProtectActionButton(button)
-  assert(button:IsObjectType("Button"), "Argument must be a Button")
-  protected_buttons[button] = true
+  return state == "CURRENT"
 end
 
 GuildRosterDelayed()
