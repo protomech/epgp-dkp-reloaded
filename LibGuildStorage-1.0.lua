@@ -47,6 +47,7 @@ else
   lib.frame = CreateFrame("Frame", MAJOR_VERSION .. "_Frame")
 end
 local frame = lib.frame
+-- Possible states: STALE, LOCAL_PENDING, REMOTE_PENDING, CURRENT
 local state = "STALE"
 local protected_buttons = {}
 
@@ -174,12 +175,12 @@ function lib:GetNote(name)
 end
 
 function lib:SetNote(name, note)
-  LockActionButtons()
   -- Also lock down all other clients as well
-  if not changes_pending then
+  if state == "CURRENT" then
+    LockActionButtons()
     SendAddonMessage("EPGP", "CHANGES_PENDING", "GUILD")
+    state = "LOCAL_PENDING"
   end
-  state = "LOCAL_PENDING"
 
   local entry = cache[name]
   if not entry then
