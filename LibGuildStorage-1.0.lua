@@ -47,8 +47,21 @@ else
   lib.frame = CreateFrame("Frame", MAJOR_VERSION .. "_Frame")
 end
 local frame = lib.frame
-local changes_pending = false
+local state = "STALE"
 local protected_buttons = {}
+
+local function LockActionButtons()
+  for button in pairs(protected_buttons) do
+    button:Disable()
+  end
+end
+
+local function RestoreActionButtons()
+  for button in pairs(protected_buttons) do
+    button:SetCurrentState()
+  end
+end
+  
 local timers = LibStub("AceTimer-3.0")
 
 -- We want to not call GuildRoster continuously if we are doing a lot
@@ -101,12 +114,17 @@ local function UpdateGuildRoster()
   next_index = e + 1
   if next_index > GetNumGuildMembers(true) then
     frame:Hide()
-    for button, old_state in pairs(protected_buttons) do
-      if old_state then
-        button:SetCurrentState()
-      end
+    if state == "STALE" then
+      RestoreActionButtons()
+      state = "CURRENT"
+    elseif state == "LOCAL_PENDING" then
+      RestoreActionButtons()
+      SendAddonMessage("EPGP", "CHANGES_FLUSHED", "GUILD")
+      state = "CURRENT"
+    elseif state == "REMOTE_FLUSHED" then
+      RestoreActionButtons()
+      state = "CURRENT"
     end
-    changes_pending = false
   end
 end
 
@@ -114,6 +132,19 @@ frame:SetScript("OnUpdate", UpdateGuildRoster)
 
 frame:RegisterEvent("PLAYER_GUILD_UPDATE")
 frame:RegisterEvent("GUILD_ROSTER_UPDATE")
+frame:RegisterEvent("CHAT_MSG_ADDON")
+
+function lib:CHAT_MSG_ADDON(prefix, msg, type, sender)
+  if prefix == "EPGP" and sender ~= UnitName("player") then
+    if msg == "CHANGES_PENDING" then
+      LockActionButtons()
+      state = "REMOTE_PENDING"
+    elseif msg == "CHANGES_FLUSHED" then
+      GuildRosterDelayed()
+      state = "REMOTE_FLUSHED"
+    end
+  end
+end
 
 function lib:PLAYER_GUILD_UPDATE()
   -- Hide the frame to stop OnUpdate from reading guild information
@@ -143,6 +174,13 @@ function lib:GetNote(name)
 end
 
 function lib:SetNote(name, note)
+  LockActionButtons()
+  -- Also lock down all other clients as well
+  if not changes_pending then
+    SendAddonMessage("EPGP", "CHANGES_PENDING", "GUILD")
+  end
+  state = "LOCAL_PENDING"
+
   local entry = cache[name]
   if not entry then
     return
@@ -153,12 +191,6 @@ function lib:SetNote(name, note)
   -- TODO(alkis): Investigate performance issues in case we want to
   -- verify if this is the right index or not.
   GuildRosterSetOfficerNote(entry.index, note)
-  if not changes_pending then
-    for button in pairs(protected_buttons) do
-      button:Disable()
-    end
-  end
-  changes_pending = true
 end
 
 function lib:GetClass(name)
