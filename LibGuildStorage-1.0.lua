@@ -210,7 +210,7 @@ function lib:GetGuildInfo()
 end
 
 function lib:IsCurrentState()
-  return state == "CURRENT"
+  return state == "CURRENT" or state == "LOCAL_PENDING"
 end
 
 function lib:ProtectActionButton(button)
