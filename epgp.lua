@@ -47,13 +47,13 @@
 -- (GetDecayPercent()).
 --
 -- CanIncEPBy(reason, amount): Return true reason and amount are
--- reasonable values for IncEPBy.
+-- reasonable values for IncEPBy and the caller can change EPGP.
 --
 -- IncEPBy(name, reason, amount): Increases the EP of member <name> by
 -- <amount>. Returns the member's main character name.
 --
--- CanIncGPBy(reason, amount): Return true if reason and amount
--- are reasonable values for IncGPBy.
+-- CanIncGPBy(reason, amount): Return true if reason and amount are
+-- reasonable values for IncGPBy and the caller can change EPGP.
 --
 -- IncGPBy(name, reason, amount): Increases the GP of member <name> by
 -- <amount>. Returns the member's main character name.
@@ -68,6 +68,8 @@
 -- minutes. If val is nil it returns the current value.
 --
 -- GetDecayPercent(): Returns the decay percent configured in guild info.
+--
+-- CanDecayEPGP(): Returns true if the caller can decay EPGP.
 --
 -- GetBaseGP(): Returns the base GP configured in guild info.
 --
@@ -472,6 +474,13 @@ function EPGP:ResetEPGP()
   callbacks:Fire("EPGPReset")
 end
 
+function EPGP:CanDecayEPGP()
+  if not CanEditOfficerNote() or decay_p == 0 or not GS:IsCurrentState() then
+    return false
+  end
+  return true
+end
+
 function EPGP:DecayEPGP()
   local decay = decay_p  * 0.01
   local reason = string.format("Decay %d%%", decay_p)
@@ -506,6 +515,9 @@ function EPGP:GetClass(name)
 end
 
 function EPGP:CanIncEPBy(reason, amount)
+  if not CanEditOfficerNote() or not GS:IsCurrentState() then
+    return false
+  end
   if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
     return false
   end
@@ -526,6 +538,9 @@ function EPGP:IncEPBy(name, reason, amount, mass, undo)
 end
 
 function EPGP:CanIncGPBy(reason, amount)
+  if not CanEditOfficerNote() or not GS:IsCurrentState() then
+    return false
+  end
   if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
     return false
   end

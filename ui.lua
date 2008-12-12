@@ -976,10 +976,10 @@ local function CreateEPGPFrameStandings()
                     StaticPopup_Show("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
                   end)
   function decay:SetCurrentState()
-    if EPGP:GetDecayPercent() == 0 then
-      self:Disable()
-    else
+    if EPGP:CanDecayEPGP() then
       self:Enable()
+    else
+      self:Disable()
     end
   end
   decay:SetScript("OnShow", decay.SetCurrentState)

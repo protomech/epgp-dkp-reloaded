@@ -11,6 +11,8 @@
 --
 -- GetGuildInfo(): Returns the guild info text
 --
+-- IsCurrentState(): Return true if the state of the library is current.
+--
 -- ProtectActionButton(button): Enables and disables buttons
 -- accordingly depending on the state of the library to avoid data
 -- corruption.
@@ -47,7 +49,8 @@ else
   lib.frame = CreateFrame("Frame", MAJOR_VERSION .. "_Frame")
 end
 local frame = lib.frame
--- Possible states: STALE, LOCAL_PENDING, REMOTE_PENDING, CURRENT
+-- Possible states: STALE, LOCAL_PENDING, REMOTE_PENDING,
+-- REMOTE_FLUSHED, CURRENT
 local state = "STALE"
 local protected_buttons = {}
 
@@ -116,15 +119,15 @@ local function UpdateGuildRoster()
   if next_index > GetNumGuildMembers(true) then
     frame:Hide()
     if state == "STALE" then
-      RestoreActionButtons()
       state = "CURRENT"
+      RestoreActionButtons()
     elseif state == "LOCAL_PENDING" then
+      state = "CURRENT"
       RestoreActionButtons()
       SendAddonMessage("EPGP", "CHANGES_FLUSHED", "GUILD")
-      state = "CURRENT"
     elseif state == "REMOTE_FLUSHED" then
-      RestoreActionButtons()
       state = "CURRENT"
+      RestoreActionButtons()
     end
   end
 end
@@ -204,6 +207,10 @@ end
 
 function lib:GetGuildInfo()
   return guild_info
+end
+
+function lib:IsCurrentState()
+  return state == "CURRENT"
 end
 
 function lib:ProtectActionButton(button)
