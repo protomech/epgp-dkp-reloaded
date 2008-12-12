@@ -11,6 +11,9 @@
 --
 -- GetGuildInfo(): Returns the guild info text
 --
+-- ProtectActionButton(button): Enables and disables buttons
+-- accordingly depending on the state of the library to avoid data
+-- corruption.
 --
 -- The library also fires the following messages, which you can
 -- register for through RegisterCallback and unregister through
@@ -44,6 +47,19 @@ else
   lib.frame = CreateFrame("Frame", MAJOR_VERSION .. "_Frame")
 end
 local frame = lib.frame
+local changes_pending = false
+local protected_buttons = {}
+local timers = LibStub("AceTimer-3.0")
+
+-- We want to not call GuildRoster continuously if we are doing a lot
+-- of changes so delay it by 10 milliseconds. If another request comes
+-- in to update the roster in the meantime cancel the current one and
+-- schedule another after 10 milliseconds.
+local guildroster_timer
+local function GuildRosterDelayed()
+  timers:CancelTimer(guildroster_timer, true)
+  guildroster_timer = timers:ScheduleTimer(GuildRoster, 0.01)
+end
 
 frame:SetScript("OnEvent",
                 function(this, event, ...)
@@ -85,6 +101,12 @@ local function UpdateGuildRoster()
   next_index = e + 1
   if next_index > GetNumGuildMembers(true) then
     frame:Hide()
+    for button, old_state in pairs(protected_buttons) do
+      if old_state then
+        button:SetCurrentState()
+      end
+    end
+    changes_pending = false
   end
 end
 
@@ -98,12 +120,12 @@ function lib:PLAYER_GUILD_UPDATE()
   if frame:IsShown() and not IsInGuild() then
     frame:Hide()
   end
-  GuildRoster()
+  GuildRosterDelayed()
 end
 
 function lib:GUILD_ROSTER_UPDATE(loc)
   if loc then
-    GuildRoster()
+    GuildRosterDelayed()
     return
   end
 
@@ -131,6 +153,12 @@ function lib:SetNote(name, note)
   -- TODO(alkis): Investigate performance issues in case we want to
   -- verify if this is the right index or not.
   GuildRosterSetOfficerNote(entry.index, note)
+  if not changes_pending then
+    for button in pairs(protected_buttons) do
+      button:Disable()
+    end
+  end
+  changes_pending = true
 end
 
 function lib:GetClass(name)
@@ -145,5 +173,11 @@ function lib:GetGuildInfo()
   return guild_info
 end
 
-GuildRoster()
+function lib:ProtectActionButton(button)
+  assert(button:IsObjectType("Button"), "Argument must be a Button")
+  protected_buttons[button] = true
+end
+
+GuildRosterDelayed()
+last_guildroster_time = GetTime()
 frame:Hide()

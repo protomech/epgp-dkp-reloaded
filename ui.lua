@@ -2,6 +2,7 @@
 
 local mod = EPGP:NewModule("EPGP_UI")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
+local GS = LibStub("LibGuildStorage-1.0")
 local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
 
 local CURRENT_VERSION = GetAddOnMetadata('EPGP', 'Version')
@@ -263,6 +264,7 @@ local function CreateEPGPLogFrame()
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3)
 
   local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+  GS:ProtectActionButton(undo)
   undo:SetNormalFontObject("GameFontNormalSmall")
   undo:SetHighlightFontObject("GameFontHighlightSmall")
   undo:SetDisabledFontObject("GameFontDisableSmall")
@@ -274,8 +276,17 @@ local function CreateEPGPLogFrame()
                  function (self, value)
                    EPGP:GetModule("EPGP_Log"):UndoLastAction()
                  end)
+  function undo:SetCurrentState()
+    if EPGP:GetModule("EPGP_Log"):GetNumRecords() ~= 0 then
+      self:Enable()
+    else
+      self:Disable()
+    end
+  end
+  EPGP:GetModule("EPGP_Log").RegisterCallback(undo, "SetCurrentState")
 
   local redo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+  GS:ProtectActionButton(redo)
   redo:SetNormalFontObject("GameFontNormalSmall")
   redo:SetHighlightFontObject("GameFontHighlightSmall")
   redo:SetDisabledFontObject("GameFontDisableSmall")
@@ -287,6 +298,14 @@ local function CreateEPGPLogFrame()
                  function (self, value)
                    EPGP:GetModule("EPGP_Log"):RedoLastUndo()
                  end)
+  function redo:SetCurrentState()
+    if EPGP:GetModule("EPGP_Log"):CanRedo() then
+      self:Enable()
+    else
+      self:Disable()
+    end
+  end
+  EPGP:GetModule("EPGP_Log").RegisterCallback(redo, "SetCurrentState")
 
   local scrollParent = CreateFrame("Frame", nil, f)
   scrollParent:SetWidth(f:GetWidth() - 20)
@@ -352,16 +371,7 @@ local function CreateEPGPLogFrame()
         record:Hide()
       end
     end
-    if numRecords > 0 then
-      undo:Enable()
-    else
-      undo:Disable()
-    end
-    if log:CanRedo() then
-      redo:Enable()
-    else
-      redo:Disable()
-    end
+
     FauxScrollFrame_Update(
       scrollBar, numRecords, numDisplayedRecords, recordHeight)
   end
@@ -373,14 +383,6 @@ local function CreateEPGPLogFrame()
       FauxScrollFrame_OnVerticalScroll(scrollBar, value, recordHeight, LogChanged)
     end)
   EPGP:GetModule("EPGP_Log"):RegisterCallback("LogChanged", LogChanged)
-end
-
-local function GP_Validation(parent)
-  if EPGP:CanIncGPBy(UIDropDownMenu_GetText(parent.dropDown), parent.editBox:GetNumber()) then
-    parent.button:Enable()
-  else
-    parent.button:Disable()
-  end
 end
 
 local function EPGPSideFrameGPDropDown_Initialize(dropDown)
@@ -399,7 +401,7 @@ local function EPGPSideFrameGPDropDown_Initialize(dropDown)
                   end
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()
-                  GP_Validation(parent)
+                  parent.button:SetCurrentState()
                 end
     info.checked = false
     UIDropDownMenu_AddButton(info)
@@ -440,6 +442,7 @@ local function AddGPControls(frame)
   label:SetPoint("TOP", dropDown, "BOTTOM")
 
   local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+  GS:ProtectActionButton(button)
   button:SetNormalFontObject("GameFontNormalSmall")
   button:SetHighlightFontObject("GameFontHighlightSmall")
   button:SetDisabledFontObject("GameFontDisableSmall")
@@ -457,7 +460,17 @@ local function AddGPControls(frame)
   editBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   editBox:SetPoint("RIGHT", button, "LEFT")
   editBox:SetPoint("TOP", label, "BOTTOM")
-  editBox:SetScript("OnTextChanged", function(self) GP_Validation(frame) end)
+  editBox:SetScript("OnTextChanged",
+                    function(self) button:SetCurrentState() end)
+
+  function button:SetCurrentState()
+    if EPGP:CanIncGPBy(UIDropDownMenu_GetText(dropDown),
+                       editBox:GetNumber()) then
+      self:Enable()
+    else
+      self:Disable()
+    end
+  end
 
   frame:SetHeight(
     reasonLabel:GetHeight() +
@@ -478,29 +491,6 @@ local function AddGPControls(frame)
                   end)
 end
 
-local function EP_Validation(parent)
-  local reason = UIDropDownMenu_GetText(parent.dropDown)
-  if reason == L["Other"] then
-    reason = parent.otherEditBox:GetText()
-  end
-  local amount = parent.editBox:GetNumber()
-  if EPGP:CanIncEPBy(reason, amount) then
-    parent.button:Enable()
-    if parent.recurring then
-      parent.recurring:Enable()
-    end
-  else
-    parent.button:Disable()
-    if parent.recurring then
-      if EPGP:RunningRecurringEP() then
-        parent.recurring:Enable()
-      else
-        parent.recurring:Disable()
-      end
-    end
-  end
-end
-
 local function EPGPSideFrameEPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
   local info = UIDropDownMenu_CreateInfo()
@@ -515,7 +505,10 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                     parent.otherEditBox:EnableKeyboard(false)
                     parent.otherEditBox:EnableMouse(false)
                     parent.otherEditBox:ClearFocus()
-                    EP_Validation(parent)
+                    parent.button:SetCurrentState()
+                    if parent.recurring then
+                      parent.recurring:SetCurrentState()
+                    end
                   end
       info.checked = false
       UIDropDownMenu_AddButton(info)
@@ -530,7 +523,10 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                 parent.otherEditBox:EnableKeyboard(true)
                 parent.otherEditBox:EnableMouse(true)
                 parent.otherEditBox:SetFocus()
-                EP_Validation(parent)
+                parent.button:SetCurrentState()
+                if parent.recurring then
+                  parent.recurring:SetCurrentState()
+                end
               end
   info.checked = false
   UIDropDownMenu_AddButton(info)
@@ -565,7 +561,13 @@ local function AddEPControls(frame, withRecurring)
   otherEditBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   otherEditBox:SetPoint("RIGHT", frame, "RIGHT", -15, 0)
   otherEditBox:SetPoint("TOP", otherLabel, "BOTTOM")
-  otherEditBox:SetScript("OnTextChanged", function(self) EP_Validation(frame) end)
+  otherEditBox:SetScript("OnTextChanged",
+                         function(self)
+                           frame.button:SetCurrentState()
+                           if frame.recurring then
+                             frame.recurring:SetCurrentState()
+                           end
+                         end)
 
   local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   label:SetText(L["Value"])
@@ -573,6 +575,7 @@ local function AddEPControls(frame, withRecurring)
   label:SetPoint("TOP", otherEditBox, "BOTTOM")
 
   local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+  GS:ProtectActionButton(button)
   button:SetNormalFontObject("GameFontNormalSmall")
   button:SetHighlightFontObject("GameFontHighlightSmall")
   button:SetDisabledFontObject("GameFontDisableSmall")
@@ -590,15 +593,43 @@ local function AddEPControls(frame, withRecurring)
   editBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   editBox:SetPoint("RIGHT", button, "LEFT")
   editBox:SetPoint("TOP", label, "BOTTOM")
-  editBox:SetScript("OnTextChanged", function(self) EP_Validation(frame) end)
+  editBox:SetScript("OnTextChanged",
+                    function(self)
+                      frame.button:SetCurrentState()
+                      if frame.recurring then
+                        frame.recurring:SetCurrentState()
+                      end
+                    end)
+
+  function button:SetCurrentState()
+    local reason = UIDropDownMenu_GetText(dropDown)
+    if reason == L["Other"] then
+      reason = otherEditBox:GetText()
+    end
+    local amount = editBox:GetNumber()
+    if EPGP:CanIncEPBy(reason, amount) then
+      self:Enable()
+    else
+      self:Disable()
+    end
+  end
 
   if withRecurring then
     local recurring =
       CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+    GS:ProtectActionButton(recurring)
     recurring:SetWidth(20)
     recurring:SetHeight(20)
     recurring:SetPoint("TOP", editBox, "BOTTOMLEFT")
     recurring:SetPoint("LEFT", reasonLabel)
+
+    function recurring:SetCurrentState()
+      if EPGP:RunningRecurringEP() then
+        self:Enable()
+      else
+        button.SetCurrentState(self)
+      end
+    end
 
     local label =
       frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -743,23 +774,31 @@ local function CreateEPGPSideFrame(self)
   gpFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -30)
   gpFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -30)
   AddGPControls(gpFrame)
-  gpFrame.button:SetScript("OnClick",
-                           function(self)
-                             EPGP:IncGPBy(f.row.name, UIDropDownMenu_GetText(gpFrame.dropDown), gpFrame.editBox:GetNumber())
-                           end)
+  gpFrame.button:SetScript(
+    "OnClick",
+    function(self)
+      EPGP:IncGPBy(f.row.name,
+                   UIDropDownMenu_GetText(gpFrame.dropDown),
+                   gpFrame.editBox:GetNumber())
+    end)
 
   local epFrame = CreateFrame("Frame", nil, f)
   epFrame:SetPoint("TOPLEFT", gpFrame, "BOTTOMLEFT", 0, -15)
   epFrame:SetPoint("TOPRIGHT", gpFrame, "BOTTOMRIGHT", 0, -15)
   AddEPControls(epFrame)
-  epFrame.button:SetScript("OnClick",
-                           function(self)
-                             if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
-                               EPGP:IncEPBy(f.row.name, epFrame.otherEditBox:GetText(), epFrame.editBox:GetNumber())
-                             else
-                               EPGP:IncEPBy(f.row.name, UIDropDownMenu_GetText(epFrame.dropDown), epFrame.editBox:GetNumber())
-                             end
-                           end)
+  epFrame.button:SetScript(
+    "OnClick",
+    function(self)
+      if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
+        EPGP:IncEPBy(f.row.name,
+                     epFrame.otherEditBox:GetText(),
+                     epFrame.editBox:GetNumber())
+      else
+        EPGP:IncEPBy(f.row.name,
+                     UIDropDownMenu_GetText(epFrame.dropDown),
+                     epFrame.editBox:GetNumber())
+      end
+    end)
 
   f:SetScript("OnShow",
               function(self)
@@ -924,6 +963,7 @@ local function CreateEPGPFrameStandings()
                   ToggleOnlySideFrame(EPGPLogFrame)
                 end)
   local decay = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
+  GS:ProtectActionButton(decay)
   decay:SetNormalFontObject("GameFontNormalSmall")
   decay:SetHighlightFontObject("GameFontHighlightSmall")
   decay:SetDisabledFontObject("GameFontDisableSmall")
@@ -935,15 +975,15 @@ local function CreateEPGPFrameStandings()
                   function(self, button, down)
                     StaticPopup_Show("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
                   end)
-  function decay:DecayPercentChanged()
+  function decay:SetCurrentState()
     if EPGP:GetDecayPercent() == 0 then
       self:Disable()
     else
       self:Enable()
     end
   end
-  decay:SetScript("OnShow", decay.OnDecayPercentChanged)
-  EPGP.RegisterCallback(decay, "DecayPercentChanged")
+  decay:SetScript("OnShow", decay.SetCurrentState)
+  EPGP.RegisterCallback(decay, "SetCurrentState")
 
   local recurringTime = main:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   recurringTime:SetHeight(16)
