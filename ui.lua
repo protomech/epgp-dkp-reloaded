@@ -275,6 +275,19 @@ local function CreateEPGPLogFrame()
                    EPGP:GetModule("EPGP_Log"):UndoLastAction()
                  end)
 
+  local redo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+  redo:SetNormalFontObject("GameFontNormalSmall")
+  redo:SetHighlightFontObject("GameFontHighlightSmall")
+  redo:SetDisabledFontObject("GameFontDisableSmall")
+  redo:SetHeight(BUTTON_HEIGHT)
+  redo:SetText(L["Redo"])
+  redo:SetWidth(redo:GetTextWidth() + BUTTON_TEXT_PADDING)
+  redo:SetPoint("RIGHT", undo, "LEFT")
+  redo:SetScript("OnClick",
+                 function (self, value)
+                   EPGP:GetModule("EPGP_Log"):RedoLastUndo()
+                 end)
+
   local scrollParent = CreateFrame("Frame", nil, f)
   scrollParent:SetWidth(f:GetWidth() - 20)
   scrollParent:SetHeight(f:GetHeight() - 65)
@@ -343,6 +356,11 @@ local function CreateEPGPLogFrame()
       undo:Enable()
     else
       undo:Disable()
+    end
+    if log:CanRedo() then
+      redo:Enable()
+    else
+      redo:Disable()
     end
     FauxScrollFrame_Update(
       scrollBar, numRecords, numDisplayedRecords, recordHeight)
@@ -915,7 +933,7 @@ local function CreateEPGPFrameStandings()
   decay:SetWidth(decay:GetTextWidth() + BUTTON_TEXT_PADDING)
   decay:SetScript("OnClick",
                   function(self, button, down)
-                    StaticPopup_Show("EPGP_DECAY_EPGP")
+                    StaticPopup_Show("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
                   end)
   function decay:DecayPercentChanged()
     if EPGP:GetDecayPercent() == 0 then

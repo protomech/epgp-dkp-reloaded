@@ -125,17 +125,12 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 }
 
 StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
-  text = "",
+  text = L["Decay EP and GP by %d%%?"],
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
   hideOnEscape = 1,
   whileDead = 1,
-  OnShow = function()
-             local text = getglobal(this:GetName().."Text")
-             text:SetFormattedText(L["Decay EP and GP by %d%%?"],
-                                   EPGP:GetDecayPercent())
-           end,
   OnAccept = function()
                EPGP:DecayEPGP()
              end
@@ -150,5 +145,17 @@ StaticPopupDialogs["EPGP_RESET_EPGP"] = {
   whileDead = 1,
   OnAccept = function()
                EPGP:ResetEPGP()
+             end
+}
+
+StaticPopupDialogs["EPGP_ROLLBACK_EPGP"] = {
+  text = L["Rollback to snapshot taken on %s?"],
+  button1 = ACCEPT,
+  button2 = CANCEL,
+  timeout = 0,
+  hideOnEscape = 1,
+  whileDead = 1,
+  OnAccept = function()
+               EPGP:GetModule("EPGP_Log"):Rollback()
              end
 }

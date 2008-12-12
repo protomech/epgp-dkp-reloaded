@@ -78,12 +78,25 @@ function mod:OnEnable()
         name = L["Custom announce channel name"],
         desc = L["Sets the custom announce channel name used to announce EPGP actions."],
       },
-      reset = {
+      rollback = {
         order = 100,
+        type = "execute",
+        name = L["Rollback EPGP"],
+        desc = L["Rollbacks to the latest snapshot of EPGP taken at logout"],
+        func = function()
+                 StaticPopup_Show(
+                   "EPGP_ROLLBACK_EPGP",
+                   EPGP:GetModule("EPGP_Log"):GetSnapshotTimeString())
+               end,
+      },
+      reset = {
+        order = 101,
         type = "execute",
         name = L["Reset EPGP"],
         desc = L["Resets EP and GP of all members of the guild. This will set all main toons' EP and GP to 0. Use with care!"],
-        func = function() StaticPopup_Show("EPGP_RESET_EPGP") end,
+        func = function()
+                 StaticPopup_Show("EPGP_RESET_EPGP")
+               end,
       },
     },
   }

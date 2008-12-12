@@ -636,6 +636,7 @@ function EPGP:OnInitialize()
     {
       profile = {
         log = {},
+        redo = {},
         show_everyone = false,
         sort_order = "PR",
         recurring_ep_period_mins = 15,

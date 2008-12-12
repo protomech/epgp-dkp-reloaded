@@ -37,6 +37,10 @@ end
 
 local function AppendToLog(kind, event_type, name, reason, amount, mass, undo)
   if not undo then
+    -- Clear the redo table
+    for k,_ in ipairs(EPGP.db.profile.redo) do
+      EPGP.db.profile.redo[k] = nil
+    end
     table.insert(EPGP.db.profile.log,
                  {GetTimestamp(), kind, name, reason, amount})
     callbacks:Fire("LogChanged", #EPGP.db.profile.log)
@@ -74,6 +78,8 @@ function mod:UndoLastAction()
   end
 
   local record = table.remove(EPGP.db.profile.log)
+  table.insert(EPGP.db.profile.redo, record)
+
   local timestamp, kind, name, reason, amount = unpack(record)
 
   local ep, gp, main = EPGP:GetEPGP(name)
@@ -90,7 +96,97 @@ function mod:UndoLastAction()
   return true
 end
 
+function mod:CanRedo()
+  return #EPGP.db.profile.redo ~= 0
+end
+
+function mod:RedoLastUndo()
+  if #EPGP.db.profile.redo == 0 then
+    return false
+  end
+
+  local record = table.remove(EPGP.db.profile.redo)
+  local timestamp, kind, name, reason, amount = unpack(record)
+
+  local ep, gp, main = EPGP:GetEPGP(name)
+  if kind == "EP" then
+    EPGP:IncEPBy(name, L["Redo"].." "..reason, amount, false, true)
+    table.insert(EPGP.db.profile.log, record)
+  elseif kind == "GP" then
+    EPGP:IncGPBy(name, L["Redo"].." "..reason, amount, false, true)
+    table.insert(EPGP.db.profile.log, record)
+  else
+    assert(false, "Unknown record in the log")
+  end
+
+  callbacks:Fire("LogChanged", #EPGP.db.profile.log)
+  return true
+end
+
+function mod:Snapshot()
+  local t = EPGP.db.profile.snapshot
+  if not t then
+    t = {}
+    EPGP.db.profile.snapshot = t
+  end
+  t.time = GetTimestamp()
+  t.data = {}
+  for i=1,GetNumGuildMembers(true) do
+    local name, _, _, _, _, _, _, note, _, _, class = GetGuildRosterInfo(i)
+    table.insert(t.data, {name, note, class})
+  end
+end
+
+function mod:Rollback()
+  assert(EPGP.db.profile.snapshot)
+  local t = EPGP.db.profile.snapshot
+  local GS = LibStub("LibGuildStorage-1.0")
+
+  -- Restore all notes
+  for _, member_record in pairs(t.data) do
+    GS:SetNote(member_record[1], member_record[2])
+  end
+
+  -- Trim the log if necessary.
+  local timestamp = t.time
+  while true do
+    local records = #EPGP.db.profile.log
+    if records == 0 then
+      break
+    end
+    
+    if EPGP.db.profile.log[records][1] > timestamp then
+      table.remove(EPGP.db.profile.log)
+    else
+      break
+    end
+  end
+  -- Add the redos back to the log if necessary.
+  while #EPGP.db.profile.redo ~= 0 do
+    local record = table.remove(EPGP.db.profile.redo)
+    if record[1] < timestamp then
+      table.insert(EPGP.db.profile.log, record)
+    end
+  end
+
+  callbacks:Fire("LogChanged", #EPGP.db.profile.log)
+end
+
+function mod:HasSnapshot()
+  return not not EPGP.db.profile.snapshot
+end
+
+function mod:GetSnapshotTimeString()
+  assert(EPGP.db.profile.snapshot)
+  return date("%Y-%m-%d %H:%M", EPGP.db.profile.snapshot.time)
+end
+
 function mod:OnEnable()
   EPGP.RegisterCallback(mod, "EPAward", AppendToLog, "EP")
   EPGP.RegisterCallback(mod, "GPAward", AppendToLog, "GP")
+
+  -- Now we setup the auto-snapshot on db shutdown
+  EPGP.db.RegisterCallback(self, "OnDatabaseShutdown", "Snapshot")
+  -- Save the realm of this guild
+  EPGP.db.realm = GetRealmName()
 end
