@@ -395,12 +395,8 @@ local function EPGPSideFrameGPDropDown_Initialize(dropDown)
     info.text = itemLink
     info.func = function(self)
                   UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                  local value = GPTooltip:GetGPValue(itemLink)
-                  if value then
-                    parent.editBox:SetText(value)
-                  else
-                    parent.editBox:SetText("")
-                  end
+                  local text = GPTooltip:GetGPValueText(itemLink)
+                  parent.editBox:SetText(text)
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()
                   parent.button:SetCurrentState()

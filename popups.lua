@@ -74,14 +74,8 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              editBox:SetPoint("RIGHT", -35, 0)
              button1:SetPoint("TOPRIGHT", itemFrame, "BOTTOMRIGHT", 85, -6)
 
-             local gp1, gp2 = GPTooltip:GetGPValue(itemFrame.link)
-             if gp1 then
-               if gp2 then
-                 editBox:SetText(L["%d or %d"]:format(gp1, gp2))
-               else
-                 editBox:SetText(gp1)
-               end
-             end
+             local text = GPTooltip:GetGPValueText(itemFrame.link)
+             editBox:SetText(text)
              editBox:HighlightText()
              EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
            end,

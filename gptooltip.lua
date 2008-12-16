@@ -219,6 +219,18 @@ function mod:GetGPValue(itemLink)
   return high, low, level
 end
 
+function mod:GetGPValueText(itemLink)
+  local gp1, gp2 = self:GetGPValue(itemLink)
+  if gp1 then
+    if gp2 then
+      return L["%d or %d"]:format(gp1, gp2)
+    else
+      tostring(gp1)
+    end
+  end
+  return ""
+end
+
 function OnTooltipSetItem(tooltip, ...)
   local _, itemlink = tooltip:GetItem()
   local gp1, gp2, ilvl = mod:GetGPValue(itemlink)
