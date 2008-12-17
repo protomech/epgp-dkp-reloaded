@@ -1000,11 +1000,37 @@ local function CreateEPGPFrameStandings()
   EPGP.RegisterCallback(recurringTime, "StopRecurringAward")
   EPGP.RegisterCallback(recurringTime, "RecurringAwardUpdate")
 
+  -- Make the status text
+  local statusText = main:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+  statusText:SetHeight(16)
+  statusText:SetJustifyH("CENTER")
+  statusText:SetPoint("BOTTOMLEFT", award, "TOPLEFT")
+  statusText:SetPoint("BOTTOMRIGHT", log, "TOPRIGHT")
+
+  function statusText:StatusTextUpdate()
+    local mode
+    if UnitInRaid("player") then
+      mode = "|cFFFF0000"..RAID.."|r"
+    else
+      mode = "|cFF00FF00"..GUILD.."|r"
+    end
+    self:SetFormattedText(
+      L["%s   Decay=%s%% BaseGP=%s MinEP=%s"],
+      mode,
+      "|cFFFFFFFF"..EPGP:GetDecayPercent().."|r",
+      "|cFFFFFFFF"..EPGP:GetBaseGP().."|r",
+      "|cFFFFFFFF"..EPGP:GetMinEP().."|r")
+  end
+  EPGP.RegisterCallback(statusText, "StandingsChanged", "StatusTextUpdate")
+  EPGP.RegisterCallback(statusText, "DecayPercentChanged", "StatusTextUpdate")
+  EPGP.RegisterCallback(statusText, "BaseGPChanged", "StatusTextUpdate")
+  EPGP.RegisterCallback(statusText, "MinEPChanged", "StatusTextUpdate")
+
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)
   tabl:SetPoint("TOPLEFT")
   tabl:SetPoint("TOPRIGHT")
-  tabl:SetPoint("BOTTOM", award, "TOP")
+  tabl:SetPoint("BOTTOM", statusText, "TOP")
 
   -- Populate the table
   CreateTable(tabl,
