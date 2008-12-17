@@ -393,9 +393,10 @@ local function EPGPSideFrameGPDropDown_Initialize(dropDown)
     local info = UIDropDownMenu_CreateInfo()
     local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
     info.text = itemLink
-    info.func = function(self)
+    info.arg1 = itemLink
+    info.func = function(self, arg1)
                   UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                  local text = GPTooltip:GetGPValueText(self.text)
+                  local text = GPTooltip:GetGPValueText(arg1)
                   parent.editBox:SetText(text)
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()
