@@ -389,19 +389,18 @@ end
 
 local function EPGPSideFrameGPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
-  local info = UIDropDownMenu_CreateInfo()
   for i=1,GPTooltip:GetNumRecentItems() do
+    local info = UIDropDownMenu_CreateInfo()
     local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
     info.text = itemLink
     info.func = function(self)
                   UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                  local text = GPTooltip:GetGPValueText(itemLink)
+                  local text = GPTooltip:GetGPValueText(self.text)
                   parent.editBox:SetText(text)
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()
                   parent.button:SetCurrentState()
                 end
-    info.checked = false
     UIDropDownMenu_AddButton(info)
   end
 end
@@ -416,20 +415,17 @@ local function AddGPControls(frame)
                                frame, "UIDropDownMenuTemplate")
   dropDown:EnableMouse(true)
   UIDropDownMenu_Initialize(dropDown, EPGPSideFrameGPDropDown_Initialize)
-  UIDropDownMenu_SetSelectedValue(dropDown, 1)
   UIDropDownMenu_SetWidth(dropDown, 150)
   UIDropDownMenu_JustifyText(dropDown, "LEFT")
   dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
   getglobal(dropDown:GetName().."Button"):SetScript(
     "OnEnter",
     function(self)
-      GameTooltip_SetDefaultAnchor(GameTooltip, self)
-      GameTooltip:AddLine(
-        L["This menu displays items recently seen by your client"],
-        NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, true)
-      GameTooltip:ClearAllPoints()
-      GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
-      GameTooltip:Show()
+      local itemLink = UIDropDownMenu_GetText(self:GetParent())
+      if itemLink then
+        GameTooltip:SetOwner(self:GetParent(), "ANCHOR_RIGHT", 5)
+        GameTooltip:SetHyperlink(itemLink)
+      end
     end)
   dropDown:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
@@ -491,10 +487,10 @@ end
 
 local function EPGPSideFrameEPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
-  local info = UIDropDownMenu_CreateInfo()
   local dungeons = {CalendarEventGetTextures(1)}
   for i=1,#dungeons,3 do
     if dungeons[i+2] == 2 then
+      local info = UIDropDownMenu_CreateInfo()
       info.text = dungeons[i]
       info.func = function(self)
                     UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
@@ -508,11 +504,11 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                       parent.recurring:SetCurrentState()
                     end
                   end
-      info.checked = false
       UIDropDownMenu_AddButton(info)
     end
   end
 
+  local info = UIDropDownMenu_CreateInfo()
   info.text = L["Other"]
   info.func = function(self)
                 UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
@@ -540,7 +536,6 @@ local function AddEPControls(frame, withRecurring)
                                frame, "UIDropDownMenuTemplate")
   dropDown:EnableMouse(true)
   UIDropDownMenu_Initialize(dropDown, EPGPSideFrameEPDropDown_Initialize)
-  UIDropDownMenu_SetSelectedValue(dropDown, 1)
   UIDropDownMenu_SetWidth(dropDown, 150)
   UIDropDownMenu_JustifyText(dropDown, "LEFT")
   dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")

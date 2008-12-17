@@ -58,6 +58,5 @@ L["Sets the custom announce channel name used to announce EPGP actions."] = true
 L["Show everyone"] = true
 L["Start recurring award (%s) %d EP/%s"] = true
 L["Stop recurring award"] = true
-L["This menu displays items recently seen by your client"] = true
 L["Undo"] = true
 L["Value"] = true
