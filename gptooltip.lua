@@ -225,7 +225,7 @@ function mod:GetGPValueText(itemLink)
     if gp2 then
       return L["%d or %d"]:format(gp1, gp2)
     else
-      tostring(gp1)
+      return tostring(gp1)
     end
   end
   return ""
