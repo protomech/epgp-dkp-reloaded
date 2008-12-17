@@ -1015,8 +1015,9 @@ local function CreateEPGPFrameStandings()
       mode = "|cFF00FF00"..GUILD.."|r"
     end
     self:SetFormattedText(
-      L["%s   Decay=%s%% BaseGP=%s MinEP=%s"],
+      L["%s (%s)  Decay=%s%% BaseGP=%s MinEP=%s"],
       mode,
+      "|cFFFFFFFF"..EPGP:GetNumMembersInAwardList().."|r",
       "|cFFFFFFFF"..EPGP:GetDecayPercent().."|r",
       "|cFFFFFFFF"..EPGP:GetBaseGP().."|r",
       "|cFFFFFFFF"..EPGP:GetMinEP().."|r")

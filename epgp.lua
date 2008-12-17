@@ -27,6 +27,9 @@
 -- DeSelectMember(name): Deselect member for award. Returns true if
 -- the member was added, false otherwise.
 --
+-- GetNumMembersInAwardList(): Returns the number of members in the
+-- award list.
+--
 -- IsMemberInAwardList(name): Returns true if member is in the award
 -- list. When in a raid, this returns true for members in the raid and
 -- members selected. When not in raid this returns true for everyone
@@ -433,6 +436,18 @@ function EPGP:DeSelectMember(name)
   selected._count = selected._count - 1
   DestroyStandings()
   return true
+end
+
+function EPGP:GetNumMembersInAwardList()
+  if UnitInRaid("player") then
+    return GetNumRaidMembers() + selected._count
+  else
+    if selected._count == 0 then
+      return self:GetNumMembers()
+    else
+      return selected._count
+    end
+  end
 end
 
 function EPGP:IsMemberInAwardList(name)
