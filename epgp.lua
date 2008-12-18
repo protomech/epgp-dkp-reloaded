@@ -331,12 +331,9 @@ local function ParseGuildNote(callback, name, note)
     -- If this is was an alt we need to fix the alts state
     local main = main_data[name]
     if main then
-      EPGP:Print("found main: %s for alt: %s", main, name)
       if alt_data[main] then
         for i,alt in ipairs(alt_data[main]) do
-          EPGP:Print("alt %d of %s: %s", i, main, alt)
           if alt == name then
-            EPGP:Print("removing alt: %s", alt)
             table.remove(alt_data[main], i)
             break
           end
