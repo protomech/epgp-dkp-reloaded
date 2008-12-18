@@ -771,7 +771,7 @@ local function CreateEPGPSideFrame(self)
   gpFrame.button:SetScript(
     "OnClick",
     function(self)
-      EPGP:IncGPBy(f.row.name,
+      EPGP:IncGPBy(f.name,
                    UIDropDownMenu_GetText(gpFrame.dropDown),
                    gpFrame.editBox:GetNumber())
     end)
@@ -784,11 +784,11 @@ local function CreateEPGPSideFrame(self)
     "OnClick",
     function(self)
       if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
-        EPGP:IncEPBy(f.row.name,
+        EPGP:IncEPBy(f.name,
                      epFrame.otherEditBox:GetText(),
                      epFrame.editBox:GetNumber())
       else
-        EPGP:IncEPBy(f.row.name,
+        EPGP:IncEPBy(f.name,
                      UIDropDownMenu_GetText(epFrame.dropDown),
                      epFrame.editBox:GetNumber())
       end
@@ -796,12 +796,7 @@ local function CreateEPGPSideFrame(self)
 
   f:SetScript("OnShow",
               function(self)
-                self.title:SetText(self.row.name)
-              end)
-
-  f:SetScript("OnHide",
-              function(self)
-                self.row:UnlockHighlight()
+                self.title:SetText(self.name)
               end)
 end
 
@@ -1068,10 +1063,10 @@ local function CreateEPGPFrameStandings()
                       EPGP:SelectMember(self.name)
                     end
                   else
-                    if EPGPSideFrame.row ~= self then
-                      EPGPSideFrame:Hide()
+                    if EPGPSideFrame.name ~= self.name then
                       self:LockHighlight()
-                      EPGPSideFrame.row = self
+                      EPGPSideFrame:Hide()
+                      EPGPSideFrame.name = self.name
                     end
                     ToggleOnlySideFrame(EPGPSideFrame)
                   end
@@ -1158,9 +1153,8 @@ local function CreateEPGPFrameStandings()
         row:Hide()
       end
       -- Fix the highlighting of the rows
-      if row.name == EPGPSideFrame.title:GetText() then
+      if row.name == EPGPSideFrame.name then
         row:LockHighlight()
-        EPGPSideFrame.row = row
       else
         row:UnlockHighlight()
       end
@@ -1168,6 +1162,11 @@ local function CreateEPGPFrameStandings()
     FauxScrollFrame_Update(EPGPScrollFrame, numMembers, numDisplayedMembers,
                            rowFrame.rowHeight, nil, nil, nil, nil,
                            nil, nil, true)
+    EPGPSideFrame:SetScript("OnHide",
+                            function(self)
+                              self.name = nil
+                              UpdateStandings()
+                            end)
   end
 
   EPGP.RegisterCallback(EPGPScrollFrame, "StandingsChanged", UpdateStandings)
