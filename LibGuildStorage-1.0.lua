@@ -51,7 +51,8 @@ local frame = lib.frame
 -- Possible states: STALE, LOCAL_PENDING, REMOTE_PENDING,
 -- REMOTE_FLUSHED, CURRENT
 local state = "STALE"
-  
+local initialized = false
+
 local timers = LibStub("AceTimer-3.0")
 
 -- We want to not call GuildRoster continuously if we are doing a lot
@@ -97,13 +98,27 @@ local function UpdateGuildRoster()
       t.class = class
       if t.note ~= note then
         t.note = note
-        callbacks:Fire("GuildNoteChanged", name, note)
+        -- We want to delay all GuildNoteChanged calls until we have a
+        -- complete view of the guild, otherwise alts might not be
+        -- rejected (we read alts note before we even know about the
+        -- main).
+        if initialized then
+          callbacks:Fire("GuildNoteChanged", name, note)
+        end
       end
     end
   end
   next_index = e + 1
   if next_index > GetNumGuildMembers(true) then
     frame:Hide()
+    if not initialized then
+      initialized = true
+      -- Now make all GuildNoteChanged calls because we have a full
+      -- state.
+      for name, t in pairs(cache) do
+        callbacks:Fire("GuildNoteChanged", name, t.note)
+      end
+    end
     if state == "STALE" then
       state = "CURRENT"
       callbacks:Fire("StateChanged")

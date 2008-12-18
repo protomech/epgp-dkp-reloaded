@@ -326,33 +326,43 @@ local function ParseGuildInfo(callback, info)
 end
 
 local function ParseGuildNote(callback, name, note)
-  local ep, gp = DecodeNote(note)
-  if ep then
-    -- If this is was an alt we need to fix the alts state
-    local main = main_data[name]
-    if main then
-      if alt_data[main] then
-        for i,alt in ipairs(alt_data[main]) do
-          if alt == name then
-            table.remove(alt_data[main], i)
-            break
-          end
+  -- If this is was an alt we need to fix the alts state
+  local main = main_data[name]
+  if main then
+    if alt_data[main] then
+      for i,alt in ipairs(alt_data[main]) do
+        if alt == name then
+          table.remove(alt_data[main], i)
+          break
         end
       end
-      main_data[name] = nil
     end
+    main_data[name] = nil
+  end
+  -- Delete any existing cached values
+  ep_data[name] = nil
+  gp_data[name] = nil
+
+  local ep, gp = DecodeNote(note)
+  if ep then
     ep_data[name] = ep
     gp_data[name] = gp
   else
-    -- This is an alt we need to associate with a main and also add
-    -- to the list of alts of this main
-    main_data[name] = note
-    if not alt_data[note] then
-      alt_data[note] = {}
+    if not GS:GetNote(note) then
+      -- If this note has junk let the user know and pretend it
+      -- doesn't exist
+      EPGP:Print(
+        L["Invalid officer note [%s] for %s (ignored)"]:format(note, name))
+    else
+      -- Otherwise setup the alts state 
+      main_data[name] = note
+      if not alt_data[note] then
+        alt_data[note] = {}
+      end
+      table.insert(alt_data[note], name)
+      ep_data[name] = nil
+      gp_data[name] = nil
     end
-    table.insert(alt_data[note], name)
-    ep_data[name] = nil
-    gp_data[name] = nil
   end
   DestroyStandings()
 end
