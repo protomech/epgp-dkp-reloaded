@@ -13,6 +13,13 @@
 --
 -- IsCurrentState(): Return true if the state of the library is current.
 --
+-- Snapshot(table): Write out snapshot in the table
+-- provided. table.guild_info will contain the epgp clause in guild
+-- info and table.notes a table of {name, class, note}.
+--
+-- Rollback(table): Given the table filled in by Snapshot, rollback
+-- the state of the officer notes and guild info to that.
+--
 -- The library also fires the following messages, which you can
 -- register for through RegisterCallback and unregister through
 -- UnregisterCallback. You can also unregister all messages through
@@ -213,6 +220,25 @@ end
 
 function lib:IsCurrentState()
   return state == "CURRENT"
+end
+
+function lib:Snapshot(t)
+  assert(type(t) == "table")
+  t.guild_info = guild_info:match("%-EPGP%-\n(.*)\n\%-EPGP%-")
+  t.roster_info = {}
+  for name,info in pairs(cache) do
+    table.insert(t.roster_info, {name, info.class, info.note})
+  end
+end
+
+function lib:Rollback(t)
+  assert(type(t) == "table")
+  SetGuildInfoText(guild_info:gsub("%-EPGP%-\n.*\n\%-EPGP%-",
+                                   "-EPGP-\n"..t.guild_info.."\n-EPGP-"))
+  for _,i in pairs(t.roster_info) do
+    lib:SetNote(i[1], i[3])
+  end
+  GuildRosterDelayed()
 end
 
 GuildRosterDelayed()

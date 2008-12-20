@@ -138,11 +138,7 @@ function mod:Snapshot()
     EPGP.db.profile.snapshot = t
   end
   t.time = GetTimestamp()
-  t.data = {}
-  for i=1,GetNumGuildMembers(true) do
-    local name, _, _, _, _, _, _, note, _, _, class = GetGuildRosterInfo(i)
-    table.insert(t.data, {name, note, class})
-  end
+  GS:Snapshot(t)
 end
 
 function mod:Rollback()
@@ -150,9 +146,7 @@ function mod:Rollback()
   local t = EPGP.db.profile.snapshot
 
   -- Restore all notes
-  for _, member_record in pairs(t.data) do
-    GS:SetNote(member_record[1], member_record[2])
-  end
+  GS:Rollback(t)
 
   -- Trim the log if necessary.
   local timestamp = t.time
