@@ -17,7 +17,12 @@ local function Announce(fmt, ...)
   local str = "EPGP:"
   for _,s in pairs({strsplit(" ", msg)}) do
     if #str + #s >= 250 then
-      SendChatMessage(str, medium, nil, GetChannelName(channel))
+      if ChatThrottleLib then
+        ChatThrottleLib:SendChatMessage(
+          "NORMAL", "EPGP", str, medium, nil, GetChannelName(channel))
+      else
+        SendChatMessage(str, medium, nil, GetChannelName(channel))
+      end
       str = "EPGP:"
     end
     str = str .. " " .. s
