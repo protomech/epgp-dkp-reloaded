@@ -8,10 +8,8 @@ local function EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
   local gp = tonumber(self.editBox:GetText())
   if EPGP:CanIncGPBy(link, gp) then
     self.button1:Enable()
-    self.button3:Enable()
   else
     self.button1:Disable()
-    self.button3:Disable()
   end
 end
 
@@ -53,58 +51,42 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
                EPGP:IncGPBy(self.name, link, gp)
              end,
 
-  OnCancel = function(self)
-               self:Hide()
-               ClearCursor()
-             end,
-
-  OnShow = function(self)
-             local itemFrame = getglobal(self:GetName().."ItemFrame")
-             local editBox = getglobal(self:GetName().."EditBox")
-             local button1 = getglobal(self:GetName().."Button1")
-
+  OnShow = function(self, data)
              if not blizzardPopupAnchors[self] then
                blizzardPopupAnchors[self] = {}
                SaveAnchors(blizzardPopupAnchors[self],
-                           itemFrame, editBox, button1)
+                           self.itemFrame, self.editBox, self.button1)
              end
 
-             itemFrame:SetPoint("TOPLEFT", 35, -35)
-             editBox:SetPoint("TOPLEFT", itemFrame, "TOPRIGHT", 150, -10)
-             editBox:SetPoint("RIGHT", -35, 0)
-             button1:SetPoint("TOPRIGHT", itemFrame, "BOTTOMRIGHT", 85, -6)
+             self.itemFrame:SetPoint("TOPLEFT", 35, -35)
+             self.editBox:SetPoint(
+               "TOPLEFT", self.itemFrame, "TOPRIGHT", 150, -10)
+             self.editBox:SetPoint("RIGHT", -35, 0)
+             self.button1:SetPoint(
+               "TOPRIGHT", self.itemFrame, "BOTTOMRIGHT", 85, -6)
 
-             local text = GPTooltip:GetGPValueText(itemFrame.link)
-             editBox:SetText(text)
-             editBox:HighlightText()
+             local text = GPTooltip:GetGPValueText(self.itemFrame.link)
+             self.editBox:SetText(text)
+             self.editBox:HighlightText()
              EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
            end,
 
   OnHide = function(self)
-             local itemFrame = getglobal(self:GetName().."ItemFrame")
-             local editBox = getglobal(self:GetName().."EditBox")
-             local button1 = getglobal(self:GetName().."Button1")
-             
              -- Clear anchor points of frames that we modified, and revert them.
-             itemFrame:ClearAllPoints()
-             editBox:ClearAllPoints()
-             button1:ClearAllPoints()
+             self.itemFrame:ClearAllPoints()
+             self.editBox:ClearAllPoints()
+             self.button1:ClearAllPoints()
 
              RestoreAnchors(blizzardPopupAnchors[self])
            
              if ChatFrameEditBox:IsShown() then
                ChatFrameEditBox:SetFocus()
              end
+             self.editBox:SetText("")
            end,
 
   EditBoxOnEnterPressed = function(self)
-                            local parent = self:GetParent()
-                            local link = parent.itemFrame.link
-                            local gp = tonumber(parent.editBox:GetText())
-                            if EPGP:CanIncGPBy(link, gp) then
-                              EPGP:IncGPBy(parent.name, link, gp)
-                              parent:Hide()
-                            end
+                            self:GetParent().button1:Click()
                           end,
 
   EditBoxOnTextChanged = function(self)
@@ -114,7 +96,6 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 
   EditBoxOnEscapePressed = function(self)
                              self:GetParent():Hide()
-                             ClearCursor()
                            end
 }
 
