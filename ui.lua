@@ -1114,6 +1114,7 @@ local function CreateEPGPFrameStandings()
     local offset = FauxScrollFrame_GetOffset(EPGPScrollFrame)
     local numMembers = EPGP:GetNumMembers()
     local numDisplayedMembers = math.min(#rowFrame.rows, numMembers - offset)
+    local minEP = EPGP:GetMinEP()
     for i=1,#rowFrame.rows do
       local row = rowFrame.rows[i]
       local j = i + offset
@@ -1140,14 +1141,7 @@ local function CreateEPGPFrameStandings()
             row.check:Show()
           end
         end
-        local alpha = 1
-        if not EPGP:IsMemberInAwardList(row.name) then
-          alpha = 0.6
-        end
-        if EPGP:IsMemberInExtrasList(row.name) then
-          alpha = 0.6
-        end
-        row:SetAlpha(alpha)
+        row:SetAlpha(ep < minEP and 0.6 or 1)
         row:Show()
       else
         row:Hide()
