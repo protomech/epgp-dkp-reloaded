@@ -1137,10 +1137,14 @@ local function CreateEPGPFrameStandings()
         local ep, gp = EPGP:GetEPGP(row.name)
         row.cells[2]:SetText(ep)
         row.cells[3]:SetText(gp)
-        if gp > 0 then
-          row.cells[4]:SetFormattedText("%.4g", ep / gp)
+        local pr = 0
+        if gp then
+          pr = ep / gp
+        end
+        if pr > 9999 then
+          row.cells[4]:SetText(math.floor(pr))
         else
-          row.cells[4]:SetText(0)
+          row.cells[4]:SetFormattedText("%.4g", pr)
         end
         row.check:Hide()
         if UnitInRaid("player") and EPGP:StandingsShowEveryone() then
