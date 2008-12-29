@@ -558,6 +558,7 @@ function EPGP:IncEPBy(name, reason, amount, mass, undo)
   local ep, gp, main = self:GetEPGP(name)
   GS:SetNote(main or name, EncodeNote(ep + amount, gp))
   callbacks:Fire("EPAward", name, reason, amount, mass, undo)
+  db.profile.last_awards[reason] = amount
   return main or name
 end
 
@@ -678,6 +679,7 @@ function EPGP:OnInitialize()
       profile = {
         log = {},
         redo = {},
+        last_awards = {},
         show_everyone = false,
         sort_order = "PR",
         recurring_ep_period_mins = 15,

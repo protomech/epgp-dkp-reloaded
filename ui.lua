@@ -500,6 +500,11 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                     parent.otherEditBox:EnableKeyboard(false)
                     parent.otherEditBox:EnableMouse(false)
                     parent.otherEditBox:ClearFocus()
+                    local reason = UIDropDownMenu_GetText(dropDown)
+                    local last_award = EPGP.db.profile.last_awards[reason]
+                    if last_award then
+                      parent.editBox:SetText(last_award)
+                    end
                     parent.button:SetCurrentState()
                     if parent.recurring then
                       parent.recurring:SetCurrentState()
@@ -518,6 +523,11 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                 parent.otherEditBox:EnableKeyboard(true)
                 parent.otherEditBox:EnableMouse(true)
                 parent.otherEditBox:SetFocus()
+                local reason = parent.otherEditBox:GetText()
+                local last_award = EPGP.db.profile.last_awards[reason]
+                if last_award then
+                  parent.editBox:SetText(last_award)
+                end
                 parent.button:SetCurrentState()
                 if parent.recurring then
                   parent.recurring:SetCurrentState()
@@ -557,6 +567,11 @@ local function AddEPControls(frame, withRecurring)
   otherEditBox:SetPoint("TOP", otherLabel, "BOTTOM")
   otherEditBox:SetScript("OnTextChanged",
                          function(self)
+                           local last_award =
+                             EPGP.db.profile.last_awards[self:GetText()]
+                           if last_award then
+                             frame.editBox:SetText(last_award)
+                           end
                            frame.button:SetCurrentState()
                            if frame.recurring then
                              frame.recurring:SetCurrentState()
@@ -715,7 +730,6 @@ local function AddEPControls(frame, withRecurring)
   frame:SetScript("OnShow",
                   function(self)
                     self.editBox:SetText("")
-                    self.otherEditBox:SetText("")
                     UIDropDownMenu_ClearAll(self.dropDown)
                     self.otherLabel:SetAlpha(0.25)
                     self.otherEditBox:SetAlpha(0.25)
@@ -783,15 +797,12 @@ local function CreateEPGPSideFrame(self)
   epFrame.button:SetScript(
     "OnClick",
     function(self)
-      if UIDropDownMenu_GetText(epFrame.dropDown) == L["Other"] then
-        EPGP:IncEPBy(f.name,
-                     epFrame.otherEditBox:GetText(),
-                     epFrame.editBox:GetNumber())
-      else
-        EPGP:IncEPBy(f.name,
-                     UIDropDownMenu_GetText(epFrame.dropDown),
-                     epFrame.editBox:GetNumber())
+      local reason = UIDropDownMenu_GetText(epFrame.dropDown)
+      if reason == L["Other"] then
+        reason = epFrame.otherEditBox:GetText()
       end
+      local amount = epFrame.editBox:GetNumber()
+      EPGP:IncEPBy(f.name, reason, amount)
     end)
 
   f:SetScript("OnShow",
