@@ -139,9 +139,11 @@ function mod:PopLootQueue()
 end
 
 local function LootReceived(event_name, player, itemLink, quantity)
-  tinsert(loot_queue, {player, itemLink, quantity})
-  if not timer then
-    timer = mod:ScheduleRepeatingTimer("PopLootQueue", 1)
+  if CanEditOfficerNote() then
+    tinsert(loot_queue, {player, itemLink, quantity})
+    if not timer then
+      timer = mod:ScheduleRepeatingTimer("PopLootQueue", 1)
+    end
   end
 end
 
