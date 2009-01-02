@@ -1,6 +1,8 @@
 -- This library handles storing information in officer notes. It
--- streamlines and optimizes access to these notes. The API is as
--- follows:
+-- streamlines and optimizes access to these notes. It should be noted
+-- that the library does not have correct information until
+-- PLAYER_ENTERING_WORLD is fired (for Ace authors this is after OnInitialize
+-- is called). The API is as follows:
 --
 -- GetNote(name): Returns the officer note of member 'name'
 --
@@ -55,6 +57,7 @@ else
   lib.frame = CreateFrame("Frame", MAJOR_VERSION .. "_Frame")
 end
 local frame = lib.frame
+frame:Hide()
 -- Possible states: STALE, LOCAL_PENDING, REMOTE_PENDING,
 -- REMOTE_FLUSHED, CURRENT
 local state = "STALE"
@@ -83,6 +86,10 @@ local guild_info = ""
 
 local next_index = 1
 local function UpdateGuildRoster()
+  -- Sometimes GetNumGuildMembers returns 0. In this case return so
+  -- that we call it again and get a proper value.
+  if GetNumGuildMembers(true) == 0 then return end
+
   if next_index == 1 then
     local new_guild_info = GetGuildInfoText() or ""
     if new_guild_info ~= guild_info then
@@ -145,6 +152,7 @@ frame:SetScript("OnUpdate", UpdateGuildRoster)
 frame:RegisterEvent("PLAYER_GUILD_UPDATE")
 frame:RegisterEvent("GUILD_ROSTER_UPDATE")
 frame:RegisterEvent("CHAT_MSG_ADDON")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 function lib:CHAT_MSG_ADDON(prefix, msg, type, sender)
   if prefix == "EPGP" and sender ~= UnitName("player") then
@@ -241,6 +249,8 @@ function lib:Rollback(t)
   GuildRosterDelayed()
 end
 
-GuildRosterDelayed()
-last_guildroster_time = GetTime()
-frame:Hide()
+function lib:PLAYER_ENTERING_WORLD()
+  frame:Hide()
+  GuildRosterDelayed()
+  last_guildroster_time = GetTime()
+end
