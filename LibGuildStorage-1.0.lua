@@ -195,6 +195,11 @@ function lib:GetNote(name)
 end
 
 function lib:SetNote(name, note)
+  local entry = cache[name]
+  if not entry then
+    return
+  end
+
   -- Also lock down all other clients as well
   if state == "CURRENT" then
     state = "LOCAL_PENDING"
@@ -202,10 +207,6 @@ function lib:SetNote(name, note)
     SendAddonMessage("EPGP", "CHANGES_PENDING", "GUILD")
   end
 
-  local entry = cache[name]
-  if not entry then
-    return
-  end
   -- We do not update the note here. We are going to wait until the
   -- next GUILD_ROSTER_UPDATE and fire a GuildNoteChanged callback.
 
