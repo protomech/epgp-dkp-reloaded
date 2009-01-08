@@ -25,6 +25,7 @@ localization.enUS.lua
 epgp.lua
 
 announce.lua
+boss.lua
 gptooltip.lua
 log.lua
 loot.lua

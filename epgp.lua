@@ -686,6 +686,8 @@ function EPGP:OnInitialize()
         gp_on_tooltips = true,
         auto_loot = true,
         auto_loot_threshold = 4,  -- Epic quality items
+        auto_standby_whispers = true,
+        auto_boss = false,
         announce = true,
         announce_medium = "GUILD",
       }

@@ -78,7 +78,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              self.button1:ClearAllPoints()
 
              RestoreAnchors(blizzardPopupAnchors[self])
-           
+
              if ChatFrameEditBox:IsShown() then
                ChatFrameEditBox:SetFocus()
              end
@@ -133,4 +133,42 @@ StaticPopupDialogs["EPGP_ROLLBACK_EPGP"] = {
   OnAccept = function()
                EPGP:GetModule("EPGP_Log"):Rollback()
              end
+}
+
+StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
+  text = L["%s is dead. Award EP?"],
+  button1 = ACCEPT,
+  button2 = CANCEL,
+  timeout = 0,
+  whileDead = 1,
+  hasEditBox = 1,
+  OnAccept = function(self)
+               local ep = tonumber(self.editBox:GetText())
+               EPGP:IncMassEPBy(self.reason, ep)
+             end,
+
+  OnHide = function(self)
+             if ChatFrameEditBox:IsShown() then
+               ChatFrameEditBox:SetFocus()
+             end
+             self.editBox:SetText("")
+             self.reason = nil
+           end,
+
+  EditBoxOnEnterPressed = function(self)
+                            self:GetParent().button1:Click()
+                          end,
+
+  EditBoxOnTextChanged = function(self)
+                           local parent = self:GetParent()
+                           local ep = tonumber(parent.editBox:GetText())
+                           if EPGP:CanIncEPBy(parent.reason, ep) then
+                             parent.button1:Enable()
+                           else
+                             parent.button1:Disable()
+                           end
+                         end,
+  EditBoxOnEscapePressed = function(self)
+                             self:GetParent():Hide()
+                           end,
 }
