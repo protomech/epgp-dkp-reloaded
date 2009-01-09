@@ -7,6 +7,7 @@ L["%+d GP (%s) to %s"] = true
 L["%s (%s)  Decay=%s%% BaseGP=%s MinEP=%s"] = true
 L["%s is added to the award list"] = true
 L["%s is already in the award list"] = true
+L["%s is dead. Award EP?"] = true
 L["%s is not eligible for EP awards"] = true
 L["%s is now removed from the award list"] = true
 L["%s: %+d EP (%s) to %s"] = true
