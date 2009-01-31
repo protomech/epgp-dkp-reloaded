@@ -29,10 +29,6 @@ local BOSSES = {
   [15990] = "Kel'Thuzad",
 }
 
-function mod:OnEnable()
-  self:RegisterEvent("RAID_ROSTER_UPDATE")
-end
-
 local function IsRLorML()
   if UnitInRaid("player") then
     local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
@@ -57,7 +53,8 @@ function mod:RAID_ROSTER_UPDATE()
   end
 end
 
-function mod:COMBAT_LOG_EVENT_UNFILTERED(timestamp, event,
+function mod:COMBAT_LOG_EVENT_UNFILTERED(event_name,
+                                         timestamp, event,
                                          source, source_name, source_flags,
                                          dest, dest_name, dest_flags,
                                          ...)
@@ -133,5 +130,6 @@ end
 function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
+  self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterMessage("BossKilled", BossKilled)
 end
