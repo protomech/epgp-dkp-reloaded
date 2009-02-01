@@ -85,6 +85,16 @@ function mod:OnEnable()
         name = L["Custom announce channel name"],
         desc = L["Sets the custom announce channel name used to announce EPGP actions."],
       },
+      report_ignored_members = {
+        order = 50,
+        type = "execute",
+        name = L["List errors"],
+        desc = L["Lists errors during officer note parsing to the default chat frame. Examples are members with an invalid officer note."],
+        func = function()
+                 outputFunc = function(s) DEFAULT_CHAT_FRAME:AddMessage(s) end
+                 EPGP:ReportErrors(outputFunc)
+               end,
+      },
       rollback = {
         order = 100,
         type = "execute",

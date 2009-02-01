@@ -86,6 +86,9 @@
 -- GetClass(name): Returns the class of member <name>. It returns nil
 -- if the class is unknown.
 --
+-- ReportErrors(outputFunc): Calls function for each error during
+-- initialization, one line at a time.
+--
 -- The library also fires the following messages, which you can
 -- register for through RegisterCallback and unregister through
 -- UnregisterCallback. You can also unregister all messages through
@@ -152,6 +155,7 @@ local ep_data = {}
 local gp_data = {}
 local main_data = {}
 local alt_data = {}
+local ignored = {}
 local db
 local standings = {}
 local selected = {}
@@ -349,10 +353,8 @@ local function ParseGuildNote(callback, name, note)
     gp_data[name] = gp
   else
     if not GS:GetNote(note) then
-      -- If this note has junk let the user know and pretend it
-      -- doesn't exist
-      EPGP:Print(
-        L["Invalid officer note [%s] for %s (ignored)"]:format(note, name))
+      -- This is a junk note, ignore it
+      ignored[name] = note
     else
       -- Otherwise setup the alts state 
       main_data[name] = note
@@ -668,6 +670,13 @@ function EPGP:IncMassEPBy(reason, amount)
     end
   end
   callbacks:Fire("MassEPAward", awarded, reason, amount)
+end
+
+function EPGP:ReportErrors(outputFunc)
+  for name, note in pairs(ignored) do
+    outputFunc(L["Invalid officer note [%s] for %s (ignored)"]:format(
+                 note, name))
+  end
 end
 
 function EPGP:OnInitialize()

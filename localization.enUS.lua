@@ -43,6 +43,8 @@ L["GP: %d or %d [ItemLevel=%d]"] = true
 L["Hint: You can open these options by typing /epgp config"] = true
 L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"] = true
 L["Invalid officer note [%s] for %s (ignored)"] = true
+L["List errors"] = true
+L["Lists errors during officer note parsing to the default chat frame. Examples are members with an invalid officer note."] = true
 L["Mass EP Award"] = true
 L["Min EP should be a positive number"] = true
 L["Next award in "] = true
