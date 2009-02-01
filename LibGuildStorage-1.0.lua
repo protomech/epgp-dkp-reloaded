@@ -108,6 +108,8 @@ local function UpdateGuildRoster()
         t = {}
         cache[name] = t
       end
+      -- Mark the entry so that we know we should keep it.
+      t.marked = true
       t.index = i
       t.class = class
       if t.note ~= note then
@@ -124,6 +126,17 @@ local function UpdateGuildRoster()
   end
   next_index = e + 1
   if next_index > GetNumGuildMembers(true) then
+    -- We are done, we need to clear the marks and delete the unmarked
+    -- entries. We also fire events for removed members now.
+    for name, t in pairs(cache) do
+      if t.marked then
+        t.marked = nil
+      else
+        cache[name] = nil
+        callbacks:Fire("GuildNoteDeleted", name)
+      end
+    end
+
     frame:Hide()
     if not initialized then
       initialized = true
@@ -143,7 +156,7 @@ local function UpdateGuildRoster()
     elseif state == "REMOTE_FLUSHED" then
       state = "CURRENT"
       callbacks:Fire("StateChanged")
-    end
+    end      
   end
 end
 

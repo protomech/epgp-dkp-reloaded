@@ -329,7 +329,7 @@ local function ParseGuildInfo(callback, info)
   end
 end
 
-local function ParseGuildNote(callback, name, note)
+local function DeleteState(name)
   -- If this is was an alt we need to fix the alts state
   local main = main_data[name]
   if main then
@@ -346,6 +346,16 @@ local function ParseGuildNote(callback, name, note)
   -- Delete any existing cached values
   ep_data[name] = nil
   gp_data[name] = nil
+end
+
+local function HandleDeletedGuildNote(callback, name)
+  DeleteState(name)
+  DestroyStandings()
+end
+
+local function ParseGuildNote(callback, name, note)
+  -- Delete current state about this toon.
+  DeleteState(callback, name)
 
   local ep, gp = DecodeNote(note)
   if ep then
@@ -760,6 +770,8 @@ end
 function EPGP:OnEnable()
   GS.RegisterCallback(self, "GuildInfoChanged", ParseGuildInfo)
   GS.RegisterCallback(self, "GuildNoteChanged", ParseGuildNote)
+  GS.RegisterCallback(self, "GuildNoteDeleted", HandleDeletedGuildNote)
+
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
 
