@@ -27,6 +27,9 @@ local BOSSES = {
 
   [15989] = "Sapphiron",
   [15990] = "Kel'Thuzad",
+
+  -- Vault of Archavon
+  [31125] = "Archavon the Stone Watcher",
 }
 
 local function IsRLorML()
