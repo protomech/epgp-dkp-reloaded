@@ -9,7 +9,7 @@ function mod:CHAT_MSG_WHISPER(event_name, msg, sender)
   if not EPGP.db.profile.auto_standby_whispers then return end
   if not msg:match("epgp standby") then return end
 
-  local member = msg:match("epgp standby (%a+)")
+  local member = msg:match("epgp standby ([^ ]+)")
   if member then
     member = member:sub(1,1):upper()..member:sub(2):lower()
   else
