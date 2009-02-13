@@ -223,9 +223,13 @@ function lib:SetNote(name, note)
   -- We do not update the note here. We are going to wait until the
   -- next GUILD_ROSTER_UPDATE and fire a GuildNoteChanged callback.
 
-  -- TODO(alkis): Investigate performance issues in case we want to
-  -- verify if this is the right index or not.
-  GuildRosterSetOfficerNote(entry.index, note)
+  if select(1, GetGuildRosterInfo(entry.index)) ~= name then
+    DEFAULT_CHAT_FRAME:AddMessage(
+      string.format("Failed to change %s's note to %s. Please report "..
+                    "this at http://epgp.googlecode.com", name, note))
+  else
+    GuildRosterSetOfficerNote(entry.index, note)
+  end
 end
 
 function lib:GetClass(name)
