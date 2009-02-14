@@ -1,4 +1,18 @@
-#!/bin/sh
+#!/bin/bash
+
+function Confirm() {
+  local text=$1
+  local reply
+  while [ 1 = 1 ]; do
+    echo -n $text " (y/N) "
+    read reply
+    case "$reply" in
+      "y"|"Y") return 0;;
+      "n"|"N"|"") return 1;;
+    esac
+  done
+  return 1
+}
 
 if [ ! $# == 1 ]; then
   echo "Usage: $0 <release_version>"
@@ -41,15 +55,16 @@ pushd $STAGE_DIR/..
 zip -r $RELEASE_ZIP epgp
 popd
 
-cat <<INFO
-=============================================================================
-The release file is located at:
-$RELEASE_ZIP
+# Tag the release
+if Confirm "Do you want to import this release to the repository?"; then
+  command="svn import $STAGE_DIR https://epgp.googlecode.com/svn/tags/epgp-$1"
+  echo "Running: $command"
+  $command
+fi
 
-Tag this release in svn:
-svn import "$STAGE_DIR" https://epgp.googlecode.com/svn/tags/epgp-$1
-
-Upload release file to googlecode:
-"$PWD/scripts/googlecode/googlecode_upload.py" -s "epgp-$1" -p epgp -u evlogimenos "$RELEASE_ZIP"
-=============================================================================
-INFO
+# Upload the release
+if Confirm "Do you want to upload the archive?"; then
+  command="\"$PWD/scripts/googlecode/googlecode_upload.py\" -s epgp-$1 -p epgp -u evlogimenos -l Featured $RELEASE_ZIP"
+  echo "Running: $command"
+  $command
+fi
