@@ -64,7 +64,7 @@ fi
 
 # Upload the release
 if Confirm "Do you want to upload the archive?"; then
-  command="\"$PWD/scripts/googlecode/googlecode_upload.py\" -s epgp-$1 -p epgp -u evlogimenos -l Featured $RELEASE_ZIP"
+  command="$PWD/scripts/googlecode/googlecode_upload.py -s epgp-$1 -p epgp -u evlogimenos -l Featured $RELEASE_ZIP"
   echo "Running: $command"
   $command
 fi
