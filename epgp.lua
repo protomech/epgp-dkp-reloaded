@@ -355,7 +355,7 @@ end
 
 local function ParseGuildNote(callback, name, note)
   -- Delete current state about this toon.
-  DeleteState(callback, name)
+  DeleteState(name)
 
   local ep, gp = DecodeNote(note)
   if ep then
