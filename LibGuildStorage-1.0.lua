@@ -230,6 +230,7 @@ function SetState(new_state)
 end
 
 local function Frame_OnUpdate(self, elapsed)
+  debugprofilestart()
   if state == "CURRENT" then
     return
   end
@@ -256,8 +257,8 @@ local function Frame_OnUpdate(self, elapsed)
     end
   end
 
-  -- Read up to 50 members at a time.
-  local last_index = math.min(index + 50, GetNumGuildMembers(true))
+  -- Read up to 100 members at a time.
+  local last_index = math.min(index + 100, GetNumGuildMembers(true))
   Debug("Processing from %d to %d members", index, last_index)
 
   for i = index, last_index do
@@ -312,6 +313,8 @@ local function Frame_OnUpdate(self, elapsed)
       for name, t in pairs(cache) do
         callbacks:Fire("GuildNoteChanged", name, t.note)
       end
+      initialized = true
+      callbacks:Fire("StateChanged")
     end
     if state == "STALE" then
       SetState("CURRENT")
@@ -329,6 +332,7 @@ local function Frame_OnUpdate(self, elapsed)
       end
     end      
   end
+  Debug(tostring(debugprofilestop()).."ms for LibGuildStorage:OnUpdate")
 end
 
 frame:SetScript("OnUpdate", Frame_OnUpdate)
