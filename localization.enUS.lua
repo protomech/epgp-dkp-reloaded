@@ -4,7 +4,7 @@ if not L then return end
 L["%d or %d"] = true
 L["%+d EP (%s) to %s"] = true
 L["%+d GP (%s) to %s"] = true
-L["%s (%s)  Decay=%s%% BaseGP=%s MinEP=%s"] = true
+L["%s (%s) Decay=%s%% BaseGP=%s MinEP=%s Extras=%s%%"] = true
 L["%s is added to the award list"] = true
 L["%s is already in the award list"] = true
 L["%s is dead. Award EP?"] = true
@@ -37,6 +37,7 @@ L["Enable automatic loot tracking by means of a popup to assign GP to the toon t
 L["Enable automatic loot tracking"] = true
 L["Enable standby whispers in raid"] = true
 L["Enable automatic handling of the standby list through whispers when in raid. When this option is selected the standby list is cleared after each reward"] = true
+L["Extras Percent should be a number between 0 and 100"] = true
 L["GP Reason"] = true
 L["GP: %d [ItemLevel=%d]"] = true
 L["GP: %d or %d [ItemLevel=%d]"] = true

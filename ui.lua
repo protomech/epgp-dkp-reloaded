@@ -216,7 +216,7 @@ local function CreateTable(parent, texts, widths, justfiesH, rightPadding)
   local fontHeight = select(2, GameFontNormalSmall:GetFont())
   local rowHeight = fontHeight + 4
   rowFrame.rowHeight = rowHeight
-  local numRows = math.floor(rowFrame:GetHeight() / rowHeight)
+  local numRows = math.floor(rowFrame:GetHeight() / rowHeight) + 2
 
   -- Make rows
   rowFrame.rows = {}
@@ -1009,7 +1009,7 @@ local function CreateEPGPFrameStandings()
 
   -- Make the status text
   local statusText = main:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-  statusText:SetHeight(16)
+  statusText:SetHeight(32)
   statusText:SetJustifyH("CENTER")
   statusText:SetPoint("BOTTOMLEFT", award, "TOPLEFT")
   statusText:SetPoint("BOTTOMRIGHT", log, "TOPRIGHT")
@@ -1022,17 +1022,19 @@ local function CreateEPGPFrameStandings()
       mode = "|cFF00FF00"..GUILD.."|r"
     end
     self:SetFormattedText(
-      L["%s (%s)  Decay=%s%% BaseGP=%s MinEP=%s"],
+      L["%s (%s) Decay=%s%% BaseGP=%s MinEP=%s Extras=%s%%"],
       mode,
       "|cFFFFFFFF"..EPGP:GetNumMembersInAwardList().."|r",
       "|cFFFFFFFF"..EPGP:GetDecayPercent().."|r",
       "|cFFFFFFFF"..EPGP:GetBaseGP().."|r",
-      "|cFFFFFFFF"..EPGP:GetMinEP().."|r")
+      "|cFFFFFFFF"..EPGP:GetMinEP().."|r",
+      "|cFFFFFFFF"..EPGP:GetExtrasPercent().."|r")
   end
   EPGP.RegisterCallback(statusText, "StandingsChanged", "StatusTextUpdate")
   EPGP.RegisterCallback(statusText, "DecayPercentChanged", "StatusTextUpdate")
   EPGP.RegisterCallback(statusText, "BaseGPChanged", "StatusTextUpdate")
   EPGP.RegisterCallback(statusText, "MinEPChanged", "StatusTextUpdate")
+  EPGP.RegisterCallback(statusText, "ExtrasPercentChanged", "StatusTextUpdate")
 
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)

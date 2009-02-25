@@ -124,6 +124,9 @@
 --
 -- MinEPChanged(v): Fired when min ep changes. v is the new value.
 --
+-- ExtrasPercentChanged(v): Fired when extras percent changes.  v is
+-- the new value.
+--
 
 EPGP = LibStub("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
@@ -146,10 +149,12 @@ end
 local DEFAULT_DECAY_P = 0
 local DEFAULT_MIN_EP = 0
 local DEFAULT_BASE_GP = 1
+local DEFAULT_EXTRAS_P = 100
 
 local decay_p = DEFAULT_DECAY_P
 local min_ep = DEFAULT_MIN_EP
 local base_gp = DEFAULT_BASE_GP
+local extras_p = DEFAULT_EXTRAS_P
 
 local ep_data = {}
 local gp_data = {}
@@ -272,6 +277,7 @@ end
 -- block. Possible options are:
 --
 -- @DECAY_P:<number>
+-- @EXTRAS_P:<number>
 -- @MIN_EP:<number>
 -- @BASE_GP:<number>
 local function ParseGuildInfo(callback, info)
@@ -296,6 +302,20 @@ local function ParseGuildInfo(callback, info)
         end
       end
 
+      -- Extras percent
+      local ep = line:match("@EXTRAS_P:(%d+)")
+      if ep then
+        ep = tonumber(ep) or DEFAULT_EXTRAS_P
+        if ep >= 0 and ep <= 100 then
+          if extras_p ~= ep then
+            extras_p = ep
+            callbacks:Fire("ExtrasPercentChanged", ep)
+          end
+        else
+          EPGP:Print(L["Extras Percent should be a number between 0 and 100"])
+        end
+      end
+      
       -- Min EP
       local mep = line:match("@MIN_EP:(%d+)")
       if mep then
@@ -656,6 +676,10 @@ function EPGP:GetDecayPercent()
   return decay_p
 end
 
+function EPGP:GetExtrasPercent()
+  return extras_p
+end
+
 function EPGP:GetBaseGP()
   return base_gp
 end
@@ -670,12 +694,14 @@ end
 
 function EPGP:IncMassEPBy(reason, amount)
   local awarded = {}
+  local extras_amount = math.floor(extras_p * 0.01 * amount)
   for i=1,EPGP:GetNumMembers() do
     local name = EPGP:GetMember(i)
     if EPGP:IsMemberInAwardList(name) then
       local main = EPGP:GetMain(name)
       if not awarded[main] then
-        awarded[EPGP:IncEPBy(name, reason, amount, true)] = true
+        local award_amount = EPGP:IsMemberInExtrasList(name) and extras_amount or amount
+        awarded[EPGP:IncEPBy(name, reason, award_amount, true)] = true
       end
     end
   end
