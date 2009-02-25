@@ -4,7 +4,7 @@ if not L then return end
 L["%d or %d"] = true
 L["%+d EP (%s) to %s"] = true
 L["%+d GP (%s) to %s"] = true
-L["%s (%s) Decay=%s%% BaseGP=%s MinEP=%s Extras=%s%%"] = true
+L["Decay=%s%% BaseGP=%s MinEP=%s Extras=%s%%"] = true
 L["%s is added to the award list"] = true
 L["%s is already in the award list"] = true
 L["%s is dead. Award EP?"] = true
