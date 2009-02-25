@@ -541,8 +541,8 @@ function EPGP:DecayEPGP()
   for name,_ in pairs(ep_data) do
     local ep, gp, main = self:GetEPGP(name)
     assert(main == nil, "Corrupt alt data!")
-    local decay_ep = math.floor(ep * decay)
-    local decay_gp = math.floor(gp * decay)
+    local decay_ep = math.ceil(ep * decay)
+    local decay_gp = math.ceil(gp * decay)
     GS:SetNote(name, EncodeNote(ep - decay_ep, gp - decay_gp))
     if decay_ep ~= 0 then
       callbacks:Fire("EPAward", name, reason, -decay_ep, true)
