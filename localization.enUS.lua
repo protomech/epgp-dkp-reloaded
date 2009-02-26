@@ -67,4 +67,5 @@ L["Show everyone"] = true
 L["Start recurring award (%s) %d EP/%s"] = true
 L["Stop recurring award"] = true
 L["Undo"] = true
+L["Using DBM for boss kill tracking"] = true
 L["Value"] = true

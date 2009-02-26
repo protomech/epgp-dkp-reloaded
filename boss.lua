@@ -1,4 +1,5 @@
 local mod = EPGP:NewModule("EPGP_Boss", "AceEvent-3.0", "AceTimer-3.0")
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local BOSSES = {
   -- The Obsidian Sanctum
@@ -43,7 +44,7 @@ end
 
 local monitoring = false
 function mod:RAID_ROSTER_UPDATE()
-  if EPGP.db.profile.auto_boss and IsRLorML() then
+  if not DBM and EPGP.db.profile.auto_boss and IsRLorML() then
     if not monitoring then
       monitoring = true
       self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -134,5 +135,10 @@ function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
   self:RegisterEvent("RAID_ROSTER_UPDATE")
-  self:RegisterMessage("BossKilled", BossKilled)
+  if DBM then
+    EPGP:Print(L["Using DBM for boss kill tracking"])
+    DBM:RegisterCallback("kill", function (mob) BossKilled("kill", mob) end)
+  else
+    self:RegisterMessage("BossKilled", BossKilled)
+  end
 end
