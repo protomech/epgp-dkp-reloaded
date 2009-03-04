@@ -137,7 +137,10 @@ function mod:OnEnable()
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   if DBM then
     EPGP:Print(L["Using DBM for boss kill tracking"])
-    DBM:RegisterCallback("kill", function (mob) BossKilled("kill", mob) end)
+    DBM:RegisterCallback("kill",
+                         function (mod)
+                           BossKilled("kill", mod.combatInfo.name)
+                         end)
   else
     self:RegisterMessage("BossKilled", BossKilled)
   end
