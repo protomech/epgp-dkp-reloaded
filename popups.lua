@@ -1,7 +1,7 @@
 local mod = EPGP:NewModule("popups")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
+local gptooltip = EPGP:GetModule("gptooltip")
 
 local function EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
   local link = self.itemFrame.link
@@ -65,7 +65,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              self.button1:SetPoint(
                "TOPRIGHT", self.itemFrame, "BOTTOMRIGHT", 85, -6)
 
-             local text = GPTooltip:GetGPValueText(self.itemFrame.link)
+             local text = gptooltip:GetGPValueText(self.itemFrame.link)
              self.editBox:SetText(text)
              self.editBox:HighlightText()
              EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
@@ -131,7 +131,7 @@ StaticPopupDialogs["EPGP_ROLLBACK_EPGP"] = {
   hideOnEscape = 1,
   whileDead = 1,
   OnAccept = function()
-               EPGP:GetModule("EPGP_Log"):Rollback()
+               EPGP:GetModule("log"):Rollback()
              end
 }
 

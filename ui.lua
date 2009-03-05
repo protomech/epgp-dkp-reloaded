@@ -3,7 +3,7 @@
 local mod = EPGP:NewModule("ui")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
-local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
+local gptooltip = EPGP:GetModule("gptooltip")
 
 local CURRENT_VERSION = GetAddOnMetadata('EPGP', 'Version')
 if not CURRENT_VERSION or #CURRENT_VERSION == 0 then
@@ -273,16 +273,16 @@ local function CreateEPGPLogFrame()
   undo:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -9, 13)
   undo:SetScript("OnClick",
                  function (self, value)
-                   EPGP:GetModule("EPGP_Log"):UndoLastAction()
+                   EPGP:GetModule("log"):UndoLastAction()
                  end)
   function undo:SetCurrentState()
-    if EPGP:GetModule("EPGP_Log"):CanUndo() then
+    if EPGP:GetModule("log"):CanUndo() then
       self:Enable()
     else
       self:Disable()
     end
   end
-  EPGP:GetModule("EPGP_Log").RegisterCallback(
+  EPGP:GetModule("log").RegisterCallback(
     undo, "LogChanged", "SetCurrentState")
   GS.RegisterCallback(undo, "StateChanged", "SetCurrentState")
 
@@ -296,16 +296,16 @@ local function CreateEPGPLogFrame()
   redo:SetPoint("RIGHT", undo, "LEFT")
   redo:SetScript("OnClick",
                  function (self, value)
-                   EPGP:GetModule("EPGP_Log"):RedoLastUndo()
+                   EPGP:GetModule("log"):RedoLastUndo()
                  end)
   function redo:SetCurrentState()
-    if EPGP:GetModule("EPGP_Log"):CanRedo() then
+    if EPGP:GetModule("log"):CanRedo() then
       self:Enable()
     else
       self:Disable()
     end
   end
-  EPGP:GetModule("EPGP_Log").RegisterCallback(
+  EPGP:GetModule("log").RegisterCallback(
     redo, "LogChanged", "SetCurrentState")
   GS.RegisterCallback(redo, "StateChanged", "SetCurrentState")
 
@@ -358,7 +358,7 @@ local function CreateEPGPLogFrame()
     if not EPGPLogFrame:IsVisible() then
       return
     end
-    local log = EPGP:GetModule("EPGP_Log")
+    local log = EPGP:GetModule("log")
     local offset = FauxScrollFrame_GetOffset(scrollBar)
     local numRecords = log:GetNumRecords()
     local numDisplayedRecords = math.min(numLogRecordFrames, numRecords - offset)
@@ -384,19 +384,19 @@ local function CreateEPGPLogFrame()
     function(self, value)
       FauxScrollFrame_OnVerticalScroll(scrollBar, value, recordHeight, LogChanged)
     end)
-  EPGP:GetModule("EPGP_Log"):RegisterCallback("LogChanged", LogChanged)
+  EPGP:GetModule("log"):RegisterCallback("LogChanged", LogChanged)
 end
 
 local function EPGPSideFrameGPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
-  for i=1,GPTooltip:GetNumRecentItems() do
+  for i=1,gptooltip:GetNumRecentItems() do
     local info = UIDropDownMenu_CreateInfo()
-    local _, itemLink = GetItemInfo(GPTooltip:GetRecentItemID(i))
+    local _, itemLink = GetItemInfo(gptooltip:GetRecentItemID(i))
     info.text = itemLink
     info.arg1 = itemLink
     info.func = function(self, arg1)
                   UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                  local text = GPTooltip:GetGPValueText(arg1)
+                  local text = gptooltip:GetGPValueText(arg1)
                   parent.editBox:SetText(text)
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()

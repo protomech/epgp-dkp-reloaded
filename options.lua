@@ -103,7 +103,7 @@ function mod:OnEnable()
         func = function()
                  StaticPopup_Show(
                    "EPGP_ROLLBACK_EPGP",
-                   EPGP:GetModule("EPGP_Log"):GetSnapshotTimeString())
+                   EPGP:GetModule("log"):GetSnapshotTimeString())
                end,
       },
       reset = {
