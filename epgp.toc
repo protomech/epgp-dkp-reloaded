@@ -31,7 +31,8 @@ gptooltip.lua
 log.lua
 loot.lua
 officernotewarning.lua
-options.lua
 popups.lua
 ui.lua
 whisper.lua
+
+options.lua

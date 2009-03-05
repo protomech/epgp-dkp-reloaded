@@ -7,7 +7,19 @@ function mod:OnEnable()
     name = "EPGP",
     type = "group",
     get = function(i) return EPGP.db.profile[i[#i]] end,
-    set = function(i, v) EPGP.db.profile[i[#i]] = v end,
+    set = function(i, v)
+            local module = EPGP:GetModule(i[#i])
+            if module then
+              if v ~= module:IsEnabled() then
+                if v then
+                  module:Enable()
+                else
+                  module:Disable()
+                end
+              end
+            end
+            EPGP.db.profile[i[#i]] = v
+          end,
     args = {
       help = {
         order = 0,
@@ -19,14 +31,14 @@ function mod:OnEnable()
         type = "description",
         name = L["Hint: You can open these options by typing /epgp config"],
       },
-      gp_on_tooltips = {
+      gptooltip = {
         order = 11,
         type = "toggle",
         name = L["Enable GP on tooltips"],
         desc = L["Enable a proposed GP value of armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."],
         width = "double",
       },
-      auto_loot = {
+      loot = {
         order = 12,
         type = "toggle",
         name = L["Enable automatic loot tracking"],
@@ -45,14 +57,14 @@ function mod:OnEnable()
           [5] = ITEM_QUALITY5_DESC,
         },
       },
-      auto_boss = {
+      boss = {
         order = 14,
         type = "toggle",
         name = L["Automatic boss kill tracking"],
         desc = L["Enable automatic boss tracking by means of a popup to mass award EP to the raid and standby when a boss is killed."],
         width = "double",
       },
-      auto_standby_whispers = {
+      whisper = {
         order = 15,
         type = "toggle",
         name = L["Enable standby whispers in raid"],

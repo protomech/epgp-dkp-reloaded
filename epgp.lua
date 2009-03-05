@@ -717,6 +717,7 @@ end
 
 function EPGP:OnInitialize()
   db = LibStub("AceDB-3.0"):New("EPGP_DB")
+  
   -- TODO(alkis): Add hooks to the modules to setup their namespaces
   -- and handle their own defaults.
   db:RegisterDefaults(
@@ -728,11 +729,11 @@ function EPGP:OnInitialize()
         show_everyone = false,
         sort_order = "PR",
         recurring_ep_period_mins = 15,
-        gp_on_tooltips = true,
-        auto_loot = true,
+        gptooltip = true,
+        loot = true,
         auto_loot_threshold = 4,  -- Epic quality items
-        auto_standby_whispers = true,
-        auto_boss = false,
+        whisper = true,
+        boss = false,
         announce = true,
         announce_medium = "GUILD",
       }
@@ -770,8 +771,24 @@ function CheckForGuildInfo()
       db:SetProfile(guild)
     end
     EPGP.db = db
+    -- Upgrade database variables
+    local translation_table = {
+      gp_on_tooltips = 'gptooltip',
+      auto_loot = 'loot',
+      auto_standby_whispers = 'whisper',
+      auto_boss = 'boss',
+    }
+    for o,n in pairs(translation_table) do
+      if db.profile[o] ~= nil then
+        db.profile[n] = db.profile[o]
+        db.profile[o] = nil
+      end
+    end
+    -- Enable all modules that are supposed to be enabled
     for name, module in EPGP:IterateModules() do
-      module:Enable()
+      if db.profile[module:GetName()] ~= false then
+        module:Enable()
+      end
     end
     EPGP:CancelTimer(EPGP.GetGuildInfoTimer)
     EPGP.GetGuildInfoTimer = nil

@@ -42,21 +42,6 @@ local function IsRLorML()
   return false
 end
 
-local monitoring = false
-function mod:RAID_ROSTER_UPDATE()
-  if not DBM and EPGP.db.profile.auto_boss and IsRLorML() then
-    if not monitoring then
-      monitoring = true
-      self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    end
-  else
-    if monitoring then
-      monitoring = false
-      self:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    end
-  end
-end
-
 function mod:COMBAT_LOG_EVENT_UNFILTERED(event_name,
                                          timestamp, event,
                                          source, source_name, source_flags,
@@ -111,7 +96,7 @@ function mod:PopAwardQueue()
 end
 
 local function BossKilled(event_name, boss_name)
-  if CanEditOfficerNote() then
+  if CanEditOfficerNote() and IsRLorML() then
     tinsert(award_queue, boss_name)
     if not timer then
       timer = mod:ScheduleRepeatingTimer("PopAwardQueue", 1)
@@ -134,7 +119,6 @@ end
 function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
-  self:RegisterEvent("RAID_ROSTER_UPDATE")
   if DBM then
     EPGP:Print(L["Using DBM for boss kill tracking"])
     DBM:RegisterCallback("kill",
@@ -142,6 +126,7 @@ function mod:OnEnable()
                            BossKilled("kill", mod.combatInfo.name)
                          end)
   else
+    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     self:RegisterMessage("BossKilled", BossKilled)
   end
 end

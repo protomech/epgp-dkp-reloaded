@@ -235,8 +235,6 @@ function OnTooltipSetItem(tooltip, ...)
   local _, itemlink = tooltip:GetItem()
   local gp1, gp2, ilvl = mod:GetGPValue(itemlink)
 
-  if not EPGP.db.profile.gp_on_tooltips then return end
-
   if gp1 then
     if gp2 then
       tooltip:AddLine(

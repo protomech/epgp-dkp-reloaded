@@ -32,17 +32,16 @@ local function Announce(fmt, ...)
 end
 
 local function AnnounceEPAward(event_name, name, reason, amount, mass)
-  if mass or not EPGP.db.profile.announce then return end
+  if mass then return end
   Announce(L["%+d EP (%s) to %s"], amount, reason, name)
 end
 
 local function AnnounceGPAward(event_name, name, reason, amount, mass)
-  if mass or not EPGP.db.profile.announce then return end
+  if mass then return end
   Announce(L["%+d GP (%s) to %s"], amount, reason, name)
 end
 
 local function AnnounceMassEPAward(event_name, names, reason, amount)
-  if not EPGP.db.profile.announce then return end
   local first = true
   local awarded
 
@@ -87,4 +86,8 @@ function mod:OnEnable()
                         AnnounceStartRecurringAward)
   EPGP.RegisterCallback(self, "StopRecurringAward", AnnounceStopRecurringAward)
   EPGP.RegisterCallback(self, "EPGPReset", AnnounceEPGPReset)
+end
+
+function mod:OnDisable()
+  EPGP.UnregisterAllCallbacks(self)
 end
