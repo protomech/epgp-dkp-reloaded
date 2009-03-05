@@ -1,4 +1,4 @@
-local mod = EPGP:NewModule("EPGP_GPTooltip", "AceHook-3.0")
+local mod = EPGP:NewModule("gptooltip", "AceHook-3.0")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 

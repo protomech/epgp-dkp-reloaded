@@ -1,4 +1,4 @@
-local mod = EPGP:NewModule("EPGP_Boss", "AceEvent-3.0", "AceTimer-3.0")
+local mod = EPGP:NewModule("boss", "AceEvent-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local BOSSES = {

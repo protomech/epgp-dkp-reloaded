@@ -15,7 +15,7 @@
 -- the log.
 --
 
-local mod = EPGP:NewModule("EPGP_Log")
+local mod = EPGP:NewModule("log")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")

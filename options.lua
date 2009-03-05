@@ -1,4 +1,4 @@
-local mod = EPGP:NewModule("EPGP_Options")
+local mod = EPGP:NewModule("options")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 

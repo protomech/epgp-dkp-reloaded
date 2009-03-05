@@ -1,6 +1,6 @@
 --[[ EPGP User Interface ]]--
 
-local mod = EPGP:NewModule("EPGP_UI")
+local mod = EPGP:NewModule("ui")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
 local GPTooltip = EPGP:GetModule("EPGP_GPTooltip")
