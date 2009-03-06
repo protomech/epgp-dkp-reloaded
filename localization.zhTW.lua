@@ -1,2 +1,3 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "zhTW", true)
+local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "zhTW")
 if not L then return end
+
