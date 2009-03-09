@@ -96,6 +96,9 @@ function mod:PopAwardQueue()
 end
 
 local function BossKilled(event_name, boss_name)
+  -- Temporary fix since we cannot unregister DBM callbacks
+  if not mod:IsEnabled() then return end
+
   if CanEditOfficerNote() and IsRLorML() then
     tinsert(award_queue, boss_name)
     if not timer then
