@@ -8,7 +8,7 @@ function mod:OnEnable()
     type = "group",
     get = function(i) return EPGP.db.profile[i[#i]] end,
     set = function(i, v)
-            local module = EPGP:GetModule(i[#i])
+            local module = EPGP:GetModule(i[#i], true)
             if module then
               if v ~= module:IsEnabled() then
                 if v then
