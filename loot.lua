@@ -81,7 +81,7 @@ local function ParseLootMessage(msg)
 end
 
 function mod:CHAT_MSG_LOOT(event_type, msg)
-  if not EPGP.db.profile.auto_loot or not IsRLorML() then return end
+  if not IsRLorML() then return end
 
   local player, item, quantity = ParseLootMessage(msg)
   if not player or not item then return end
