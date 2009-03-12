@@ -24,6 +24,12 @@ local function DebugFrame(frame, r, g, b)
   t:SetTexture(r or 0, g or 1, b or 0, 0.05)
 end
 
+local function DebugPoints(frame, name)
+  Debug("%s top=%d bottom=%d left=%d right=%d height=%d width=%d", name,
+        frame:GetTop(), frame:GetBottom(), frame:GetLeft(), frame:GetRight(),
+        frame:GetHeight(), frame:GetWidth())
+end
+
 local SIDEFRAMES = {}
 local function ToggleOnlySideFrame(frame)
   for _,f in ipairs(SIDEFRAMES) do
@@ -216,7 +222,7 @@ local function CreateTable(parent, texts, widths, justfiesH, rightPadding)
   local fontHeight = select(2, GameFontNormalSmall:GetFont())
   local rowHeight = fontHeight + 4
   rowFrame.rowHeight = rowHeight
-  local numRows = math.floor(rowFrame:GetHeight() / rowHeight) + 2
+  local numRows = math.floor(rowFrame:GetHeight() / rowHeight)
 
   -- Make rows
   rowFrame.rows = {}
@@ -985,8 +991,10 @@ local function CreateEPGPFrameStandings()
   EPGP.RegisterCallback(decay, "DecayPercentChanged", "SetCurrentState")
   GS.RegisterCallback(decay, "StateChanged", "SetCurrentState")
 
+  local fontHeight = select(2, GameFontNormal:GetFont())
+
   local recurringTime = main:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  recurringTime:SetHeight(16)
+  recurringTime:SetHeight(fontHeight)
   recurringTime:SetJustifyH("CENTER")
   recurringTime:SetPoint("LEFT", award, "RIGHT")
   recurringTime:SetPoint("RIGHT", decay, "LEFT")
@@ -1009,7 +1017,7 @@ local function CreateEPGPFrameStandings()
 
   -- Make the status text
   local statusText = main:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-  statusText:SetHeight(16)
+  statusText:SetHeight(fontHeight)
   statusText:SetJustifyH("CENTER")
   statusText:SetPoint("BOTTOMLEFT", award, "TOPLEFT")
   statusText:SetPoint("BOTTOMRIGHT", log, "TOPRIGHT")
@@ -1029,7 +1037,7 @@ local function CreateEPGPFrameStandings()
 
   -- Make the mode text
   local modeText = main:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-  modeText:SetHeight(16)
+  modeText:SetHeight(fontHeight)
   modeText:SetJustifyH("CENTER")
   modeText:SetPoint("BOTTOMLEFT", statusText, "TOPLEFT")
   modeText:SetPoint("BOTTOMRIGHT", statusText, "TOPRIGHT")
