@@ -284,6 +284,11 @@ local function ParseGuildInfo(callback, info)
   local lines = {string.split("\n", info)}
   local in_block = false
 
+  local new_decay_p = DEFAULT_DECAY_P
+  local new_extras_p = DEFAULT_EXTRAS_P
+  local new_base_gp = DEFAULT_BASE_GP
+  local new_min_ep = DEFAULT_MIN_EP
+
   for _,line in pairs(lines) do
     if line == "-EPGP-" then
       in_block = not in_block
@@ -293,10 +298,7 @@ local function ParseGuildInfo(callback, info)
       if dp then
         dp = tonumber(dp) or DEFAULT_DECAY_P
         if dp >= 0 and dp <= 100 then
-          if decay_p ~= dp then
-            decay_p = dp
-            callbacks:Fire("DecayPercentChanged", dp)
-          end
+          new_decay_p = dp
         else
           EPGP:Print(L["Decay Percent should be a number between 0 and 100"])
         end
@@ -307,10 +309,7 @@ local function ParseGuildInfo(callback, info)
       if ep then
         ep = tonumber(ep) or DEFAULT_EXTRAS_P
         if ep >= 0 and ep <= 100 then
-          if extras_p ~= ep then
-            extras_p = ep
-            callbacks:Fire("ExtrasPercentChanged", ep)
-          end
+          new_extras_p = ep
         else
           EPGP:Print(L["Extras Percent should be a number between 0 and 100"])
         end
@@ -321,11 +320,7 @@ local function ParseGuildInfo(callback, info)
       if mep then
         mep = tonumber(mep) or DEFAULT_MIN_EP
         if mep >= 0 then
-          if min_ep ~= mep then
-            min_ep = mep
-            callbacks:Fire("MinEPChanged", mep)
-            DestroyStandings()
-          end
+          new_min_ep = mep
         else
           EPGP:Print(L["Min EP should be a positive number"])
         end
@@ -336,16 +331,31 @@ local function ParseGuildInfo(callback, info)
       if bgp then
         bgp = tonumber(bgp) or DEFAULT_BASE_GP
         if bgp >= 0 then
-          if base_gp ~= bgp then
-            base_gp = bgp
-            callbacks:Fire("BaseGPChanged", bgp)
-            DestroyStandings()
-          end
+          new_base_gp = bgp
         else
           EPGP:Print(L["Base GP should be a positive number"])
         end
       end
     end
+  end
+
+  if decay_p ~= new_decay_p then
+    decay_p = new_decay_p
+    callbacks:Fire("DecayPercentChanged", decay_p)
+  end
+  if extras_p ~= new_extras_p then
+    extras_p = new_extras_p
+    callbacks:Fire("ExtrasPercentChanged", extras_p)
+  end
+  if min_ep ~= new_min_ep then
+    min_ep = new_min_ep
+    callbacks:Fire("MinEPChanged", min_ep)
+    DestroyStandings()
+  end
+  if base_gp ~= new_base_gp then
+    base_gp = new_base_gp
+    callbacks:Fire("BaseGPChanged", base_gp)
+    DestroyStandings()
   end
 end
 
@@ -686,6 +696,27 @@ end
 
 function EPGP:GetMinEP()
   return min_ep
+end
+
+function EPGP:SetGlobalConfiguration(decay_p, extras_p, base_gp, min_ep)
+  local guild_info = GS:GetGuildInfo()
+  epgp_stanza = string.format(
+    "-EPGP-\n@DECAY_P:%d\n@EXTRAS_P:%s\n@MIN_EP:%d\n@BASE_GP:%d\n-EPGP-",
+    decay_p or DEFAULT_DECAY_P,
+    extras_p or DEFAULT_EXTRAS_P,
+    min_ep or DEFAULT_MIN_EP,
+    base_gp or DEFAULT_BASE_GP)
+
+  -- If we have a global configuration stanza we need to replace it
+  EPGP:Print("epgp_stanza\n"..epgp_stanza)
+  if guild_info:match("%-EPGP%-.*%-EPGP%-") then
+    guild_info = guild_info:gsub("%-EPGP%-.*%-EPGP%-", epgp_stanza)
+  else
+    guild_info = epgp_stanza.."\n"..guild_info
+  end
+  EPGP:Print("guild_info"..guild_info)
+  SetGuildInfoText(guild_info)
+  GuildRoster()
 end
 
 function EPGP:GetMain(name)
