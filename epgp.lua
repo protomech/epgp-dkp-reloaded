@@ -242,6 +242,7 @@ local function DestroyStandings()
 end
 
 local function RefreshStandings(order, showEveryone)
+  EPGP:Debug("Resorting standings")
   if UnitInRaid("player") then
     -- If we are in raid:
     ---  showEveryone = true: show all in raid (including alts) and
@@ -277,6 +278,7 @@ end
 -- @MIN_EP:<number>
 -- @BASE_GP:<number>
 local function ParseGuildInfo(callback, info)
+  EPGP:Debug("Parsing GuildInfo")
   local lines = {string.split("\n", info)}
   local in_block = false
 
@@ -380,6 +382,7 @@ local function HandleDeletedGuildNote(callback, name)
 end
 
 local function ParseGuildNote(callback, name, note)
+  EPGP:Debug("Parsing Guild Note for %s [%s]", name, note)
   -- Delete current state about this toon.
   DeleteState(name)
 
