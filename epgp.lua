@@ -142,10 +142,6 @@ local callbacks = EPGP.callbacks
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
-local function debug(...)
-  ChatFrame1:AddMessage(table.concat({...}, ""))
-end
-
 local DEFAULT_DECAY_P = 0
 local DEFAULT_MIN_EP = 0
 local DEFAULT_BASE_GP = 1
@@ -300,7 +296,7 @@ local function ParseGuildInfo(callback, info)
         if dp >= 0 and dp <= 100 then
           new_decay_p = dp
         else
-          EPGP:Print(L["Decay Percent should be a number between 0 and 100"])
+          EPGP:Error(L["Decay Percent should be a number between 0 and 100"])
         end
       end
 
@@ -311,7 +307,7 @@ local function ParseGuildInfo(callback, info)
         if ep >= 0 and ep <= 100 then
           new_extras_p = ep
         else
-          EPGP:Print(L["Extras Percent should be a number between 0 and 100"])
+          EPGP:Error(L["Extras Percent should be a number between 0 and 100"])
         end
       end
       
@@ -322,7 +318,7 @@ local function ParseGuildInfo(callback, info)
         if mep >= 0 then
           new_min_ep = mep
         else
-          EPGP:Print(L["Min EP should be a positive number"])
+          EPGP:Error(L["Min EP should be a positive number"])
         end
       end
 
@@ -333,7 +329,7 @@ local function ParseGuildInfo(callback, info)
         if bgp >= 0 then
           new_base_gp = bgp
         else
-          EPGP:Print(L["Base GP should be a positive number"])
+          EPGP:Error(L["Base GP should be a positive number"])
         end
       end
     end
@@ -708,13 +704,13 @@ function EPGP:SetGlobalConfiguration(decay_p, extras_p, base_gp, min_ep)
     base_gp or DEFAULT_BASE_GP)
 
   -- If we have a global configuration stanza we need to replace it
-  EPGP:Print("epgp_stanza\n"..epgp_stanza)
+  EPGP:Debug("epgp_stanza:\n%s", epgp_stanza)
   if guild_info:match("%-EPGP%-.*%-EPGP%-") then
     guild_info = guild_info:gsub("%-EPGP%-.*%-EPGP%-", epgp_stanza)
   else
     guild_info = epgp_stanza.."\n"..guild_info
   end
-  EPGP:Print("guild_info"..guild_info)
+  EPGP:Debug("guild_info:\n%s", guild_info)
   SetGuildInfoText(guild_info)
   GuildRoster()
 end
@@ -852,4 +848,36 @@ function EPGP:OnEnable()
   if IsInGuild() then
     self.GetGuildInfoTimer = self:ScheduleRepeatingTimer(CheckForGuildInfo, 1)
   end
+end
+
+-- Console output support
+local console_levels = {
+  DEBUG = 1,
+  INFO = 2,
+  WARNING = 3,
+  ERROR = 4,
+}
+
+local prefix_for_level = {
+  [1] = "(dbg): ",
+  [2] = "(inf): ",
+  [3] = "(wrn): ",
+  [4] = "(err): ",
+}
+
+local console_level = 3
+
+local function OutputToConsoleFormatted(lvl, fmt, ...)
+  if lvl < console_level then return end
+  local msg = fmt:format(...)
+  EPGP:Print(prefix_for_level[lvl]..msg)
+end
+
+function EPGP:Debug(fmt, ...) OutputToConsoleFormatted(1, fmt, ...) end
+function EPGP:Info(fmt, ...) OutputToConsoleFormatted(2, fmt, ...) end
+function EPGP:Warning(fmt, ...) OutputToConsoleFormatted(3, fmt, ...) end
+function EPGP:Error(fmt, ...) OutputToConsoleFormatted(4, fmt, ...) end
+
+function EPGP:SetConsoleLevel(level)
+  console_level = console_levels[level]
 end

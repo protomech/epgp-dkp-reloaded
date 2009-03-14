@@ -96,6 +96,7 @@ function mod:PopAwardQueue()
 end
 
 local function BossKilled(event_name, boss_name)
+  EPGP:Debug("Boss killed: %s", boss_name)
   -- Temporary fix since we cannot unregister DBM callbacks
   if not mod:IsEnabled() then return end
 
@@ -123,7 +124,7 @@ function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
   if DBM then
-    EPGP:Print(L["Using DBM for boss kill tracking"])
+    EPGP:Info(L["Using DBM for boss kill tracking"])
     DBM:RegisterCallback("kill",
                          function (mod)
                            BossKilled("kill", mod.combatInfo.name)
