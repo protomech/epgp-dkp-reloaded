@@ -106,6 +106,7 @@ function lib:SetNote(name, note)
       e.pending_note = note
       SetState("FLUSHING")
     end
+    return e.note
   end
 end
 
