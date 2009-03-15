@@ -67,5 +67,5 @@ L["%s is now removed from the award list"] = "%s ha sido eliminado de la lista d
 L["Start recurring award (%s) %d EP/%s"] = "Comienzo de recompensa recurrente (%s) %d EP/%s"
 L["Stop recurring award"] = "Fin de recomensa recurrente"
 L["Undo"] = "Deshacer"
-L["Using DBM for boss kill tracking"] = "Usando DBM para el seguimiento para matar al jefe" -- Needs review
+L["Using DBM for boss kill tracking"] = "Usar DBM para hacer seguimiento de boss muerto"
 L["Value"] = "Valor"

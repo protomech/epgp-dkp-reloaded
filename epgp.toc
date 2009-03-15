@@ -29,7 +29,7 @@ localization.esMX.lua
 localization.frFR.lua
 localization.koKR.lua
 localization.ruRU.lua
-localization.zhCH.lua
+localization.zhCN.lua
 localization.zhTW.lua
 
 epgp.lua

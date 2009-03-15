@@ -3,7 +3,7 @@ if not L then return end
 
 L["Alts"] = "Alts"
 L["Automatic boss kill tracking"] = "Deteccion automatica de muerte de jefes"
-L["Automatic loot tracking threshold"] = "Umbral para registro de bot\195\173n autom\195\161tico"
+L["Automatic loot tracking threshold"] = "Umbral de deteccion automatica de items" -- Needs review
 L["Award EP"] = "Otorgar EP"
 L["Base GP should be a positive number"] = "El GP base debe ser un n\195\186mero positivo"
 L["Credit GP"] = "Reconocer GP"
@@ -20,11 +20,11 @@ L["%d or %d"] = "%d o %d"
 L["Enable announcement of all EPGP actions to the specified medium."] = "Habilitar anuncios de todas las acciones de EPGP por el medio especificado"
 L["Enable announce of actions"] = "Habilitar anuncios de acciones"
 L["Enable a proposed GP value of armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."] = "Habilitar un valor propuesto de GP de armaduras en los tooltips. Los items de quest o tokens que pueden ser canjeados por armaduras tambien tendran un valor propuesto de GP"
-L["Enable automatic boss tracking by means of a popup to mass award EP to the raid and standby when a boss is killed."] = "Activar registro autom\195\161tico de bosses mediante un popup para recompensar en masa EP a la raid y suplentes cuando un boss es matado"
-L["Enable automatic handling of the standby list through whispers when in raid. When this option is selected the standby list is cleared after each reward"] = "Activar manejo autom\195\161tico de la lista de suplentes a trav\195\169s de susurros cuando se est\195\169 en raid. Cuando esta opci\195\179n sea seleccionada, la lista de suplentes ser\195\161 vaciada despu\195\169s de cada recompensa"
+L["Enable automatic boss tracking by means of a popup to mass award EP to the raid and standby when a boss is killed."] = "Habilitar deteccion automatica de jefes a traves de una ventana emergente para entregar EP masivo al raid y la lista de espera cuando se mata un jefe" -- Needs review
+L["Enable automatic handling of the standby list through whispers when in raid. When this option is selected the standby list is cleared after each reward"] = "Habilitar manejo automatico de la lista de espera a traves de mensajes privados al estar en un raid. Cuando esta opcion es seleccionada la lista de espera se vacia despues de cada entrega de puntos." -- Needs review
 L["Enable automatic loot tracking"] = "Habilitar deteccion automatica de items"
-L["Enable automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."] = "Activar registro autom\195\161tico del bot\195\173n mediante un popup para asignar GP al personaje que reciba bot\195\173n. Esta opci\195\179n s\195\179lo tiene efecto si est\195\161s en raid y si eres o el L\195\173der de Raid o el Maestro Despojador"
-L["Enable GP on tooltips"] = "Activar GP en la ventana del objeto"
+L["Enable automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."] = "Habilitar deteccion automatica de items por medio de una ventana emergente para asignar GP al personaje que recibio el item. Esta opcion solo tiene efecto si estas en un raid y eres Lider del Raid o el Master Looter" -- Needs review
+L["Enable GP on tooltips"] = "Habilitar GP en los tooltips" -- Needs review
 L["Enable standby whispers in raid"] = "Activar susurros de suplentes en la raid"
 L["EP/GP are reset"] = "EP/GP reiniciados"
 L["EPGP is an in game, relational loot distribution system"] = "EPGP es un sistema de distribucion de items relacional dentro del juego"
