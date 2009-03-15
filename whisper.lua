@@ -31,6 +31,8 @@ function mod:CHAT_MSG_WHISPER(event_name, msg, sender)
 end
 
 local function SendNotifiesAndClearExtras(event_name, names, reason, amount)
+  EPGP:GetModule("announce"):Announce(
+    L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"])
   for member, sender in pairs(senderMap) do
     if EPGP:IsMemberInExtrasList(member) then
       SendChatMessage(L["%+d EP (%s) to %s"]:format(amount, reason, member),
@@ -47,4 +49,5 @@ end
 function mod:OnEnable()
   self:RegisterEvent("CHAT_MSG_WHISPER")
   EPGP.RegisterCallback(self, "MassEPAward", SendNotifiesAndClearExtras)
+  EPGP.RegisterCallback(self, "StartRecurringAward", SendNotifiesAndClearExtras)
 end

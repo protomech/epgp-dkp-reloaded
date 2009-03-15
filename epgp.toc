@@ -35,6 +35,7 @@ localization.zhTW.lua
 epgp.lua
 
 announce.lua
+
 boss.lua
 gptooltip.lua
 log.lua

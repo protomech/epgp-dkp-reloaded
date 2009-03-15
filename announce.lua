@@ -2,7 +2,7 @@ local mod = EPGP:NewModule("announce")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
-local function Announce(fmt, ...)
+function mod:Announce(fmt, ...)
   local medium = EPGP.db.profile.announce_medium
   local channel = EPGP.db.profile.announce_channel or 0
 
@@ -33,12 +33,12 @@ end
 
 local function AnnounceEPAward(event_name, name, reason, amount, mass)
   if mass then return end
-  Announce(L["%+d EP (%s) to %s"], amount, reason, name)
+  mod:Announce(L["%+d EP (%s) to %s"], amount, reason, name)
 end
 
 local function AnnounceGPAward(event_name, name, reason, amount, mass)
   if mass then return end
-  Announce(L["%+d GP (%s) to %s"], amount, reason, name)
+  mod:Announce(L["%+d GP (%s) to %s"], amount, reason, name)
 end
 
 local function AnnounceMassEPAward(event_name, names, reason, amount)
@@ -54,27 +54,24 @@ local function AnnounceMassEPAward(event_name, names, reason, amount)
     end
   end
 
-  Announce(L["%+d EP (%s) to %s"], amount, reason, awarded)
-  if EPGP.db.profile.auto_standby_whispers and UnitInRaid("player") then
-    Announce(L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"])
-  end
+  mod:Announce(L["%+d EP (%s) to %s"], amount, reason, awarded)
 end
 
 local function AnnounceDecay(event_name, decay_p)
-  Announce(L["Decay of EP/GP by %d%%"], decay_p)
+  mod:Announce(L["Decay of EP/GP by %d%%"], decay_p)
 end
 
 local function AnnounceStartRecurringAward(event_name, reason, amount, mins)
   local fmt, val = SecondsToTimeAbbrev(mins * 60)
-  Announce(L["Start recurring award (%s) %d EP/%s"], reason, amount, fmt:format(val))
+  mod:Announce(L["Start recurring award (%s) %d EP/%s"], reason, amount, fmt:format(val))
 end
 
 local function AnnounceStopRecurringAward(event_name)
-  Announce(L["Stop recurring award"])
+  mod:Announce(L["Stop recurring award"])
 end
 
 local function AnnounceEPGPReset(event_name)
-  Announce(L["EP/GP are reset"])
+  mod:Announce(L["EP/GP are reset"])
 end
 
 function mod:OnEnable()
