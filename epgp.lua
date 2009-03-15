@@ -142,11 +142,6 @@ local callbacks = EPGP.callbacks
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
-local decay_p
-local min_ep
-local base_gp
-local extras_p
-
 local ep_data = {}
 local gp_data = {}
 local main_data = {}
@@ -171,7 +166,9 @@ local function DecodeNote(note)
 end
 
 local function EncodeNote(ep, gp)
-  return string.format("%d,%d", math.max(ep, 0), math.max(gp - base_gp, 0))
+  return string.format("%d,%d",
+                       math.max(ep, 0),
+                       math.max(gp - global_config.base_gp, 0))
 end
 
 -- A wrapper function to handle sort logic for selected
@@ -214,8 +211,8 @@ local comparators = {
          local a_ep, a_gp = EPGP:GetEPGP(a)
          local b_ep, b_gp = EPGP:GetEPGP(b)
 
-         local a_qualifies = a_ep >= min_ep
-         local b_qualifies = b_ep >= min_ep
+         local a_qualifies = a_ep >= global_config.min_ep
+         local b_qualifies = b_ep >= global_config.min_ep
 
          if a_qualifies == b_qualifies then
            return a_ep/a_gp > b_ep/b_gp
@@ -272,7 +269,9 @@ end
 -- @EXTRAS_P:<number>
 -- @MIN_EP:<number>
 -- @BASE_GP:<number>
-local global_config = {
+local global_config = {}
+
+local global_config_defs = {
   decay_p = {
     pattern = "@DECAY_P:(%d+)",
     parser = tonumber,
@@ -307,8 +306,8 @@ local global_config = {
   },
 }
 -- Set defaults
-for var, def in pairs(global_config) do
-  _G[var] = def.default
+for var, def in pairs(global_config_defs) do
+  global_config[var] = def.default
 end
 local function ParseGuildInfo(callback, info)
   EPGP:Debug("Parsing GuildInfo")
@@ -321,7 +320,7 @@ local function ParseGuildInfo(callback, info)
     if line == "-EPGP-" then
       in_block = not in_block
     elseif in_block then
-      for var, def in pairs(global_config) do
+      for var, def in pairs(global_config_defs) do
         local v = line:match(def.pattern)
         if v then
           EPGP:Debug("Matched [%s]", line)
@@ -336,15 +335,15 @@ local function ParseGuildInfo(callback, info)
     end
   end
 
-  for var, def in pairs(global_config) do
+  for var, def in pairs(global_config_defs) do
     local new_value = new_config[var]
     if new_value == nil then
       new_value = def.default
     end
-    if _G[var] ~= new_value then
+    if global_config[var] ~= new_value then
       EPGP:Debug("Setting new value %s for variable %s",
                  tostring(new_value), var)
-      _G[var] = new_value
+      global_config[var] = new_value
       callbacks:Fire(def.change_message, new_value)
     end
   end
@@ -531,15 +530,15 @@ function EPGP:ResetEPGP()
 end
 
 function EPGP:CanDecayEPGP()
-  if not CanEditOfficerNote() or decay_p == 0 or not GS:IsCurrentState() then
+  if not CanEditOfficerNote() or global_config.decay_p == 0 or not GS:IsCurrentState() then
     return false
   end
   return true
 end
 
 function EPGP:DecayEPGP()
-  local decay = decay_p  * 0.01
-  local reason = string.format("Decay %d%%", decay_p)
+  local decay = global_config.decay_p  * 0.01
+  local reason = string.format("Decay %d%%", global_config.decay_p)
   for name,_ in pairs(ep_data) do
     local ep, gp, main = self:GetEPGP(name)
     assert(main == nil, "Corrupt alt data!")
@@ -553,7 +552,7 @@ function EPGP:DecayEPGP()
       callbacks:Fire("GPAward", name, reason, -decay_gp, true)
     end
   end
-  callbacks:Fire("Decay", decay_p)
+  callbacks:Fire("Decay", global_config.decay_p)
 end
 
 function EPGP:GetEPGP(name)
@@ -562,7 +561,7 @@ function EPGP:GetEPGP(name)
     name = main
   end
   if ep_data[name] then
-    return ep_data[name], gp_data[name] + base_gp, main
+    return ep_data[name], gp_data[name] + global_config.base_gp, main
   end
 end
 
@@ -675,19 +674,19 @@ function EPGP:RecurringEPPeriodMinutes(val)
 end
 
 function EPGP:GetDecayPercent()
-  return decay_p
+  return global_config.decay_p
 end
 
 function EPGP:GetExtrasPercent()
-  return extras_p
+  return global_config.extras_p
 end
 
 function EPGP:GetBaseGP()
-  return base_gp
+  return global_config.base_gp
 end
 
 function EPGP:GetMinEP()
-  return min_ep
+  return global_config.min_ep
 end
 
 function EPGP:SetGlobalConfiguration(decay_p, extras_p, base_gp, min_ep)
@@ -717,7 +716,7 @@ end
 
 function EPGP:IncMassEPBy(reason, amount)
   local awarded = {}
-  local extras_amount = math.floor(extras_p * 0.01 * amount)
+  local extras_amount = math.floor(global_config.extras_p * 0.01 * amount)
   for i=1,EPGP:GetNumMembers() do
     local name = EPGP:GetMember(i)
     if EPGP:IsMemberInAwardList(name) then
