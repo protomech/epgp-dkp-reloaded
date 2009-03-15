@@ -142,15 +142,10 @@ local callbacks = EPGP.callbacks
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
-local DEFAULT_DECAY_P = 0
-local DEFAULT_MIN_EP = 0
-local DEFAULT_BASE_GP = 1
-local DEFAULT_EXTRAS_P = 100
-
-local decay_p = DEFAULT_DECAY_P
-local min_ep = DEFAULT_MIN_EP
-local base_gp = DEFAULT_BASE_GP
-local extras_p = DEFAULT_EXTRAS_P
+local decay_p
+local min_ep
+local base_gp
+local extras_p
 
 local ep_data = {}
 local gp_data = {}
@@ -277,83 +272,81 @@ end
 -- @EXTRAS_P:<number>
 -- @MIN_EP:<number>
 -- @BASE_GP:<number>
+local global_config = {
+  decay_p = {
+    pattern = "@DECAY_P:(%d+)",
+    parser = tonumber,
+    validator = function(v) return v >= 0 and v <= 100 end,
+    error = L["Decay Percent should be a number between 0 and 100"],
+    default = 0,
+    change_message = "DecayPercentChanged",
+  },
+  extras_p = {
+    pattern = "@EXTRAS_P:(%d+)",
+    parser = tonumber,
+    validator = function(v) return v >= 0 and v <= 100 end,
+    error = L["Extras Percent should be a number between 0 and 100"],
+    default = 100,
+    change_message = "ExtrasPercentChanged",
+  },
+  min_ep = {
+    pattern = "@MIN_EP:(%d+)",
+    parser = tonumber,
+    validator = function(v) return v >= 0 end,
+    error = L["Min EP should be a positive number"],
+    default = 0,
+    change_message = "MinEPChanged",
+  },
+  base_gp = {
+    pattern = "@BASE_GP:(%d+)",
+    parser = tonumber,
+    validator = function(v) return v >= 0 end,
+    error = L["Base GP should be a positive number"],
+    default = 1,
+    change_message = "BaseGPChanged",
+  },
+}
+-- Set defaults
+for var, def in pairs(global_config) do
+  _G[var] = def.default
+end
 local function ParseGuildInfo(callback, info)
   EPGP:Debug("Parsing GuildInfo")
   local lines = {string.split("\n", info)}
   local in_block = false
 
-  local new_decay_p = DEFAULT_DECAY_P
-  local new_extras_p = DEFAULT_EXTRAS_P
-  local new_base_gp = DEFAULT_BASE_GP
-  local new_min_ep = DEFAULT_MIN_EP
+  local new_config = {}
 
   for _,line in pairs(lines) do
     if line == "-EPGP-" then
       in_block = not in_block
     elseif in_block then
-      -- Decay percent
-      local dp = line:match("@DECAY_P:(%d+)")
-      if dp then
-        dp = tonumber(dp) or DEFAULT_DECAY_P
-        if dp >= 0 and dp <= 100 then
-          new_decay_p = dp
-        else
-          EPGP:Error(L["Decay Percent should be a number between 0 and 100"])
-        end
-      end
-
-      -- Extras percent
-      local ep = line:match("@EXTRAS_P:(%d+)")
-      if ep then
-        ep = tonumber(ep) or DEFAULT_EXTRAS_P
-        if ep >= 0 and ep <= 100 then
-          new_extras_p = ep
-        else
-          EPGP:Error(L["Extras Percent should be a number between 0 and 100"])
-        end
-      end
-      
-      -- Min EP
-      local mep = line:match("@MIN_EP:(%d+)")
-      if mep then
-        mep = tonumber(mep) or DEFAULT_MIN_EP
-        if mep >= 0 then
-          new_min_ep = mep
-        else
-          EPGP:Error(L["Min EP should be a positive number"])
-        end
-      end
-
-      -- Base GP
-      local bgp = line:match("@BASE_GP:(%d+)")
-      if bgp then
-        bgp = tonumber(bgp) or DEFAULT_BASE_GP
-        if bgp >= 0 then
-          new_base_gp = bgp
-        else
-          EPGP:Error(L["Base GP should be a positive number"])
+      for var, def in pairs(global_config) do
+        local v = line:match(def.pattern)
+        if v then
+          EPGP:Debug("Matched [%s]", line)
+          v = def.parser(v)
+          if v == nil or not def.validator(v) then
+            EPGP:Error(def.error)
+          else
+            new_config[var] = v
+          end
         end
       end
     end
   end
 
-  if decay_p ~= new_decay_p then
-    decay_p = new_decay_p
-    callbacks:Fire("DecayPercentChanged", decay_p)
-  end
-  if extras_p ~= new_extras_p then
-    extras_p = new_extras_p
-    callbacks:Fire("ExtrasPercentChanged", extras_p)
-  end
-  if min_ep ~= new_min_ep then
-    min_ep = new_min_ep
-    callbacks:Fire("MinEPChanged", min_ep)
-    DestroyStandings()
-  end
-  if base_gp ~= new_base_gp then
-    base_gp = new_base_gp
-    callbacks:Fire("BaseGPChanged", base_gp)
-    DestroyStandings()
+  for var, def in pairs(global_config) do
+    local new_value = new_config[var]
+    if new_value == nil then
+      new_value = def.default
+    end
+    if _G[var] ~= new_value then
+      EPGP:Debug("Setting new value %s for variable %s",
+                 tostring(new_value), var)
+      _G[var] = new_value
+      callbacks:Fire(def.change_message, new_value)
+    end
   end
 end
 
