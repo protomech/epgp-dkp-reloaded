@@ -142,6 +142,7 @@ local callbacks = EPGP.callbacks
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
+local global_config = {}
 local ep_data = {}
 local gp_data = {}
 local main_data = {}
@@ -269,8 +270,6 @@ end
 -- @EXTRAS_P:<number>
 -- @MIN_EP:<number>
 -- @BASE_GP:<number>
-local global_config = {}
-
 local global_config_defs = {
   decay_p = {
     pattern = "@DECAY_P:(%d+)",
