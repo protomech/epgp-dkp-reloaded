@@ -399,6 +399,24 @@ local function ParseGuildNote(callback, name, note)
   DestroyStandings()
 end
 
+function EPGP:ExportRoster()
+  local t = {}
+  for name,_ in pairs(ep_data) do
+    local ep, gp, main = self:GetEPGP(name)
+    table.insert(t, {name, self:GetClass(name), ep, gp})
+  end
+  return t
+end
+
+function EPGP:ImportRoster(t, base_gp)
+  for _, entry in pairs(t) do
+    local name, ep, gp = unpack(entry)
+    if not GS:SetNote(name, EncodeNote(ep, gp - base_gp)) then
+      EPGP:Warning(L["Ignoring non-existent member %s"]:format(name))
+    end
+  end
+end
+
 function EPGP:StandingsSort(order)
   if not order then
     return db.profile.sort_order

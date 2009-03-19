@@ -123,18 +123,6 @@ StaticPopupDialogs["EPGP_RESET_EPGP"] = {
              end
 }
 
-StaticPopupDialogs["EPGP_ROLLBACK_EPGP"] = {
-  text = L["Rollback to snapshot taken on %s?"],
-  button1 = ACCEPT,
-  button2 = CANCEL,
-  timeout = 0,
-  hideOnEscape = 1,
-  whileDead = 1,
-  OnAccept = function()
-               EPGP:GetModule("log"):Rollback()
-             end
-}
-
 StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
   text = L["%s is dead. Award EP?"],
   button1 = ACCEPT,
@@ -168,6 +156,45 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
                              parent.button1:Disable()
                            end
                          end,
+  EditBoxOnEscapePressed = function(self)
+                             self:GetParent():Hide()
+                           end,
+}
+
+StaticPopupDialogs["EPGP_EXPORT"] = {
+  text = L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"] = true
+  timeout = 0,
+  whileDead = 1,
+  hasEditBox = 1,
+  OnShow = function(self)
+             self.editBox:SetText(EPGP:GetModule("log"):Export())
+             self.editBox:HighlightText()
+           end,
+  OnHide = function(self)
+             self.editBox:SetText("")
+           end,
+  EditBoxOnEscapePressed = function(self)
+                             self:GetParent():Hide()
+                           end,
+}
+
+StaticPopupDialogs["EPGP_IMPORT"] = {
+  text = L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http: http://epgpweb.appspot.com here"]
+  button1 = ACCEPT,
+  button2 = CANCEL,
+  timeout = 0,
+  hideOnEscape = 1,
+  whileDead = 1,
+  hasEditBox = 1,
+  OnAccept = function(self)
+               EPGP:GetModule("log"):Import(self.editBox:GetText())
+             end,
+  OnHide = function(self)
+             self.editBox:SetText("")
+           end,
+  EditBoxOnEnterPressed = function(self)
+                            self:GetParent().button1:Click()
+                          end,
   EditBoxOnEscapePressed = function(self)
                              self:GetParent():Hide()
                            end,

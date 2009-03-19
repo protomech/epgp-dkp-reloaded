@@ -107,17 +107,6 @@ function mod:OnEnable()
                  EPGP:ReportErrors(outputFunc)
                end,
       },
-      rollback = {
-        order = 100,
-        type = "execute",
-        name = L["Rollback EPGP"],
-        desc = L["Rollbacks to the latest snapshot of EPGP taken at logout"],
-        func = function()
-                 StaticPopup_Show(
-                   "EPGP_ROLLBACK_EPGP",
-                   EPGP:GetModule("log"):GetSnapshotTimeString())
-               end,
-      },
       reset = {
         order = 101,
         type = "execute",

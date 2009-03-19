@@ -19,6 +19,7 @@ local mod = EPGP:NewModule("log")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
+local JSON = LibStub("LibJSON-1.0")
 
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not mod.callbacks then
@@ -148,8 +149,77 @@ function mod:Rollback()
   -- Restore all notes
   GS:Rollback(t)
 
+end
+
+function mod:Export()
+  local d = {}
+  d.guild = select(1, GetGuildInfo("player"))
+  d.realm = GetRealmName()
+  d.base_gp = EPGP:GetBaseGP()
+  d.min_ep = EPGP:GetMinEP()
+  d.decay_p = EPGP:GetDecayPercent()
+  d.extras_p = EPGP:GetExtrasPercent()
+  d.timestamp = GetTimestamp()
+
+  d.roster = EPGP:ExportRoster()
+
+  return JSON.Serialize(d):gsub("\124", "\124\124")
+end
+
+function mod:Import(jsonStr)
+  local success, d = pcall(JSON.Deserialize, jsonStr)
+  if not success then
+    EPGP:Error(L["The imported data is invalid"])
+    return
+  end
+
+  if d.guild ~= select(1, GetGuildInfo("player")) or
+     d.realm ~= GetRealmName() then
+    EPGP:Error(L["The imported data is invalid"])
+    return
+  end
+
+  local types = {
+    timestamp = "number",
+    roster = "table",
+    decay_p = "number",
+    extras_p = "number",
+    min_ep = "number",
+    base_gp = "number",
+  }
+  for k,t in pairs(types) do
+    if type(d[k]) ~= t then
+      EPGP:Error(L["The imported data is invalid"])
+      return
+    end
+  end
+
+  for _, entry in pairs(d.roster) do
+    if type(entry) ~= "table" then
+      EPGP:Error(L["The imported data is invalid"])
+      return
+    else
+      local types = {
+        [1] = "string",
+        [2] = "number",
+        [3] = "number",
+      }
+      for k,t in pairs(types) do
+        if type(entry[k]) ~= t then
+          EPGP:Error(L["The imported data is invalid"])
+          return
+        end
+      end
+    end
+  end
+
+  EPGP:Warning(L["Importing data snapshot taken at: %s"]:format(
+                 date("%Y-%m-%d %H:%M", d.timestamp)))
+  EPGP:ImportRoster(d.roster, d.base_gp)
+  EPGP:SetGlobalConfiguration(d.decay_p, d.extras_p, d.base_gp, d.min_ep)
+
   -- Trim the log if necessary.
-  local timestamp = t.time
+  local timestamp = d.timestamp
   while true do
     local records = #EPGP.db.profile.log
     if records == 0 then
@@ -173,21 +243,7 @@ function mod:Rollback()
   callbacks:Fire("LogChanged", #EPGP.db.profile.log)
 end
 
-function mod:HasSnapshot()
-  return not not EPGP.db.profile.snapshot
-end
-
-function mod:GetSnapshotTimeString()
-  assert(EPGP.db.profile.snapshot)
-  return date("%Y-%m-%d %H:%M", EPGP.db.profile.snapshot.time)
-end
-
 function mod:OnEnable()
   EPGP.RegisterCallback(mod, "EPAward", AppendToLog, "EP")
   EPGP.RegisterCallback(mod, "GPAward", AppendToLog, "GP")
-
-  -- Now we setup the auto-snapshot on db shutdown
-  EPGP.db.RegisterCallback(self, "OnDatabaseShutdown", "Snapshot")
-  -- Save the realm of this guild
-  EPGP.db.realm = GetRealmName()
 end

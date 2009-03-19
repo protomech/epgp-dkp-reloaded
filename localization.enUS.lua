@@ -37,12 +37,16 @@ L["Enable automatic loot tracking by means of a popup to assign GP to the toon t
 L["Enable automatic loot tracking"] = true
 L["Enable standby whispers in raid"] = true
 L["Enable automatic handling of the standby list through whispers when in raid. When this option is selected the standby list is cleared after each reward"] = true
+L["Export"] = true
 L["Extras Percent should be a number between 0 and 100"] = true
 L["GP Reason"] = true
 L["GP: %d [ItemLevel=%d]"] = true
 L["GP: %d or %d [ItemLevel=%d]"] = true
 L["Hint: You can open these options by typing /epgp config"] = true
 L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"] = true
+L["Ignoring non-existent member %s"] = true
+L["Import"] = true
+L["Importing data snapshot taken at: %s"] = true
 L["Invalid officer note [%s] for %s (ignored)"] = true
 L["List errors"] = true
 L["Lists errors during officer note parsing to the default chat frame. Examples are members with an invalid officer note."] = true
@@ -66,6 +70,9 @@ L["Sets the custom announce channel name used to announce EPGP actions."] = true
 L["Show everyone"] = true
 L["Start recurring award (%s) %d EP/%s"] = true
 L["Stop recurring award"] = true
+L["The imported data is invalid"] = true
+L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"] = true
+L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http: http://epgpweb.appspot.com here"] = true
 L["Undo"] = true
 L["Using DBM for boss kill tracking"] = true
 L["Value"] = true

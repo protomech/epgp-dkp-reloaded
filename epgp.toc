@@ -21,6 +21,7 @@ libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\AceTimer-3.0\AceTimer-3.0.xml
 
 LibGuildStorage-1.0.lua
+LibJSON-1.0.lua
 
 localization.deDE.lua
 localization.enUS.lua
