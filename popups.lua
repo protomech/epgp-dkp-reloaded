@@ -179,7 +179,7 @@ StaticPopupDialogs["EPGP_EXPORT"] = {
 }
 
 StaticPopupDialogs["EPGP_IMPORT"] = {
-  text = L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http: http://epgpweb.appspot.com here"]
+  text = L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http://epgpweb.appspot.com here"]
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
