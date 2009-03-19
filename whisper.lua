@@ -51,3 +51,7 @@ function mod:OnEnable()
   EPGP.RegisterCallback(self, "MassEPAward", SendNotifiesAndClearExtras)
   EPGP.RegisterCallback(self, "StartRecurringAward", SendNotifiesAndClearExtras)
 end
+
+function mod:OnDisable()
+  EPGP.UnregisterAllCallbacks(self)
+end
