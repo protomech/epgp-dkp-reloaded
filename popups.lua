@@ -162,7 +162,7 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
 }
 
 StaticPopupDialogs["EPGP_EXPORT"] = {
-  text = L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"] = true
+  text = L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"],
   timeout = 0,
   whileDead = 1,
   hasEditBox = 1,
@@ -179,7 +179,7 @@ StaticPopupDialogs["EPGP_EXPORT"] = {
 }
 
 StaticPopupDialogs["EPGP_IMPORT"] = {
-  text = L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http://epgpweb.appspot.com here"]
+  text = L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http://epgpweb.appspot.com here"],
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
