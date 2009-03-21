@@ -89,6 +89,7 @@ def main():
   for locale in non_enUS_locales:
     localization = GetLocalization(locale)
     filename = 'localization.%s.lua' % locale
+    logging.info('Writing %s' % filename)
     file = open(filename, 'w')
     file.writelines([
       'local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "%s")' % locale,
