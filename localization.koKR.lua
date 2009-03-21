@@ -1,4 +1,4 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "koKR", true)
+local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "koKR")
 if not L then return end
 
 -- L["Alts"] = ""
@@ -30,12 +30,16 @@ L["EP/GP are reset"] = "EP/GP \234\176\128 \236\180\136\234\184\176\237\153\148\
 L["EPGP is an in game, relational loot distribution system"] = "EPGP \235\138\148 \234\178\140\236\158\132 \235\130\180, \236\131\129\234\180\128\236\160\129 \235\163\168\237\140\133 \235\182\132\235\176\176 \236\139\156\236\138\164\237\133\156 \236\158\133\235\139\136\235\139\164"
 L["EPGP is using Officer Notes for data storage. Do you really want to edit the Officer Note by hand?"] = "EPGP \235\138\148 \236\152\164\237\148\188\236\132\156 \235\133\184\237\138\184\235\165\188 \234\184\176\235\161\157 \236\158\165\236\134\140\235\161\156 \236\130\172\236\154\169\237\149\169\235\139\136\235\139\164. \236\160\149\235\167\144\235\161\156 \236\152\164\237\148\188\236\132\156 \235\133\184\237\138\184\235\165\188 \236\167\129\236\160\145 \236\136\152\236\160\149\237\149\152\234\178\160\236\138\181\235\139\136\234\185\140?"
 L["EP Reason"] = "EP \234\183\188\234\177\176"
+-- L["Export"] = ""
 -- L["Extras Percent should be a number between 0 and 100"] = ""
 L["GP: %d [ItemLevel=%d]"] = "GP: %d [\236\149\132\236\157\180\237\133\156\235\160\136\235\178\168=%d]"
 L["GP: %d or %d [ItemLevel=%d]"] = "GP: %d \235\152\144\235\138\148 %d [\236\149\132\236\157\180\237\133\156\235\160\136\235\178\168=%d]"
 L["GP Reason"] = "GP \234\183\188\234\177\176"
 L["Hint: You can open these options by typing /epgp config"] = "\237\158\140\237\138\184: \236\177\132\237\140\133\236\176\189\236\151\144 '/epgp config' \235\165\188 \236\158\133\235\160\165\237\149\152\236\151\172 \236\157\180 \236\152\181\236\133\152\236\176\189\236\157\132 \236\151\180 \236\136\152 \236\158\136\236\138\181\235\139\136\235\139\164."
 -- L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"] = ""
+-- L["Ignoring non-existent member %s"] = ""
+-- L["Import"] = ""
+-- L["Importing data snapshot taken at: %s"] = ""
 -- L["Invalid officer note [%s] for %s (ignored)"] = ""
 L["List errors"] = "\235\170\169\235\161\157 \236\152\164\235\165\152"
 -- L["Lists errors during officer note parsing to the default chat frame. Examples are members with an invalid officer note."] = ""
@@ -66,6 +70,9 @@ L["%s is dead. Award EP?"] = "%s \234\176\128 \236\163\189\236\151\136\236\138\1
 L["%s is now removed from the award list"] = "%s \235\138\148 \236\157\180\236\160\156 \235\179\180\236\131\129 \235\170\169\235\161\157\236\151\144\236\132\156 \236\160\156\234\177\176\235\144\152\236\151\136\236\138\181\235\139\136\235\139\164."
 L["Start recurring award (%s) %d EP/%s"] = "\235\176\152\235\179\181 \235\179\180\236\131\129 \236\139\156\236\158\145 (%s) %d EP/%s"
 L["Stop recurring award"] = "\235\176\152\235\179\181 \235\179\180\236\131\129 \236\164\145\236\167\128"
+-- L["The imported data is invalid"] = ""
+-- L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"] = ""
+-- L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http://epgpweb.appspot.com here"] = ""
 L["Undo"] = "\236\139\164\237\150\137 \236\183\168\236\134\140"
 -- L["Using DBM for boss kill tracking"] = ""
 L["Value"] = "\234\176\146"

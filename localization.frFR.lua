@@ -1,4 +1,4 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "frFR", true)
+local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "frFR")
 if not L then return end
 
 L["Alts"] = "Rerolls"
@@ -30,12 +30,16 @@ L["EP/GP are reset"] = "Les EP/GP ont \195\169t\195\169 r\195\169initialis\195\1
 L["EPGP is an in game, relational loot distribution system"] = "EPGP est, dans le jeu, un syst\195\168me relationnel de distribution de butin"
 L["EPGP is using Officer Notes for data storage. Do you really want to edit the Officer Note by hand?"] = "EPGP utilise les notes d'officiers pour stocker ses donn\195\169es. Souhaitez-vous r\195\169ellement \195\169diter manuellement la note d'officier ?"
 L["EP Reason"] = "Raison de l'EP"
+L["Export"] = "Exporter"
 L["Extras Percent should be a number between 0 and 100"] = "Pourcentage suppl\195\169mentaire doit \195\170tre un nombre compris entre 0 et 100"
 L["GP: %d [ItemLevel=%d]"] = "GP : %d [NiveauObjet=%d]"
 L["GP: %d or %d [ItemLevel=%d]"] = "GP : %d ou %d [NiveauObjet=%d]"
 L["GP Reason"] = "Raison du GP"
 L["Hint: You can open these options by typing /epgp config"] = "Astuce : vous pouvez ouvrir ces options en entrant /epgp config"
 L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"] = "Si vous souhaitez \195\170tre sur la liste des gains mais que vous n'\195\170tes pas dans le raid, vous devez me chuchoter : 'epgp standby' ou 'epgp standby <nom>' o\195\185 <nom> est le membre qui devrait recevoir les gains"
+L["Ignoring non-existent member %s"] = "Ignore membre non-existant %s"
+L["Import"] = "Importer"
+L["Importing data snapshot taken at: %s"] = "Importation"
 L["Invalid officer note [%s] for %s (ignored)"] = "Note d'officier invalide [%s] pour %s (ignor\195\169)"
 L["List errors"] = "Lister les erreurs"
 L["Lists errors during officer note parsing to the default chat frame. Examples are members with an invalid officer note."] = "Liste les erreurs lors du rapport des notes d'officiers sur la fen\195\170tre de discussion par d\195\169faut, comme lorsque des membres ont une note d'officier invalide, par exemple."
@@ -66,6 +70,9 @@ L["%s is not eligible for EP awards"] = "%s n'est pas \195\169ligible pour les g
 L["%s is now removed from the award list"] = "%s est \195\160 pr\195\169sent supprim\195\169 de la liste des gains"
 L["Start recurring award (%s) %d EP/%s"] = "Commencer la collecte des gains (%s) %d EP/%s"
 L["Stop recurring award"] = "Arr\195\170ter la collecte des gains"
+L["The imported data is invalid"] = "Les donn\195\169es import\195\169es ne sont pas valides"
+L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"] = "Pour exporter les classements actuels, copier le texte ci-dessous et poster le sur l'application web: http://epgpweb.appspot.com"
+L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http://epgpweb.appspot.com here"] = "Pour restorer une version pr\195\169c\195\169dente des classements, copier/coller le texte \195\160 partir de l'application web: http://epgpweb.appspot.com ici"
 L["Undo"] = "Annuler"
 L["Using DBM for boss kill tracking"] = "Utiliser DBM pour tracker la mort des boss"
 L["Value"] = "Valeur"
