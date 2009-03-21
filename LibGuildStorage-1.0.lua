@@ -295,8 +295,8 @@ local function Frame_OnUpdate(self, elapsed)
       end
     end
   end
-  index = last_index + 1
-  if index > GetNumGuildMembers(true) then
+  index = last_index
+  if index >= GetNumGuildMembers(true) then
     -- We are done, we need to clear the seen marks and delete the
     -- unmarked entries. We also fire events for removed members now.
     for name, t in pairs(cache) do
