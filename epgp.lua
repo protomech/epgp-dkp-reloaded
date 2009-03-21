@@ -400,20 +400,30 @@ local function ParseGuildNote(callback, name, note)
 end
 
 function EPGP:ExportRoster()
+  local base_gp = global_config.base_gp
   local t = {}
   for name,_ in pairs(ep_data) do
     local ep, gp, main = self:GetEPGP(name)
-    table.insert(t, {name, self:GetClass(name), ep, gp})
+    if ep ~= 0 or gp ~= base_gp then
+      table.insert(t, {name, self:GetClass(name), ep, gp})
+    end
   end
   return t
 end
 
 function EPGP:ImportRoster(t, base_gp)
+  local notes = {}
   for _, entry in pairs(t) do
     local name, ep, gp = unpack(entry)
-    if not GS:SetNote(name, EncodeNote(ep, gp - base_gp)) then
-      EPGP:Warning(L["Ignoring non-existent member %s"]:format(name))
-    end
+    ep = math.max(0, ep)
+    gp = math.max(base_gp, gp)
+    notes[name] = EncodeNote(ep, gp - base_gp)
+  end
+
+  local zero_note = EncodeNote(0, 0)
+  for name,_ in pairs(ep_data) do
+    local note = notes[name] or zero_note
+    GS:SetNote(name, note)
   end
 end
 
