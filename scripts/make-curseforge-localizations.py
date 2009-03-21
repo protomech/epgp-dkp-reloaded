@@ -14,8 +14,6 @@ import re
 import sys
 import urllib2
 
-from BeautifulSoup import BeautifulSoup
-
 # The multipart encoder
 def _multipart_encode(vars):
   CRLF = '\r\n'
@@ -61,7 +59,7 @@ non_enUS_locales = [
   'zhTW',
 ]
 
-_SCRIPT_RE = re.compile('<script.*?</script>', re.DOTALL)
+_TEXTAREA_RE = re.compile(r'(?si)<textarea[^>]*?>(.*?)</textarea>')
 
 def GetLocalization(locale):
   assert(locale in non_enUS_locales)
@@ -79,11 +77,13 @@ def GetLocalization(locale):
     params).read()
 
   # Remove all contents of script tags
-  logging.info('Stripping all <script>...</script> content')
-  html = _SCRIPT_RE.sub('', html)
+  logging.info('Grabbing localization from the html response')
   
-  soup = BeautifulSoup(html)
-  return soup.find('textarea').string
+  localization = _TEXTAREA_RE.search(html)
+  if not localization:
+    raise Exception('Localization not found localization!')
+  
+  return localization.group(1)
 
 def main():
   for locale in non_enUS_locales:
