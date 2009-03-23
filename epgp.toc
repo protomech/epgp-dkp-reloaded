@@ -51,3 +51,5 @@ ui.lua
 whisper.lua
 
 options.lua
+
+debug.xml
