@@ -22,18 +22,18 @@ local LBIR = LibStub("LibBabble-Inventory-3.0"):GetReverseLookupTable()
 local LBCR = LibStub("LibBabble-Class-3.0"):GetReverseLookupTable()
 local deformat = AceLibrary("Deformat-2.0")
 
--- Use the Frame or create a new one and initialize it.
--- This frame currently is only used for it's OnUpdate event for the itemcacher
-lib.frame = lib.frame or CreateFrame("Frame", MAJOR_VERSION .. "_Frame", UIParent) -- reuse the old frame
+-- Make a frame for our repeating calls to GetItemInfo.
+lib.frame = lib.frame or CreateFrame("Frame", MAJOR_VERSION .. "_Frame")
 local frame = lib.frame
 frame:Hide()
 frame:SetScript('OnUpdate', nil)
-frame:SetScript('OnEvent', nil)
 frame:UnregisterAllEvents()
 
 -- Use the GameTooltip or create a new one and initialize it
 -- Used to extract Class limitations for an item and binding type.
-lib.tooltip = lib.tooltip or CreateFrame("GameTooltip", MAJOR_VERSION .. "_Tooltip", frame, "GameTooltipTemplate")  -- reuse the old tooltip
+lib.tooltip = lib.tooltip or CreateFrame("GameTooltip",
+                                         MAJOR_VERSION .. "_Tooltip",
+                                         frame, "GameTooltipTemplate")
 local tooltip = lib.tooltip
 local bindingFrame = getglobal(tooltip:GetName().."TextLeft2")
 local restrictedClassFrame = getglobal(tooltip:GetName().."TextLeft3")
@@ -346,66 +346,91 @@ lib.itemQueue = lib.itemQueue or {}
 local itemQueue = lib.itemQueue
 
 --- Try to lookup the items on the itemQueue
---  This will lookup all the items on the itemQueue, if not found on the cache
---  it will use SetHyperlink on a tooltip to try and get the item cached. It will only
---  call the SetHyperlink once every 0.5 sec for every item. After 10 tries (5 secs) the
---  lookup gets aborted, assuming the item doesn't exist. This is done to avoid disconnects.
+--
+--  This will lookup all the items on the itemQueue, and if found it
+--  will call the callbacks and remove them. If they are not found it
+--  will retry once per second for a max of 30 seconds after the last
+--  callback was called, and after that it will give up.
+local timeout = 0
+local ticker = 0
 local function LookupItems(frame, elapsed)
-  local ready = true
-  for itemlink, itemData in pairs(itemQueue) do
-    local itemName = GetItemInfo(itemlink)
-    if not itemName then
-      -- The item has not been cached, try looking it up now, but only do so every 0.5 sec.
-      if not itemData.timeout or itemData.timeout > 0.5 then
-        tooltip:SetHyperlink(itemlink)
-        itemData.lookups = (itemData.lookups or 0) + 1
-        itemData.timeout = 0
-        if itemData.lookups > 10 then
-          -- We failed to lookup for the 10th time (5 secs), abort the lookup
-          itemQueue[itemlink] = nil
+  timeout = timeout + elapsed
+  ticker = ticker + elapsed
+  if timeout > 30 then
+    Debug("Giving up, clearing itemQueue")
+    for item, _ in pairs(itemQueue) do
+      Debug("\t%s", item)
+    end
+    wipe(itemQueue)
+    ticker = 0
+    frame:Hide()
+    return
+  end
+
+  if ticker > 1 then
+    ticker = 0
+    -- Go through all the items and check if they have data in the
+    -- client cache. If the do call the saved functions and args.
+    Debug("Checking for new items in the cache")
+    for itemLink, itemData in pairs(itemQueue) do
+      if GetItemInfo(itemLink) then
+        -- If we found an item, reset the timeout.
+        timeout = 0
+        itemQueue[itemLink] = nil
+        for callback, args in pairs(itemData) do
+          pcall(callback, unpack(args))
         end
-      end
-      itemData.timeout = (itemData.timeout or 0) + elapsed    -- track when we've last tried to get the item.
-      ready = false
-    else
-      -- remove the itemlink from the queue
-      itemQueue[itemlink] = nil
-      -- The item has been cached, call the handlers
-      for index, callback in ipairs(itemData.callbacks) do
-        pcall(callback.func, unpack(callback.args))
+      else
+        -- Otherwise set the hyperlink on a tooltip to make the cache
+        -- fetch it.
+        tooltip:SetHyperlink(itemLink)
+        tooltip:Show()
+        tooltip:Hide()
       end
     end
   end
-  -- Hide the frame so we're not updating again untill there are new items to lookup
-  if ready then
+
+  -- If we have no more items in the itemQueue to lookup, reset the
+  -- timeout and hide the frame.
+  if not next(itemQueue) then
+    timeout = 0
+    ticker = 0
     frame:Hide()
   end
 end
 frame:SetScript("OnUpdate", LookupItems)
 
 --- Try to cache an item and call the callback function when the item is available
---  @param itemlink any itemlink in Hitem:1234 form
+--  @param itemLink any itemLink in Hitem:1234 form
 --  @param callback function pointer to the callback function that should be called when the item is available
 --  @param ... a list of variables you would like to pass to the callback function.
 --  @return boolean true if the item has been registered successfully
-function lib:CacheItem(itemlink, callback, ...)
-  if type(itemlink) == 'number' then
-    itemlink = format('Hitem:%d', itemlink)
+function lib:CacheItem(itemLink, callback, ...)
+  -- Reset the timeout for the itemQueue
+  timeout = 0
+
+  -- If we can get the info now we have it in the cache so we just return.
+  if GetItemInfo(itemLink) then
+    pcall(callback, ...)
+    return
+  end
+
+  -- It was not in the item cache so we add this to the queue and call
+  -- the callback when the data is in cache.
+  if type(itemLink) == 'number' then
+    itemLink = format('Hitem:%d', itemLink)
   end
   
   if type(callback) ~= "function" then
-    error("Usage: CacheItem(itemlink, function, [...]): 'callback' - function pointer expected.", 2)
+    error("Usage: CacheItem(itemLink, function, [...]): 'callback' - function pointer expected.", 2)
   end
   
-  if not itemlink or not strmatch(itemlink, 'Hitem:(%d+)') then
-    error("Usage: CacheItem(itemlink, function, [...]): 'itemlink' - not a valid itemlink (Hitem:12345).", 2)
+  if not itemLink or not strmatch(itemLink, 'Hitem:(%d+)') then
+    error("Usage: CacheItem(itemLink, function, [...]): 'itemLink' - not a valid itemLink (Hitem:12345).", 2)
   end
 
-  itemQueue[itemlink] = itemQueue[itemlink] or {callbacks={},lookups=0}
-  tinsert(itemQueue[itemlink].callbacks, {
-    func = callback,
-    args = {...}
-  })
+  itemQueue[itemLink] = itemQueue[itemLink] or {}
+  itemQueue[itemLink][callback] = {...}
   
   -- show the frame to start looking up items
   frame:Show()
@@ -459,7 +484,7 @@ local items = {
   1234567890, -- Non existent item
 }
 
-function lib:DebugTest()  
+function lib:DebugTest()
   for _, itemID in ipairs(items) do
     if not select(1,GetItemInfo(itemID)) then
       Debug("Item %s is not yet cached", itemID)
