@@ -1,31 +1,7 @@
 local mod = EPGP:NewModule("loot", "AceEvent-3.0", "AceTimer-3.0")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-
-local pattern_cache = {}
-local function deformat(str, format)
-  local pattern = pattern_cache[format]
-  if not pattern then
-    -- print(string.format("Format: %s", format))
-
-    -- Escape special characters
-    pattern = format:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]",
-                          function(c) return "%"..c end)
-    -- print(string.format("Escaped pattern: %s", pattern))
-
-    -- Substitute formatting elements with captures (only s and d
-    -- supported now). Obviously now a formatting element will look
-    -- like %%s because we escaped the %.
-    pattern = pattern:gsub("%%%%([sd])", {
-                             ["s"] = "(.-)",
-                             ["d"] = "(%d+)",
-                           })
-    --print(string.format("Final pattern: %s", pattern))
-
-    pattern_cache[format] = pattern
-  end
-  return str:match(pattern)
-end
+local deformat = AceLibrary("Deformat-2.0")
 
 local ignored_items = {
   [20725] = true, -- Nexus Crystal
