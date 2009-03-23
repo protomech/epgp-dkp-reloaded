@@ -34,34 +34,6 @@ local bindingFrame = getglobal(frame:GetName().."TextLeft2")
 local restrictedClassFrame = getglobal(frame:GetName().."TextLeft3")
 frame:Show()
 
--- Deformat library. This should really go into its own.
-local pattern_cache = {}
-local function deformat(str, format)
-  local pattern = pattern_cache[format]
-  if not pattern then
-    -- print(string.format("Format: %s", format))
-
-    -- Escape special characters
-    pattern = format:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]",
-                          function(c) return "%"..c end)
-    -- print(string.format("Escaped pattern: %s", pattern))
-
-    -- Substitute formatting elements with captures (only s and d
-    -- supported now). Obviously now a formatting element will look
-    -- like %%s because we escaped the %.
-    pattern = pattern:gsub("%%%%([sd])", {
-                             ["s"] = "(.-)",
-                             ["d"] = "(%d+)",
-                           })
-    -- If the last pattern is a non-greedy match and it ends the
-    -- pattern, make a greedy match.
-    pattern = pattern:gsub("%-%)$", "+)")
-    --print(string.format("Final pattern: %s", pattern))
-    pattern_cache[format] = pattern
-  end
-  return str:match(pattern)
-end
-
 --[[
 
 All item types we care about:
