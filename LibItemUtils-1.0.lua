@@ -22,17 +22,22 @@ local LBIR = LibStub("LibBabble-Inventory-3.0"):GetReverseLookupTable()
 local LBCR = LibStub("LibBabble-Class-3.0"):GetReverseLookupTable()
 local deformat = AceLibrary("Deformat-2.0")
 
-if lib.frame then
-  lib.frame:UnregisterAllEvents()
-  lib.frame:SetScript("OnEvent", nil)
-  lib.frame:SetScript("OnUpdate", nil)
-else
-  lib.frame = CreateFrame("GameTooltip", MAJOR_VERSION .. "_Frame", UIParent, "GameTooltipTemplate")
-end
+-- Use the Frame or create a new one and initialize it.
+-- This frame currently is only used for it's OnUpdate event for the itemcacher
+lib.frame = lib.frame or CreateFrame("Frame", MAJOR_VERSION .. "_Frame", UIParent) -- reuse the old frame
 local frame = lib.frame
-local bindingFrame = getglobal(frame:GetName().."TextLeft2")
-local restrictedClassFrame = getglobal(frame:GetName().."TextLeft3")
-frame:Show()
+frame:Hide()
+frame:SetScript('OnUpdate', nil)
+frame:SetScript('OnEvent', nil)
+frame:UnregisterAllEvents()
+
+-- Use the GameTooltip or create a new one and initialize it
+-- Used to extract Class limitations for an item and binding type.
+lib.tooltip = lib.tooltip or CreateFrame("GameTooltip", MAJOR_VERSION .. "_Tooltip", frame, "GameTooltipTemplate")  -- reuse the old tooltip
+local tooltip = lib.tooltip
+local bindingFrame = getglobal(tooltip:GetName().."TextLeft2")
+local restrictedClassFrame = getglobal(tooltip:GetName().."TextLeft3")
+tooltip:Hide();
 
 --[[
 
@@ -249,11 +254,11 @@ function lib:ClassCanUse(class, item)
   -- Check if this is a restricted class token.
   -- TODO(alkis): Possibly cache this check if performance is an issue.
   local link = select(2, GetItemInfo(item))
-  frame:SetOwner(UIParent, "ANCHOR_NONE")
-  frame:SetHyperlink(link)
-  if frame:NumLines() > 2 then
+  tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+  tooltip:SetHyperlink(link)
+  if tooltip:NumLines() > 2 then
     local text = restrictedClassFrame:GetText()
-    frame:Hide()
+    tooltip:Hide()
 
     if text then
       local classList = deformat(text, ITEM_CLASSES_ALLOWED)
@@ -268,7 +273,7 @@ function lib:ClassCanUse(class, item)
       end
     end
   end
-  frame:Hide()
+  tooltip:Hide()
 
   -- Check if players can equip this item.
   subType = LBIR[subType]
@@ -312,16 +317,16 @@ end
 -- binding is one of: ITEM_BIND_ON_PICKUP, ITEM_BIND_ON_EQUIP, ITEM_BIND_ON_USE, ITEM_BIND_TO_ACCOUNT
 function lib:IsBinding(binding, item)
   local link = select(2, GetItemInfo(item))
-  frame:SetOwner(UIParent, "ANCHOR_NONE")
-  frame:SetHyperlink(link)
+  tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+  tooltip:SetHyperlink(link)
 
-  if frame:NumLines() > 1 then
+  if tooltip:NumLines() > 1 then
     local text = bindingFrame:GetText()
     if text then
       return text == binding
     end
   end
-  frame:Hide()
+  tooltip:Hide()
 end
 
 function lib:IsBoP(item)
@@ -331,6 +336,86 @@ end
 function lib:IsBoE(item)
   return lib:IsBinding(ITEM_BIND_ON_EQUIP, item)
 end
+
+--[[###############################################--
+          ITEMCACHER STUFF
+--###############################################]]--
+
+-- Reuse or create a table to store the lookup queue in
+lib.itemQueue = lib.itemQueue or {}
+local itemQueue = lib.itemQueue
+
+--- Try to lookup the items on the itemQueue
+--  This will lookup all the items on the itemQueue, if not found on the cache
+--  it will use SetHyperlink on a tooltip to try and get the item cached. It will only
+--  call the SetHyperlink once every 0.5 sec for every item. After 10 tries (5 secs) the
+--  lookup gets aborted, assuming the item doesn't exist. This is done to avoid disconnects.
+local function LookupItems(frame, elapsed)
+  local ready = true
+  for itemlink, itemData in pairs(itemQueue) do
+    local itemName = GetItemInfo(itemlink)
+    if not itemName then
+      -- The item has not been cached, try looking it up now, but only do so every 0.5 sec.
+      if not itemData.timeout or itemData.timeout > 0.5 then
+        tooltip:SetHyperlink(itemlink)
+        itemData.lookups = (itemData.lookups or 0) + 1
+        itemData.timeout = 0
+        if itemData.lookups > 10 then
+          -- We failed to lookup for the 10th time (5 secs), abort the lookup
+          itemQueue[itemlink] = nil
+        end
+      end
+      itemData.timeout = (itemData.timeout or 0) + elapsed    -- track when we've last tried to get the item.
+      ready = false
+    else
+      -- remove the itemlink from the queue
+      itemQueue[itemlink] = nil
+      -- The item has been cached, call the handlers
+      for index, callback in ipairs(itemData.callbacks) do
+        pcall(callback.func, unpack(callback.args))
+      end
+    end
+  end
+  -- Hide the frame so we're not updating again untill there are new items to lookup
+  if ready then
+    frame:Hide()
+  end
+end
+frame:SetScript("OnUpdate", LookupItems)
+
+--- Try to cache an item and call the callback function when the item is available
+--  @param itemlink any itemlink in Hitem:1234 form
+--  @param callback function pointer to the callback function that should be called when the item is available
+--  @param ... a list of variables you would like to pass to the callback function.
+--  @return boolean true if the item has been registered successfully
+function lib:CacheItem(itemlink, callback, ...)
+  if type(itemlink) == 'number' then
+    itemlink = format('Hitem:%d', itemlink)
+  end
+  
+  if type(callback) ~= "function" then
+    error("Usage: CacheItem(itemlink, function, [...]): 'callback' - function pointer expected.", 2)
+  end
+  
+  if not itemlink or not strmatch(itemlink, 'Hitem:(%d+)') then
+    error("Usage: CacheItem(itemlink, function, [...]): 'itemlink' - not a valid itemlink (Hitem:12345).", 2)
+  end
+
+  itemQueue[itemlink] = itemQueue[itemlink] or {callbacks={},lookups=0}
+  tinsert(itemQueue[itemlink].callbacks, {
+    func = callback,
+    args = {...}
+  })
+  
+  -- show the frame to start looking up items
+  frame:Show()
+  
+  return true
+end
+
+--[[###############################################--
+          UNIT TESTS
+--###############################################]]--
 
 local items = {
   40558, -- Cloth
@@ -370,23 +455,30 @@ local items = {
   40245, -- Wand
 
   40626, -- Protector token
+  
+  1234567890, -- Non existent item
 }
 
-function lib:DebugTest()
-  local t = {}
+function lib:DebugTest()  
   for _, itemID in ipairs(items) do
-    local link = select(2, GetItemInfo(itemID))
-
-    t = self:ClassesThatCanUse(itemID)
-    Debug("Classes that can use %s: %s", link, table.concat(t, ' '))
-
-    t = self:ClassesThatCannotUse(itemID)
-    Debug("Classes that cannot use %s: %s", link, table.concat(t, ' '))
-
-    Debug("IsBoP: %s", tostring(self:IsBoP(itemID)))
-    Debug("IsBoE: %s", tostring(self:IsBoE(itemID)))
-
+    if not select(1,GetItemInfo(itemID)) then
+      Debug("Item %s is not yet cached", itemID)
+    end
+    self:CacheItem(itemID, self.DebugTestItem, self, itemID)
   end
+end
+
+local t = {}
+function lib:DebugTestItem(itemID)
+  local link = select(2, GetItemInfo(itemID))
+
+  t = self:ClassesThatCanUse(itemID, t)
+  Debug("Classes that can use %s: %s", link, table.concat(t, ' '))
+
+  t = self:ClassesThatCannotUse(itemID, t)
+  Debug("Classes that cannot use %s: %s", link, table.concat(t, ' '))
+
+  Debug("IsBoP: %s, IsBoE: %s", tostring(self:IsBoP(itemID)), tostring(self:IsBoE(itemID)))
 end
 
 -- /script LibStub("LibItemUtils-1.0"):DebugTest()
