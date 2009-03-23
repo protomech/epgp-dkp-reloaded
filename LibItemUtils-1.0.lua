@@ -409,12 +409,6 @@ function lib:CacheItem(itemLink, callback, ...)
   -- Reset the timeout for the itemQueue
   timeout = 0
 
-  -- If we can get the info now we have it in the cache so we just return.
-  if GetItemInfo(itemLink) then
-    pcall(callback, ...)
-    return
-  end
-
   -- It was not in the item cache so we add this to the queue and call
   -- the callback when the data is in cache.
   if type(itemLink) == 'number' then
