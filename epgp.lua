@@ -842,6 +842,7 @@ function CheckForGuildInfo()
     -- Enable all modules that are supposed to be enabled
     for name, module in EPGP:IterateModules() do
       if db.profile[module:GetName()] ~= false then
+        EPGP:Info("Enabling module: %s", module:GetName())
         module:Enable()
       end
     end
@@ -893,7 +894,7 @@ local prefix_for_level = {
   [4] = "(err): ",
 }
 
-local console_level = version == '(development)' and 1 or 3
+local console_level = version == '(development)' and 2 or 3
 
 local function OutputToConsoleFormatted(lvl, fmt, ...)
   if lvl < console_level then return end

@@ -45,10 +45,10 @@ function mod:PopLootQueue()
     return
   end
 
-  local player, itemLink = unpack(loot_queue[1])
+  local player, itemID = unpack(loot_queue[1])
 
   -- In theory this should never happen.
-  if not player or not itemLink then
+  if not player or not itemID then
     tremove(loot_queue, 1)
     return
   end
@@ -60,7 +60,7 @@ function mod:PopLootQueue()
 
   tremove(loot_queue, 1)
 
-  local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(itemLink)
+  local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(itemID)
   local r, g, b = GetItemQualityColor(itemRarity)
 
   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
@@ -76,15 +76,16 @@ end
 
 local function LootReceived(event_name, player, itemLink, quantity)
   if IsRLorML() and CanEditOfficerNote() then
-    local item_name, item_link, item_rarity = GetItemInfo(itemLink)
-    if item_rarity < EPGP.db.profile.auto_loot_threshold then return end
+    local itemID = tonumber(select(3, itemLink:find("item:(%d+)")) or 0)
+    if not itemID then return end
 
-    local item_id = tonumber(select(3, item_link:find("item:(%d+)")) or 0)
-    if not item_id then return end
+    local itemRarity = select(3, GetItemInfo(itemID))
+    EPGP:Debug("itemRarity: %d", itemRarity)
+    if itemRarity < EPGP.db.profile.auto_loot_threshold then return end
 
-    if ignored_items[item_id] then return end
+    if ignored_items[itemID] then return end
 
-    tinsert(loot_queue, {player, itemLink, quantity})
+    tinsert(loot_queue, {player, itemID, quantity})
     if not timer then
       timer = mod:ScheduleRepeatingTimer("PopLootQueue", 1)
     end

@@ -51,11 +51,8 @@ end
 local function HandleLootMessage(msg)
   local player, itemLink, quantity = ParseLootMessage(msg)
   if player and itemLink and quantity then
-    local itemID = tonumber(select(3, itemLink:find("item:(%d+)")) or 0)
-    if not itemID then return end
-
-    Debug('Firing LootReceived(%s, %d, %d)', player, itemID, quantity)
-    callbacks:Fire("LootReceived", player, itemID, quantity)
+    Debug('Firing LootReceived(%s, %s, %d)', player, itemLink, quantity)
+    callbacks:Fire("LootReceived", player, itemLink, quantity)
   end
 end
 

@@ -12,8 +12,10 @@ function mod:OnEnable()
             if module then
               if v ~= module:IsEnabled() then
                 if v then
+                  EPGP:Info("Enabling module: %s", module:GetName())
                   module:Enable()
                 else
+                  EPGP:Info("Disabling module: %s", module:GetName())
                   module:Disable()
                 end
               end
