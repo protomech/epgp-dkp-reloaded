@@ -21,23 +21,6 @@ local callbacks = EPGP.callbacks
 -- Initialise the main loot table
 local lootTable = {}
 
--- TODO(mackatack): The following libBabble stuff probably needs to be moved elsewhere
-
--- Use LibBabble-Class to create a lookup table to unlocalize "Death Knight" to "DEATHKNIGHT" for example.
--- Used on the ui to load the class icon texture and for the autopass functionality
-local LibBabbleClass = LibStub("LibBabble-Class-3.0")
-local lbClassesReverse = {}
-for english, localized in LibBabbleClass:Iterate() do
-  -- We are building our own table because LibBabble-Class also distinguishes
-  -- between class genders, we need everything merged into one table
-  lbClassesReverse[localized] = strupper(english)
-end
-
--- Use LibBabble-Inventory to create a lookup table to unlocalize german "Stoff" to "Cloth" for example
--- Used for the autopass functionality
-local LibBabbleInventory = LibStub("LibBabble-Inventory-3.0")
-local lbInventoryReverse = LibBabbleInventory:GetReverseLookupTable()
-
 -- Cache some math function for faster access and preventing
 -- other addons from screwing em up.
 local mathRandomseed        = math.randomseed
@@ -47,7 +30,6 @@ local mathCachedRandomSeed  = math.random()*1000
 
 --- Initialize the lootmaster module
 function mod:OnInitialize()
-
   -- Set current lootmaster to -1 so the LootMasterChanged event always gets called
   self.current_ml = -1
 
