@@ -412,15 +412,15 @@ function lib:CacheItem(itemLink, callback, ...)
   -- It was not in the item cache so we add this to the queue and call
   -- the callback when the data is in cache.
   if type(itemLink) == 'number' then
-    itemLink = format('Hitem:%d', itemLink)
+    itemLink = format('item:%d', itemLink)
   end
   
   if type(callback) ~= "function" then
-    error("Usage: CacheItem(itemLink, function, [...]): 'callback' - function pointer expected.", 2)
+    error("Usage: CacheItem(itemLink, callback, [...]): 'callback' - function.", 2)
   end
   
-  if not itemLink or not strmatch(itemLink, 'Hitem:(%d+)') then
-    error("Usage: CacheItem(itemLink, function, [...]): 'itemLink' - not a valid itemLink (Hitem:12345).", 2)
+  if not itemLink or not strmatch(itemLink, 'item:(%d+)') then
+    error("Usage: CacheItem(itemLink, callback, [...]): 'itemLink' - not a valid itemLink (item:12345).", 2)
   end
 
   itemQueue[itemLink] = itemQueue[itemLink] or {}
@@ -480,9 +480,6 @@ local items = {
 
 function lib:DebugTest()
   for _, itemID in ipairs(items) do
-    if not select(1,GetItemInfo(itemID)) then
-      Debug("Item %s is not yet cached", itemID)
-    end
     self:CacheItem(itemID, self.DebugTestItem, self, itemID)
   end
 end
