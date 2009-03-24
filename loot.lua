@@ -1,7 +1,7 @@
 local mod = EPGP:NewModule("loot", "AceEvent-3.0", "AceTimer-3.0")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local deformat = AceLibrary("Deformat-2.0")
+local LLN = LibStub("LibLootNotify-1.0")
 
 local ignored_items = {
   [20725] = true, -- Nexus Crystal
@@ -32,46 +32,6 @@ local function IsRLorML()
     if loot_method ~= "master" and IsRaidLeader() then return true end
   end
   return false
-end
-
-local function ParseLootMessage(msg)
-  local player = UnitName("player")
-  local item, quantity = deformat(msg, LOOT_ITEM_SELF_MULTIPLE)
-  if item and quantity then
-    return player, item, tonumber(quantity)
-  end
-  quantity = 1
-  item = deformat(msg, LOOT_ITEM_SELF)
-  if item then
-    return player, item, tonumber(quantity)
-  end
-
-  player, item, quantity = deformat(msg, LOOT_ITEM_MULTIPLE)
-  if player and item and quantity then
-    return player, item, tonumber(quantity)
-  end
-
-  quantity = 1
-  player, item = deformat(msg, LOOT_ITEM)
-  return player, item, tonumber(quantity)
-end
-
-function mod:CHAT_MSG_LOOT(event_type, msg)
-  if not IsRLorML() then return end
-
-  local player, item, quantity = ParseLootMessage(msg)
-  if not player or not item then return end
-
-  local item_name, item_link, item_rarity = GetItemInfo(item)
-  if item_rarity < EPGP.db.profile.auto_loot_threshold then return end
-
-  local item_id = select(3, item_link:find("item:(%d+):"))
-  if not item_id then return end
-  item_id = tonumber(item_id:trim())
-  if not item_id then return end
-
-  if ignored_items[item_id] then return end
-  self:SendMessage("LootReceived", player, item_link, quantity)
 end
 
 function mod:PopLootQueue()
@@ -115,7 +75,15 @@ function mod:PopLootQueue()
 end
 
 local function LootReceived(event_name, player, itemLink, quantity)
-  if CanEditOfficerNote() then
+  if IsRLorML() and CanEditOfficerNote() then
+    local item_name, item_link, item_rarity = GetItemInfo(itemLink)
+    if item_rarity < EPGP.db.profile.auto_loot_threshold then return end
+
+    local item_id = tonumber(select(3, item_link:find("item:(%d+)")) or 0)
+    if not item_id then return end
+
+    if ignored_items[item_id] then return end
+
     tinsert(loot_queue, {player, itemLink, quantity})
     if not timer then
       timer = mod:ScheduleRepeatingTimer("PopLootQueue", 1)
@@ -136,8 +104,11 @@ function mod:Debug()
 end
 
 function mod:OnEnable()
-  self:RegisterEvent("CHAT_MSG_LOOT")
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
-  self:RegisterMessage("LootReceived", LootReceived)
+  LLN.RegisterCallback(self, "LootReceived", LootReceived)
+end
+
+function mod:OnDisable()
+  LLN.UnregisterAllCallbacks(self)
 end
