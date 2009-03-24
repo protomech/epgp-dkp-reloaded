@@ -76,3 +76,9 @@ L["To restore to an earlier version of the standings, copy and paste the text fr
 L["Undo"] = true
 L["Using DBM for boss kill tracking"] = true
 L["Value"] = true
+L['You are the Loot Master, loot tracking enabled.'] = true
+L['You are the Loot Master, tracking disabled manually (open configuration panel to change).'] = true
+L["You are the Loot Master, would you like to use %s to distribute loot?\r\n\r\n(You will be asked again next time. Use the configuration panel to change this behaviour)"] = true
+L['You have disabled loot tracking for this raid'] = true
+L['You have enabled loot tracking for this raid'] = true
+

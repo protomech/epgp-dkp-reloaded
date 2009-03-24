@@ -199,3 +199,25 @@ StaticPopupDialogs["EPGP_IMPORT"] = {
                              self:GetParent():Hide()
                            end,
 }
+
+StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
+  text = L["You are the Loot Master, would you like to use %s to distribute loot?\r\n\r\n(You will be asked again next time. Use the configuration panel to change this behaviour)"]:format('EPGP Lootmaster'),
+  button1 = YES,
+  button2 = NO,
+  OnAccept = function()
+    EPGP:GetModule("lootmaster"):EnableTracking()
+    EPGP:Print(L['You have enabled loot tracking for this raid'])
+  end,
+  OnCancel = function()
+    EPGP:GetModule("lootmaster"):DisableTracking()
+    EPGP:Print(L['You have disabled loot tracking for this raid'])
+  end,
+  OnShow = function()
+  end,
+  OnHide = function()
+  end,
+  timeout = 0,
+  hideOnEscape = 0,
+  whileDead = 1,
+  showAlert = 1
+}
