@@ -409,8 +409,6 @@ function lib:CacheItem(itemLink, callback, ...)
   -- Reset the timeout for the itemQueue
   timeout = 0
 
-  -- It was not in the item cache so we add this to the queue and call
-  -- the callback when the data is in cache.
   if type(itemLink) == 'number' then
     itemLink = format('item:%d', itemLink)
   end
