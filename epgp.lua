@@ -133,6 +133,12 @@ EPGP = LibStub("AceAddon-3.0"):NewAddon(
 local EPGP = EPGP
 EPGP:SetDefaultModuleState(false)
 
+local version = GetAddOnMetadata('EPGP', 'Version')
+if not version or #version == 0 then
+  version = "(development)"
+end
+EPGP.version = version
+
 local GS = LibStub("LibGuildStorage-1.0")
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not EPGP.callbacks then
@@ -887,7 +893,7 @@ local prefix_for_level = {
   [4] = "(err): ",
 }
 
-local console_level = 3
+local console_level = version == '(development)' and 1 or 3
 
 local function OutputToConsoleFormatted(lvl, fmt, ...)
   if lvl < console_level then return end

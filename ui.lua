@@ -5,11 +5,6 @@ local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
 local gptooltip = EPGP:GetModule("gptooltip")
 
-local CURRENT_VERSION = GetAddOnMetadata('EPGP', 'Version')
-if not CURRENT_VERSION or #CURRENT_VERSION == 0 then
-  CURRENT_VERSION = "(development)"
-end
-
 local BUTTON_TEXT_PADDING = 20
 local BUTTON_HEIGHT = 22
 local ROW_TEXT_PADDING = 5
@@ -98,7 +93,7 @@ local function CreateEPGPFrame()
   t:SetWidth(250)
   t:SetHeight(16)
   t:SetPoint("TOP", f, "TOP", 3, -16)
-  t:SetText("EPGP "..CURRENT_VERSION)
+  t:SetText("EPGP "..EPGP.version)
 
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -30, -8)
