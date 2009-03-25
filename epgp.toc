@@ -31,15 +31,7 @@ LibItemUtils-1.0.lua
 LibJSON-1.0.lua
 LibLootNotify-1.0.lua
 
-localization.deDE.lua
-localization.enUS.lua
-localization.esES.lua
-localization.esMX.lua
-localization.frFR.lua
-localization.koKR.lua
-localization.ruRU.lua
-localization.zhCN.lua
-localization.zhTW.lua
+localization\localization.xml
 
 epgp.lua
 
