@@ -834,7 +834,7 @@ class SubversionVCS(VersionControlSystem):
     return re.sub(r"\$(%s):(:?)([^\$]+)\$" % '|'.join(keywords), repl, content)
 
   def GetUnknownFiles(self):
-    status = RunShell(["svn", "status", "--ignore-externals"], silent_ok=True)
+    status = RunShell(["svn", "status", "-q", "--ignore-externals"], silent_ok=True)
     unknown_files = []
     for line in status.split("\n"):
       if line and line[0] == "?":
@@ -854,7 +854,7 @@ class SubversionVCS(VersionControlSystem):
   def GetStatus(self, filename):
     """Returns the status of a file."""
     if not self.options.revision:
-      status = RunShell(["svn", "status", "--ignore-externals", filename])
+      status = RunShell(["svn", "status", "-q", "--ignore-externals", filename])
       if not status:
         ErrorExit("svn status returned no output for %s" % filename)
       status_lines = status.splitlines()
