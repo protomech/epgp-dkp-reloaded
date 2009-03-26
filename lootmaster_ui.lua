@@ -13,4 +13,3 @@ local CURRENT_VERSION = GetAddOnMetadata('EPGP', 'Version')
 if not CURRENT_VERSION or #CURRENT_VERSION == 0 then
   CURRENT_VERSION = "(dev)"
 end
-

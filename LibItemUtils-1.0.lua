@@ -412,21 +412,21 @@ function lib:CacheItem(itemLink, callback, ...)
   if type(itemLink) == 'number' then
     itemLink = format('item:%d', itemLink)
   end
-  
+
   if type(callback) ~= "function" then
     error("Usage: CacheItem(itemLink, callback, [...]): 'callback' - function.", 2)
   end
-  
+
   if not itemLink or not strmatch(itemLink, 'item:(%d+)') then
     error("Usage: CacheItem(itemLink, callback, [...]): 'itemLink' - not a valid itemLink (item:12345).", 2)
   end
 
   itemQueue[itemLink] = itemQueue[itemLink] or {}
   itemQueue[itemLink][callback] = {...}
-  
+
   -- show the frame to start looking up items
   frame:Show()
-  
+
   return true
 end
 
@@ -472,7 +472,7 @@ local items = {
   40245, -- Wand
 
   40626, -- Protector token
-  
+
   1234567890, -- Non existent item
 }
 

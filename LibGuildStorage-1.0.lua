@@ -331,7 +331,7 @@ local function Frame_OnUpdate(self, elapsed)
         SetState("STALE_WAITING_FOR_ROSTER_UPDATE")
         SendAddonMessage("EPGP", "CHANGES_FLUSHED", "GUILD")
       end
-    end      
+    end
   end
   Debug(tostring(debugprofilestop()).."ms for LibGuildStorage:OnUpdate")
 end

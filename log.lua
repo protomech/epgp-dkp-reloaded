@@ -225,7 +225,7 @@ function mod:Import(jsonStr)
     if records == 0 then
       break
     end
-    
+
     if self.db.profile.log[records][1] > timestamp then
       table.remove(self.db.profile.log)
     else

@@ -1075,7 +1075,7 @@ local function CreateEPGPFrameStandings()
                           "|cFFFFFFFF"..EPGP:GetNumMembersInAwardList().."|r")
   end
   EPGP.RegisterCallback(modeText, "StandingsChanged", "TextUpdate")
-                          
+
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)
   tabl:SetPoint("TOPLEFT")

@@ -392,7 +392,7 @@ local function ParseGuildNote(callback, name, note)
       -- This is a junk note, ignore it
       ignored[name] = note
     else
-      -- Otherwise setup the alts state 
+      -- Otherwise setup the alts state
       main_data[name] = note
       if not alt_data[note] then
         alt_data[note] = {}
@@ -664,7 +664,7 @@ local function RecurringTicker(arg)
     EPGP:IncMassEPBy(reason, amount)
     next_award = next_award + db.profile.recurring_ep_period_mins * 60
   end
-  
+
   callbacks:Fire("RecurringAwardUpdate", reason, amount, next_award - now)
 end
 

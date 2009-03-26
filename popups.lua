@@ -41,7 +41,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   maxLetters = 16,
   hideOnEscape = 1,
   hasEditBox = 1,
-  hasItemFrame = 1,                    
+  hasItemFrame = 1,
 
   OnAccept = function(self)
                local link = self.itemFrame.link
