@@ -81,7 +81,7 @@ local function LootReceived(event_name, player, itemLink, quantity)
 
     local itemRarity = select(3, GetItemInfo(itemID))
     EPGP:Debug("itemRarity: %d", itemRarity)
-    if itemRarity < EPGP.db.profile.auto_loot_threshold then return end
+    if itemRarity < mod.db.profile.threshold then return end
 
     if ignored_items[itemID] then return end
 
@@ -100,9 +100,34 @@ function mod:PLAYER_REGEN_ENABLED()
   in_combat = false
 end
 
-function mod:Debug()
-  LootReceived("LootReceived", UnitName("player"), "\124cffa335ee|Hitem:39235:0:0:0:0:0:0:531162426:8\124h[Bone-Framed Bracers]\124h\124r")
-end
+mod.dbDefaults = {
+  profile = {
+    enabled = true,
+    threshold = 4,  -- Epic quality items
+  }
+}
+
+mod.optionsName = L["Loot"]
+mod.optionsDesc = L["Automatic loot tracking"]
+mod.optionsArgs = {
+  help = {
+    order = 1,
+    type = "description",
+    name = L["Automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."]
+  },
+  threshold = {
+    order = 10,
+    type = "select",
+    name = L["Loot tracking threshold"],
+    desc = L["Sets loot tracking threshold, to disable the popup on loot below this threshold quality."],
+    values = {
+      [2] = ITEM_QUALITY2_DESC,
+      [3] = ITEM_QUALITY3_DESC,
+      [4] = ITEM_QUALITY4_DESC,
+      [5] = ITEM_QUALITY5_DESC,
+    },
+  },
+}
 
 function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")

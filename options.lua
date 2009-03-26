@@ -1,106 +1,58 @@
-local mod = EPGP:NewModule("options")
-
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
-function mod:OnEnable()
+function EPGP:ModuleEnabled(i)
+  local m = self:GetModule(i[#i-1])
+  return m:IsEnabled()
+end
+
+function EPGP:ModuleDisabled(i)
+  local m = self:GetModule(i[#i-1])
+  return not m:IsEnabled()
+end
+
+function EPGP:ModuleSetEnabledState(i, v)
+  local m = self:GetModule(i[#i-1])
+  if v ~= m:IsEnabled() then
+    if v then
+      self:Info("Enabling module: %s", m:GetName())
+      m:Enable()
+    else
+      self:Info("Disabling module: %s", m:GetName())
+      m:Disable()
+    end
+  end
+  m.db.profile.enabled = v
+end
+
+function EPGP:ModuleGetDBVar(i)
+  local m = self:GetModule(i[#i-1])
+  return m.db.profile[i[#i]]
+end
+
+function EPGP:ModuleSetDBVar(i, v)
+  local m = self:GetModule(i[#i-1])
+  m.db.profile[i[#i]] = v
+end
+
+function EPGP:SetupOptions()
   local options = {
     name = "EPGP",
     type = "group",
-    get = function(i) return EPGP.db.profile[i[#i]] end,
-    set = function(i, v)
-            local module = EPGP:GetModule(i[#i], true)
-            if module then
-              if v ~= module:IsEnabled() then
-                if v then
-                  EPGP:Info("Enabling module: %s", module:GetName())
-                  module:Enable()
-                else
-                  EPGP:Info("Disabling module: %s", module:GetName())
-                  module:Disable()
-                end
-              end
-            end
-            EPGP.db.profile[i[#i]] = v
-          end,
+    childGroups = "tab",
+    handler = self,
     args = {
       help = {
-        order = 0,
+        order = 1,
         type = "description",
         name = L["EPGP is an in game, relational loot distribution system"],
       },
       hint = {
-        order = 1,
+        order = 2,
         type = "description",
         name = L["Hint: You can open these options by typing /epgp config"],
       },
-      gptooltip = {
-        order = 11,
-        type = "toggle",
-        name = L["Enable GP on tooltips"],
-        desc = L["Enable a proposed GP value of armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."],
-        width = "double",
-      },
-      loot = {
-        order = 12,
-        type = "toggle",
-        name = L["Enable automatic loot tracking"],
-        desc = L["Enable automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."],
-        width = "double",
-      },
-      auto_loot_threshold = {
-        order = 13,
-        type = "select",
-        name = L["Automatic loot tracking threshold"],
-        desc = L["Sets automatic loot tracking threshold, to disable the popup on loot below this threshold quality."],
-        values = {
-          [2] = ITEM_QUALITY2_DESC,
-          [3] = ITEM_QUALITY3_DESC,
-          [4] = ITEM_QUALITY4_DESC,
-          [5] = ITEM_QUALITY5_DESC,
-        },
-      },
-      boss = {
-        order = 14,
-        type = "toggle",
-        name = L["Automatic boss kill tracking"],
-        desc = L["Enable automatic boss tracking by means of a popup to mass award EP to the raid and standby when a boss is killed."],
-        width = "double",
-      },
-      whisper = {
-        order = 15,
-        type = "toggle",
-        name = L["Enable standby whispers in raid"],
-        desc = L["Enable automatic handling of the standby list through whispers when in raid. When this option is selected the standby list is cleared after each reward"],
-        width = "double",
-      },
-      announce = {
-        order = 20,
-        type = "toggle",
-        name = L["Enable announce of actions"],
-        desc = L["Enable announcement of all EPGP actions to the specified medium."],
-        width = "double",
-      },
-      announce_medium = {
-        order = 21,
-        type = "select",
-        name = L["Set the announce medium"],
-        desc = L["Sets the announce medium EPGP will use to announce EPGP actions."],
-        values = {
-          ["GUILD"] = CHAT_MSG_GUILD,
-          ["OFFICER"] = CHAT_MSG_OFFICER,
-          ["RAID"] = CHAT_MSG_RAID,
-          ["PARTY"] = CHAT_MSG_PARTY,
-          ["CHANNEL"] = CUSTOM,
-        },
-      },
-      announce_channel = {
-        order = 22,
-        type = "input",
-        name = L["Custom announce channel name"],
-        desc = L["Sets the custom announce channel name used to announce EPGP actions."],
-      },
-      report_ignored_members = {
-        order = 50,
+      list_errors = {
+        order = 1000,
         type = "execute",
         name = L["List errors"],
         desc = L["Lists errors during officer note parsing to the default chat frame. Examples are members with an invalid officer note."],
@@ -110,16 +62,55 @@ function mod:OnEnable()
                end,
       },
       reset = {
-        order = 101,
+        order = 1001,
         type = "execute",
+        confirm = true,
+        confirmText = L["Reset all main toons' EP and GP to 0?"],
         name = L["Reset EPGP"],
         desc = L["Resets EP and GP of all members of the guild. This will set all main toons' EP and GP to 0. Use with care!"],
-        func = function()
-                 StaticPopup_Show("EPGP_RESET_EPGP")
-               end,
+        func = "ResetEPGP",
       },
     },
   }
+
+  -- Setup options for each module that defines them.
+  for name, m in self:IterateModules() do
+    if m.optionsArgs then
+      -- Set all options under this module as disabled when the module
+      -- is disabled.
+      for n, o in pairs(m.optionsArgs) do
+        if o.disabled then
+          local old_disabled = o.disabled
+          o.disabled = function(i)
+                         return old_disabled(i) or ModuleDisabled(i)
+                       end
+        else
+          o.disabled = ModuleDisabled
+        end
+      end
+      -- Add the enable/disable option.
+      m.optionsArgs.enabled = {
+        order = 0,
+        type = "toggle",
+        width = "full",
+        name = ENABLE,
+        get = "ModuleEnabled",
+        set = "ModuleSetEnabledState",
+      }
+    end
+    if m.optionsName then
+      -- Add this module's options.
+      options.args[name] = {
+        order = 100,
+        type = "group",
+        name = m.optionsName,
+        desc = m.optionsDesc,
+        args = m.optionsArgs,
+        get = "ModuleGetDBVar",
+        set = "ModuleSetDBVar",
+      }
+    end
+  end
 
   local config = LibStub("AceConfig-3.0")
   local dialog = LibStub("AceConfigDialog-3.0")

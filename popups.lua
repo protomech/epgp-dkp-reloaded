@@ -1,5 +1,3 @@
-local mod = EPGP:NewModule("popups")
-
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local gptooltip = EPGP:GetModule("gptooltip")
 

@@ -46,6 +46,22 @@ local function SendNotifiesAndClearExtras(event_name, names, reason, amount)
   end
 end
 
+mod.dbDefaults = {
+  profile = {
+    enable = false,
+  }
+}
+
+mod.optionsName = L["Whisper"]
+mod.optionsDesc = L["Standby whispers in raid"]
+mod.optionsArgs = {
+  help = {
+    order = 1,
+    type = "description",
+    name = L["Automatic handling of the standby list through whispers when in raid. When this is enabled, the standby list is cleared after each reward."],
+  },
+}
+
 function mod:OnEnable()
   self:RegisterEvent("CHAT_MSG_WHISPER")
   EPGP.RegisterCallback(self, "MassEPAward", SendNotifiesAndClearExtras)

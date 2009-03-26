@@ -3,8 +3,8 @@ local mod = EPGP:NewModule("announce")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 function mod:Announce(fmt, ...)
-  local medium = EPGP.db.profile.announce_medium
-  local channel = EPGP.db.profile.announce_channel or 0
+  local medium = self.db.profile.medium
+  local channel = self.db.profile.channel or 0
 
   -- Override raid and party if we are not grouped
   if medium == "RAID" and not UnitInRaid("player") then
@@ -73,6 +73,43 @@ end
 local function AnnounceEPGPReset(event_name)
   mod:Announce(L["EP/GP are reset"])
 end
+
+mod.dbDefaults = {
+  profile = {
+    enabled = true,
+    medium = "GUILD",
+  }
+}
+
+mod.optionsName = L["Announce"]
+mod.optionsDesc = L["Announcement of EPGP actions"]
+mod.optionsArgs = {
+  help = {
+    order = 1,
+    type = "description",
+    name = L["Announces all EPGP actions to the specified medium."],
+  },
+  medium = {
+    order = 10,
+    type = "select",
+    name = L["Announce medium"],
+    desc = L["Sets the announce medium EPGP will use to announce EPGP actions."],
+    values = {
+      ["GUILD"] = CHAT_MSG_GUILD,
+      ["OFFICER"] = CHAT_MSG_OFFICER,
+      ["RAID"] = CHAT_MSG_RAID,
+      ["PARTY"] = CHAT_MSG_PARTY,
+      ["CHANNEL"] = CUSTOM,
+    },
+  },
+  channel = {
+    order = 11,
+    type = "input",
+    name = L["Custom announce channel name"],
+    desc = L["Sets the custom announce channel name used to announce EPGP actions."],
+    disabled = function(i) return mod.db.profile.medium ~= "CHANNEL" end,
+  },
+}
 
 function mod:OnEnable()
   EPGP.RegisterCallback(self, "EPAward", AnnounceEPAward)

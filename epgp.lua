@@ -771,28 +771,44 @@ function EPGP:ReportErrors(outputFunc)
 end
 
 function EPGP:OnInitialize()
+  -- Setup the DB. The DB will NOT be ready until after OnEnable is
+  -- called on EPGP. We do not call OnEnable on modules until after
+  -- the DB is ready to use.
   db = LibStub("AceDB-3.0"):New("EPGP_DB")
-  
-  -- TODO(alkis): Add hooks to the modules to setup their namespaces
-  -- and handle their own defaults.
-  db:RegisterDefaults(
-    {
-      profile = {
-        log = {},
-        redo = {},
-        last_awards = {},
-        show_everyone = false,
-        sort_order = "PR",
-        recurring_ep_period_mins = 15,
-        gptooltip = true,
-        loot = true,
-        auto_loot_threshold = 4,  -- Epic quality items
-        whisper = true,
-        boss = false,
-        announce = true,
-        announce_medium = "GUILD",
-      }
-    })
+
+  local defaults = {
+    profile = {
+      last_awards = {},
+      show_everyone = false,
+      sort_order = "PR",
+      recurring_ep_period_mins = 15,
+    }
+  }
+  db:RegisterDefaults(defaults)
+  local moduleDefaults = {
+    profile = {
+      enabled = true
+    }
+  }
+  for name, module in self:IterateModules() do
+    -- Each module gets its own namespace. If a module needs to set
+    -- defaults, module.defaults needs to be a table with defaults.
+    module.db = db:RegisterNamespace(name, module.dbDefaults or moduleDefaults)
+  end
+  -- After the database objects are created, we setup the
+  -- options. Each module can inject its own options by defining:
+  --
+  -- * module.optionsName: The name of the options group for this module
+  -- * module.optionsDesc: The description for this options group [short]
+  -- * module.optionsArgs: The definition of this option group
+  --
+  -- In addition to the above EPGP will add an Enable checkbox for
+  -- this module. It is also guaranteed that the name of the node this
+  -- group will be in, is the same as the name of the module. This
+  -- means you can get the name of the module from the info table
+  -- passed to the callback functions by doing info[#info-1].
+  --
+  self:SetupOptions()
 end
 
 function EPGP:RAID_ROSTER_UPDATE()
@@ -826,23 +842,10 @@ function CheckForGuildInfo()
       db:SetProfile(guild)
     end
     EPGP.db = db
-    -- Upgrade database variables
-    local translation_table = {
-      gp_on_tooltips = 'gptooltip',
-      auto_loot = 'loot',
-      auto_standby_whispers = 'whisper',
-      auto_boss = 'boss',
-    }
-    for o,n in pairs(translation_table) do
-      if db.profile[o] ~= nil then
-        db.profile[n] = db.profile[o]
-        db.profile[o] = nil
-      end
-    end
     -- Enable all modules that are supposed to be enabled
     for name, module in EPGP:IterateModules() do
-      if db.profile[module:GetName()] ~= false then
-        EPGP:Info("Enabling module: %s", module:GetName())
+      if module.db.profile.enabled or not module.dbDefaults then
+        EPGP:Info("Enabling module (startup): %s", name)
         module:Enable()
       end
     end

@@ -120,6 +120,22 @@ function mod:Debug()
   BossKilled("BossKilled", "Sapphiron")
 end
 
+mod.dbDefaults = {
+  profile = {
+    enabled = false,
+  },
+}
+
+mod.optionsName = L["Boss"]
+mod.optionsDesc = L["Automatic boss tracking"]
+mod.optionsArgs = {
+  help = {
+    order = 1,
+    type = "description",
+    name = L["Automatic boss tracking by means of a popup to mass award EP to the raid and standby when a boss is killed."]
+  },
+}
+
 function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
