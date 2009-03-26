@@ -34,6 +34,7 @@ LibLootNotify-1.0.lua
 localization\localization.xml
 
 epgp.lua
+epgp_options.lua
 
 announce.lua
 
@@ -45,7 +46,5 @@ officernotewarning.lua
 popups.lua
 ui.lua
 whisper.lua
-
-options.lua
 
 debug.xml
