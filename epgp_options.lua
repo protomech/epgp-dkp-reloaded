@@ -64,11 +64,9 @@ function EPGP:SetupOptions()
       reset = {
         order = 1001,
         type = "execute",
-        confirm = true,
-        confirmText = L["Reset all main toons' EP and GP to 0?"],
         name = L["Reset EPGP"],
         desc = L["Resets EP and GP of all members of the guild. This will set all main toons' EP and GP to 0. Use with care!"],
-        func = "ResetEPGP",
+        func = function() StaticPopup_Show("EPGP_RESET_EPGP") end,
       },
     },
   }

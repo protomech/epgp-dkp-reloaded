@@ -660,7 +660,7 @@ local next_award
 local function RecurringTicker(arg)
   local reason, amount = unpack(arg)
   local now = GetTime()
-  if now > next_award then
+  if now > next_award and GS:IsCurrentState() then
     EPGP:IncMassEPBy(reason, amount)
     next_award = next_award + db.profile.recurring_ep_period_mins * 60
   end

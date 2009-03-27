@@ -1,15 +1,6 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
+local GS = LibStub("LibGuildStorage-1.0")
 local gptooltip = EPGP:GetModule("gptooltip")
-
-local function EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
-  local link = self.itemFrame.link
-  local gp = tonumber(self.editBox:GetText())
-  if EPGP:CanIncGPBy(link, gp) then
-    self.button1:Enable()
-  else
-    self.button1:Disable()
-  end
-end
 
 local function SaveAnchors(t, ...)
   for n=1,select('#', ...) do
@@ -66,7 +57,6 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              local text = gptooltip:GetGPValueText(self.itemFrame.link)
              self.editBox:SetText(text)
              self.editBox:HighlightText()
-             EPGP_CONFIRM_GP_CREDIT_UpdateButtons(self)
            end,
 
   OnHide = function(self)
@@ -83,14 +73,19 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              self.editBox:SetText("")
            end,
 
+  OnUpdate = function(self, elapsed)
+               local link = self.itemFrame.link
+               local gp = tonumber(self.editBox:GetText())
+               if EPGP:CanIncGPBy(link, gp) then
+                 self.button1:Enable()
+               else
+                 self.button1:Disable()
+               end
+             end,
+
   EditBoxOnEnterPressed = function(self)
                             self:GetParent().button1:Click()
                           end,
-
-  EditBoxOnTextChanged = function(self)
-                           local parent = self:GetParent()
-                           EPGP_CONFIRM_GP_CREDIT_UpdateButtons(parent)
-                         end,
 
   EditBoxOnEscapePressed = function(self)
                              self:GetParent():Hide()
@@ -106,7 +101,15 @@ StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
   whileDead = 1,
   OnAccept = function()
                EPGP:DecayEPGP()
-             end
+             end,
+
+  OnUpdate = function(self, elapsed)
+               if GS:IsCurrentState() then
+                 self.button1:Enable()
+               else
+                 self.button1:Disable()
+               end
+             end,
 }
 
 StaticPopupDialogs["EPGP_RESET_EPGP"] = {
@@ -118,7 +121,15 @@ StaticPopupDialogs["EPGP_RESET_EPGP"] = {
   whileDead = 1,
   OnAccept = function()
                EPGP:ResetEPGP()
-             end
+             end,
+
+  OnUpdate = function(self, elapsed)
+               if GS:IsCurrentState() then
+                 self.button1:Enable()
+               else
+                 self.button1:Disable()
+               end
+             end,
 }
 
 StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
@@ -140,6 +151,15 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
              self.editBox:SetText("")
              self.reason = nil
            end,
+
+  OnUpdate = function(self, elapsed)
+               local ep = tonumber(self.editBox:GetText())
+               if EPGP:CanIncEPBy("", ep) then
+                 self.button1:Enable()
+               else
+                 self.button1:Disable()
+               end
+             end,
 
   EditBoxOnEnterPressed = function(self)
                             self:GetParent().button1:Click()
