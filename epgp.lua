@@ -421,9 +421,7 @@ function EPGP:ImportRoster(t, base_gp)
   local notes = {}
   for _, entry in pairs(t) do
     local name, ep, gp = unpack(entry)
-    ep = math.max(0, ep)
-    gp = math.max(base_gp, gp)
-    notes[name] = EncodeNote(ep, gp - base_gp)
+    notes[name] = EncodeNote(ep, gp)
   end
 
   local zero_note = EncodeNote(0, 0)
