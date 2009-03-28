@@ -234,10 +234,7 @@ for k,f in pairs(comparators) do
 end
 
 local function DestroyStandings()
-  -- Remove everything from standings
-  for k,v in pairs(standings) do
-    standings[k] = nil
-  end
+  wipe(standings)
   callbacks:Fire("StandingsChanged")
 end
 
@@ -771,9 +768,7 @@ function EPGP:RAID_ROSTER_UPDATE()
   else
     -- If we are not in a raid, this means we just left so remove
     -- everyone from the selected list.
-    for name,_ in pairs(selected) do
-      selected[name] = nil
-    end
+    wipe(selected)
     selected._count = 0
     -- We also need to stop any recurring EP since they should stop
     -- once a raid stops.
