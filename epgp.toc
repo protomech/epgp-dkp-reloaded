@@ -36,6 +36,7 @@ localization\localization.xml
 
 epgp.lua
 epgp_options.lua
+epgp_recurring.lua
 
 announce.lua
 

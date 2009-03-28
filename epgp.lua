@@ -653,97 +653,6 @@ function EPGP:IncGPBy(name, reason, amount, mass, undo)
   return main or name
 end
 
-local frame = CreateFrame("Frame", "EPGP_RecurringAwardFrame")
-local timeout = 0
-local function RecurringTicker(self, elapsed)
-  local now = GetTime()
-  if now > db.profile.next_award and GS:IsCurrentState() then
-    EPGP:IncMassEPBy(db.profile.next_award_reason, db.profile.next_award_amount)
-    db.profile.next_award =
-      db.profile.next_award + db.profile.recurring_ep_period_mins * 60
-  end
-  timeout = timeout + elapsed
-  if timeout > 0.5 then
-    callbacks:Fire("RecurringAwardUpdate",
-                   db.profile.next_award_reason,
-                   db.profile.next_award_amount,
-                   db.profile.next_award - now)
-    timeout = 0
-  end
-end
-frame:SetScript("OnUpdate", RecurringTicker)
-frame:Hide()
-
-function EPGP:StartRecurringEP(reason, amount)
-  if db.profile.next_award then
-    return false
-  end
-
-  db.profile.next_award_reason = reason
-  db.profile.next_award_amount = amount
-  db.profile.next_award = GetTime() + db.profile.recurring_ep_period_mins * 60
-  frame:Show()
-
-  callbacks:Fire("StartRecurringAward",
-                 db.profile.next_award_reason,
-                 db.profile.next_award_amount,
-                 db.profile.recurring_ep_period_mins)
-  return true
-end
-
-function EPGP:ResumeRecurringEP()
-  assert(db.profile.next_award_reason)
-  assert(db.profile.next_award_amount)
-  assert(db.profile.next_award)
-  callbacks:Fire("ResumeRecurringAward",
-                 db.profile.next_award_reason,
-                 db.profile.next_award_amount,
-                 db.profile.recurring_ep_period_mins)
-  frame:Show()
-end
-
-function EPGP:CanResumeRecurringEP()
-  local now = GetTime()
-  if not db.profile.next_award then return false end
-
-  -- Now check if we only missed at most one award period.
-  local period_secs = db.profile.recurring_ep_period_mins * 60
-  if db.profile.next_award + period_secs < GetTime() then
-    return false
-  end
-  return true
-end
-
-function EPGP:CancelRecurringEP()
-  db.profile.next_award_reason = nil
-  db.profile.next_award_amount = nil
-  db.profile.next_award = nil
-  frame:Hide()
-end
-
-function EPGP:StopRecurringEP()
-  self:CancelRecurringEP()
-
-  callbacks:Fire("StopRecurringAward")
-  return true
-end
-
-function EPGP:RunningRecurringEP()
-  return not not db.profile.next_award
-end
-
-function EPGP:RecurringEPPeriodMinutes(val)
-  if val == nil then
-    return db.profile.recurring_ep_period_mins
-  end
-  db.profile.recurring_ep_period_mins = val
-end
-
-function EPGP:RecurringEPPeriodString()
-  local fmt, val = SecondsToTimeAbbrev(db.profile.recurring_ep_period_mins * 60)
-  return fmt:format(val)
-end
-
 function EPGP:GetDecayPercent()
   return global_config.decay_p
 end
@@ -868,7 +777,9 @@ function EPGP:RAID_ROSTER_UPDATE()
     selected._count = 0
     -- We also need to stop any recurring EP since they should stop
     -- once a raid stops.
-    self:StopRecurringEP()
+    if self:RunningRecurringEP() then
+      self:StopRecurringEP()
+    end
   end
   DestroyStandings()
 end
