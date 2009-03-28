@@ -330,11 +330,11 @@ function mod:OnLootMasterChange(event, newLootMaster)
   -- Show a message here, based on the current settings
   if db.use_lootmaster == 'enabled' then
       -- Always enable without asking
-      EPGP:Print(L['You are the Loot Master, loot tracking enabled.'])
+      EPGP:Print('You are the Loot Master, loot tracking enabled.')
       self:EnableTracking()
   elseif db.use_lootmaster == 'disabled' then
       -- Disabled from the config panel
-      EPGP:Print(L['You are the Loot Master, tracking disabled manually (open configuration panel to change).'])
+      EPGP:Print('You are the Loot Master, tracking disabled manually (open configuration panel to change).')
       self:DisableTracking()
   else
       StaticPopup_Show("EPGP_LOOTMASTER_ASK_TRACKING")
