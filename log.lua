@@ -215,8 +215,8 @@ function mod:Import(jsonStr)
 
   EPGP:Print(L["Importing data snapshot taken at: %s"]:format(
                date("%Y-%m-%d %H:%M", d.timestamp)))
-  EPGP:ImportRoster(d.roster, d.base_gp)
   EPGP:SetGlobalConfiguration(d.decay_p, d.extras_p, d.base_gp, d.min_ep)
+  EPGP:ImportRoster(d.roster, d.base_gp)
 
   -- Trim the log if necessary.
   local timestamp = d.timestamp

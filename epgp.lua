@@ -415,7 +415,14 @@ function EPGP:ExportRoster()
   return t
 end
 
-function EPGP:ImportRoster(t, base_gp)
+function EPGP:ImportRoster(t, new_base_gp)
+  -- This ugly hack is because EncodeNote reads base_gp to encode the
+  -- GP properly. So we reset it to what we get passed, and then we
+  -- restore it so that the BaseGPChanged event is fired properly when
+  -- we parse the guild info text after this function returns.
+  local old_base_gp = base_gp
+  base_gp = new_base_gp
+
   local notes = {}
   for _, entry in pairs(t) do
     local name, ep, gp = unpack(entry)
@@ -427,6 +434,8 @@ function EPGP:ImportRoster(t, base_gp)
     local note = notes[name] or zero_note
     GS:SetNote(name, note)
   end
+
+  base_gp = old_base_gp
 end
 
 function EPGP:StandingsSort(order)
@@ -830,6 +839,8 @@ function EPGP:OnEnable()
   GS.RegisterCallback(self, "GuildInfoChanged", ParseGuildInfo)
   GS.RegisterCallback(self, "GuildNoteChanged", ParseGuildNote)
   GS.RegisterCallback(self, "GuildNoteDeleted", HandleDeletedGuildNote)
+
+  EPGP.RegisterCallback(self, "BaseGPChanged", DestroyStandings)
 
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
