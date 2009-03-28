@@ -219,7 +219,7 @@ StaticPopupDialogs["EPGP_IMPORT"] = {
 }
 
 StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
-  text = "You are the Loot Master, would you like to use %s to distribute loot?\r\n\r\n(You will be asked again next time. Use the configuration panel to change this behaviour)":format('EPGP Lootmaster'),
+  text = "You are the Loot Master, would you like to use EPGP Lootmaster to distribute loot?\r\n\r\n(You will be asked again next time. Use the configuration panel to change this behaviour)",
   button1 = YES,
   button2 = NO,
   OnAccept = function()
