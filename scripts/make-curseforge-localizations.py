@@ -78,11 +78,11 @@ def GetLocalization(locale):
 
   # Remove all contents of script tags
   logging.info('Grabbing localization from the html response')
-  
+
   localization = _TEXTAREA_RE.search(html)
   if not localization:
     raise Exception('Localization not found localization!')
-  
+
   return localization.group(1)
 
 def main():
