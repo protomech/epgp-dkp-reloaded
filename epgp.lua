@@ -146,6 +146,7 @@ if not EPGP.callbacks then
 end
 local callbacks = EPGP.callbacks
 
+local Debug = LibStub("LibDebug-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local global_config = {}
@@ -241,7 +242,7 @@ local function DestroyStandings()
 end
 
 local function RefreshStandings(order, showEveryone)
-  EPGP:Debug("Resorting standings")
+  Debug("Resorting standings")
   if UnitInRaid("player") then
     -- If we are in raid:
     ---  showEveryone = true: show all in raid (including alts) and
@@ -315,7 +316,7 @@ for var, def in pairs(global_config_defs) do
   global_config[var] = def.default
 end
 local function ParseGuildInfo(callback, info)
-  EPGP:Debug("Parsing GuildInfo")
+  Debug("Parsing GuildInfo")
   local lines = {string.split("\n", info)}
   local in_block = false
 
@@ -328,7 +329,7 @@ local function ParseGuildInfo(callback, info)
       for var, def in pairs(global_config_defs) do
         local v = line:match(def.pattern)
         if v then
-          EPGP:Debug("Matched [%s]", line)
+          Debug("Matched [%s]", line)
           v = def.parser(v)
           if v == nil or not def.validator(v) then
             EPGP:Error(def.error)
@@ -346,8 +347,8 @@ local function ParseGuildInfo(callback, info)
       new_value = def.default
     end
     if global_config[var] ~= new_value then
-      EPGP:Debug("Setting new value %s for variable %s",
-                 tostring(new_value), var)
+      Debug("Setting new value %s for variable %s",
+            tostring(new_value), var)
       global_config[var] = new_value
       callbacks:Fire(def.change_message, new_value)
     end
@@ -379,7 +380,7 @@ local function HandleDeletedGuildNote(callback, name)
 end
 
 local function ParseGuildNote(callback, name, note)
-  EPGP:Debug("Parsing Guild Note for %s [%s]", name, note)
+  Debug("Parsing Guild Note for %s [%s]", name, note)
   -- Delete current state about this toon.
   DeleteState(name)
 
@@ -769,13 +770,13 @@ function EPGP:SetGlobalConfiguration(decay_p, extras_p, base_gp, min_ep)
     base_gp or DEFAULT_BASE_GP)
 
   -- If we have a global configuration stanza we need to replace it
-  EPGP:Debug("epgp_stanza:\n%s", epgp_stanza)
+  Debug("epgp_stanza:\n%s", epgp_stanza)
   if guild_info:match("%-EPGP%-.*%-EPGP%-") then
     guild_info = guild_info:gsub("%-EPGP%-.*%-EPGP%-", epgp_stanza)
   else
     guild_info = epgp_stanza.."\n"..guild_info
   end
-  EPGP:Debug("guild_info:\n%s", guild_info)
+  Debug("guild_info:\n%s", guild_info)
   SetGuildInfoText(guild_info)
   GuildRoster()
 end
@@ -882,7 +883,7 @@ function CheckForGuildInfo()
     -- Enable all modules that are supposed to be enabled
     for name, module in EPGP:IterateModules() do
       if module.db.profile.enabled or not module.dbDefaults then
-        EPGP:Info("Enabling module (startup): %s", name)
+        Debug("Enabling module (startup): %s", name)
         module:Enable()
       end
     end
@@ -932,34 +933,6 @@ function EPGP:OnEnable()
   end
 end
 
--- Console output support
-local console_levels = {
-  DEBUG = 1,
-  INFO = 2,
-  WARNING = 3,
-  ERROR = 4,
-}
-
-local prefix_for_level = {
-  [1] = "(dbg): ",
-  [2] = "(inf): ",
-  [3] = "(wrn): ",
-  [4] = "(err): ",
-}
-
-local console_level = version == '(development)' and 2 or 3
-
-local function OutputToConsoleFormatted(lvl, fmt, ...)
-  if lvl < console_level then return end
-  local msg = fmt:format(...)
-  EPGP:Print(prefix_for_level[lvl]..msg)
-end
-
-function EPGP:Debug(fmt, ...) OutputToConsoleFormatted(1, fmt, ...) end
-function EPGP:Info(fmt, ...) OutputToConsoleFormatted(2, fmt, ...) end
-function EPGP:Warning(fmt, ...) OutputToConsoleFormatted(3, fmt, ...) end
-function EPGP:Error(fmt, ...) OutputToConsoleFormatted(4, fmt, ...) end
-
-function EPGP:SetConsoleLevel(level)
-  console_level = console_levels[level]
+if version == '(development)' then
+  Debug:EnableDebugging()
 end

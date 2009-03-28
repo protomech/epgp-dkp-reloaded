@@ -1,4 +1,5 @@
 local mod = EPGP:NewModule("boss", "AceEvent-3.0", "AceTimer-3.0")
+local Debug = LibStub("LibDebug-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local BOSSES = {
@@ -96,7 +97,7 @@ function mod:PopAwardQueue()
 end
 
 local function BossKilled(event_name, boss_name)
-  EPGP:Debug("Boss killed: %s", boss_name)
+  Debug("Boss killed: %s", boss_name)
   -- Temporary fix since we cannot unregister DBM callbacks
   if not mod:IsEnabled() then return end
 
@@ -116,7 +117,7 @@ function mod:PLAYER_REGEN_ENABLED()
   in_combat = false
 end
 
-function mod:Debug()
+function mod:DebugTest()
   BossKilled("BossKilled", "Sapphiron")
 end
 
@@ -140,7 +141,7 @@ function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
   if DBM then
-    EPGP:Info(L["Using DBM for boss kill tracking"])
+    EPGP:Print(L["Using DBM for boss kill tracking"])
     DBM:RegisterCallback("kill",
                          function (mod)
                            BossKilled("kill", mod.combatInfo.name)

@@ -1,4 +1,5 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
+local Debug = LibStub("LibDebug-1.0")
 
 function EPGP:ModuleEnabled(i)
   local m = self:GetModule(i[#i-1])
@@ -120,6 +121,12 @@ function EPGP:SetupOptions()
   SlashCmdList["EPGP"] = function(msg)
                            if msg == "config" then
                              InterfaceOptionsFrame_OpenToCategory("EPGP")
+                           elseif msg == "debug" then
+                             if Debug:IsDebugging() then
+                               Debug:EnableDebugging(false)
+                             else
+                               Debug:EnableDebugging()
+                             end
                            else
                              if EPGPFrame then
                                if EPGPFrame:IsShown() then

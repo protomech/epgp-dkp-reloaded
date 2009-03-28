@@ -7,12 +7,7 @@ local MINOR_VERSION = tonumber(("$Revision: 1023 $"):match("%d+")) or 0
 local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local function Debug(fmt, ...)
-  DEFAULT_CHAT_FRAME:AddMessage(string.format(fmt, ...))
-end
-
--- Comment out this line to enable debug info
--- function Debug(...) end
+local Debug = LibStub("LibDebug-1.0")
 
 local deformat = AceLibrary("Deformat-2.0")
 local CallbackHandler = LibStub("CallbackHandler-1.0")

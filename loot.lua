@@ -80,7 +80,6 @@ local function LootReceived(event_name, player, itemLink, quantity)
     if not itemID then return end
 
     local itemRarity = select(3, GetItemInfo(itemID))
-    EPGP:Debug("itemRarity: %d", itemRarity)
     if itemRarity < mod.db.profile.threshold then return end
 
     if ignored_items[itemID] then return end

@@ -10,9 +10,7 @@ local MINOR_VERSION = tonumber(("$Revision: $"):match("%d+")) or 0
 local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-local function Debug(fmt, ...)
-  DEFAULT_CHAT_FRAME:AddMessage(string.format(fmt, ...))
-end
+local Debug = LibStub("LibDebug-1.0")
 
 -- Inventory types are localized on each client. For this we need
 -- LibBabble-Inventory to unlocalize the strings.

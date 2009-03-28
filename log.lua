@@ -213,8 +213,8 @@ function mod:Import(jsonStr)
     end
   end
 
-  EPGP:Warning(L["Importing data snapshot taken at: %s"]:format(
-                 date("%Y-%m-%d %H:%M", d.timestamp)))
+  EPGP:Print(L["Importing data snapshot taken at: %s"]:format(
+               date("%Y-%m-%d %H:%M", d.timestamp)))
   EPGP:ImportRoster(d.roster, d.base_gp)
   EPGP:SetGlobalConfiguration(d.decay_p, d.extras_p, d.base_gp, d.min_ep)
 
