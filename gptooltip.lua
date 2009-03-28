@@ -254,7 +254,7 @@ mod.optionsArgs = {
   help = {
     order = 1,
     type = "description",
-    name = L["Provide a proposed GP value of armor on tooltips. Quest items or tokens that can be traded with armor will also have a proposed GP value."],
+    name = L["Provide a proposed GP value of armor on tooltips. Quest items or tokens that can be traded for armor will also have a proposed GP value."],
   },
 }
 
