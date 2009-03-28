@@ -420,8 +420,8 @@ function EPGP:ImportRoster(t, new_base_gp)
   -- GP properly. So we reset it to what we get passed, and then we
   -- restore it so that the BaseGPChanged event is fired properly when
   -- we parse the guild info text after this function returns.
-  local old_base_gp = base_gp
-  base_gp = new_base_gp
+  local old_base_gp = global_config.base_gp
+  global_config.base_gp = new_base_gp
 
   local notes = {}
   for _, entry in pairs(t) do
@@ -435,7 +435,7 @@ function EPGP:ImportRoster(t, new_base_gp)
     GS:SetNote(name, note)
   end
 
-  base_gp = old_base_gp
+  global_config.base_gp = old_base_gp
 end
 
 function EPGP:StandingsSort(order)
