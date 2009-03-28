@@ -34,6 +34,7 @@ L["Decay Percent should be a number between 0 and 100"] = true
 L["Decay of EP/GP by %d%%"] = true
 L["Decay"] = true
 L["Decay=%s%% BaseGP=%s MinEP=%s Extras=%s%%"] = true
+L["Do you want to resume recurring award (%s) %d EP/%s?"] = true
 L["EP Reason"] = true
 L["EP/GP are reset"] = true
 L["EPGP is an in game, relational loot distribution system"] = true
@@ -74,6 +75,7 @@ L["Redo"] = true
 L["Reset EPGP"] = true
 L["Reset all main toons' EP and GP to 0?"] = true
 L["Resets EP and GP of all members of the guild. This will set all main toons' EP and GP to 0. Use with care!"] = true
+L["Resume recurring award (%s) %d EP/%s"] = true
 L["Rollback EPGP"] = true
 L["Rollback to snapshot taken on %s?"] = true
 L["Rollbacks to the latest snapshot of EPGP taken at logout"] = true

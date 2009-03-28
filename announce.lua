@@ -66,6 +66,11 @@ local function AnnounceStartRecurringAward(event_name, reason, amount, mins)
   mod:Announce(L["Start recurring award (%s) %d EP/%s"], reason, amount, fmt:format(val))
 end
 
+local function AnnounceResumeRecurringAward(event_name, reason, amount, mins)
+  local fmt, val = SecondsToTimeAbbrev(mins * 60)
+  mod:Announce(L["Resume recurring award (%s) %d EP/%s"], reason, amount, fmt:format(val))
+end
+
 local function AnnounceStopRecurringAward(event_name)
   mod:Announce(L["Stop recurring award"])
 end
@@ -118,6 +123,8 @@ function mod:OnEnable()
   EPGP.RegisterCallback(self, "Decay", AnnounceDecay)
   EPGP.RegisterCallback(self, "StartRecurringAward",
                         AnnounceStartRecurringAward)
+  EPGP.RegisterCallback(self, "ResumeRecurringAward",
+                        AnnounceResumeRecurringAward)
   EPGP.RegisterCallback(self, "StopRecurringAward", AnnounceStopRecurringAward)
   EPGP.RegisterCallback(self, "EPGPReset", AnnounceEPGPReset)
 end

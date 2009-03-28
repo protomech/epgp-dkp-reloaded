@@ -239,3 +239,17 @@ StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
   whileDead = 1,
   showAlert = 1
 }
+
+StaticPopupDialogs["EPGP_RECURRING_RESUME"] = {
+  text = "%s",
+  button1 = YES,
+  button2 = NO,
+  timeout = 0,
+  whileDead = 1,
+  OnAccept = function()
+               EPGP:ResumeRecurringEP()
+             end,
+  OnCancel = function()
+               EPGP:StopRecurringEP()
+             end,
+}

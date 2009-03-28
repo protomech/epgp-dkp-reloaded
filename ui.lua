@@ -1024,6 +1024,9 @@ local function CreateEPGPFrameStandings()
   function recurringTime:StartRecurringAward()
     self:Show()
   end
+  function recurringTime:ResumeRecurringAward()
+    self:Show()
+  end
   function recurringTime:StopRecurringAward()
     self:Hide()
   end
@@ -1034,6 +1037,7 @@ local function CreateEPGPFrameStandings()
   end
 
   EPGP.RegisterCallback(recurringTime, "StartRecurringAward")
+  EPGP.RegisterCallback(recurringTime, "ResumeRecurringAward")
   EPGP.RegisterCallback(recurringTime, "StopRecurringAward")
   EPGP.RegisterCallback(recurringTime, "RecurringAwardUpdate")
 
