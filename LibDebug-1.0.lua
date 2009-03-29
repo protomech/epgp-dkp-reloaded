@@ -27,9 +27,9 @@ frame:SetBackdrop(
     bgFile = "Interface\\Tooltips\\ChatBubble-Background",
     edgeFile = "Interface\\Tooltips\\ChatBubble-BackDrop",
     tile = true,
-    tileSize = 32,
-    edgeSize = 32,
-    insets = { left=32, right=32, top=32, bottom=32 }
+    tileSize = 16,
+    edgeSize = 16,
+    insets = { left=16, right=16, top=16, bottom=16 }
   })
 frame:SetBackdropColor(0, 0, 0, 1)
 
@@ -54,7 +54,7 @@ frame:SetResizable(true)
 frame.sizer = CreateFrame("Button", nil, frame)
 frame.sizer:SetHeight(16)
 frame.sizer:SetWidth(16)
-frame.sizer:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -8, 8)
+frame.sizer:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
 frame.sizer:SetScript("OnMouseDown",
                        function (self)
                          self:GetParent():StartSizing("BOTTOMRIGHT")
@@ -63,13 +63,21 @@ frame.sizer:SetScript("OnMouseUp",
                        function (self) self:GetParent():StopMovingOrSizing()
                        end)
 
-local sizerTexture = frame.sizer:CreateTexture(nil, "BACKGROUND")
-sizerTexture:SetWidth(17)
-sizerTexture:SetHeight(17)
-sizerTexture:SetPoint("BOTTOMRIGHT", -6, 4)
-sizerTexture:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
-local x = 0.1 * 10/17
-sizerTexture:SetTexCoord(0.15 - x, 0.5, 0.05, 0.5 + x, 0.05, 0.5 - x, 0.5 + x, 0.5)
+local line1 = frame.sizer:CreateTexture(nil, "BACKGROUND")
+line1:SetWidth(14)
+line1:SetHeight(14)
+line1:SetPoint("BOTTOMRIGHT", -8, 8)
+line1:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+local x = 0.1 * 14/17
+line1:SetTexCoord(0.05 - x, 0.5, 0.05, 0.5 + x, 0.05, 0.5 - x, 0.5 + x, 0.5)
+
+local line2 = frame.sizer:CreateTexture(nil, "BACKGROUND")
+line2:SetWidth(8)
+line2:SetHeight(8)
+line2:SetPoint("BOTTOMRIGHT", -8, 8)
+line2:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+local x = 0.1 * 8/17
+line2:SetTexCoord(0.05 - x, 0.5, 0.05, 0.5 + x, 0.05, 0.5 - x, 0.5 + x, 0.5)
 
 frame.bottom = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 frame.bottom:SetJustifyH("LEFT")
