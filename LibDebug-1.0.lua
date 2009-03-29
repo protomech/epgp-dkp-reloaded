@@ -7,13 +7,13 @@ local MINOR_VERSION = tonumber(("$Revision: 1023 $"):match("%d+")) or 0
 local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
-if lib.frame then
-  lib.frame:Hide()
-  lib.frame = nil
-end
+lib.frame = lib.frame or CreateFrame("Frame", MAJOR_VERSION.."_Frame", UIParent)
+local frame = lib.frame
+
+-- See if we're updating the lib, if so copy the old lib's isDebugging boolean
+local isDebugging = lib.isDebugging and lib:isDebugging() or false
 
 -- The main frame.
-local frame = CreateFrame("Frame", MAJOR_VERSION.."_Frame", UIParent)
 frame:EnableMouse()
 
 frame:SetHeight(400)
@@ -52,8 +52,6 @@ frame:SetResizable(true)
 frame.sizer = CreateFrame("Button", nil, frame)
 frame.sizer:SetHeight(16)
 frame.sizer:SetWidth(16)
-frame.sizer:SetNormalTexture(
-  "Interface\\Buttons\\CancelButton-Highlight")
 frame.sizer:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -8, 8)
 frame.sizer:SetScript("OnMouseDown",
                        function (self)
@@ -63,12 +61,20 @@ frame.sizer:SetScript("OnMouseUp",
                        function (self) self:GetParent():StopMovingOrSizing()
                        end)
 
+local sizerTexture = frame.sizer:CreateTexture(nil, "BACKGROUND")
+sizerTexture:SetWidth(17)
+sizerTexture:SetHeight(17)
+sizerTexture:SetPoint("BOTTOMRIGHT", -6, 4)
+sizerTexture:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+local x = 0.1 * 10/17
+sizerTexture:SetTexCoord(0.15 - x, 0.5, 0.05, 0.5 + x, 0.05, 0.5 - x, 0.5 + x, 0.5)
+
 frame.bottom = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 frame.bottom:SetJustifyH("LEFT")
 frame.bottom:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 8, 8)
 frame.bottom:SetPoint("BOTTOMRIGHT", frame.sizer)
 frame.bottom:SetHeight(8)
-frame.bottom:SetText("Mouse wheel to scroll (with shift scroll top/bottom). Title bar drags. Red dot resizes.")
+frame.bottom:SetText("Mouse wheel to scroll (with shift scroll top/bottom). Title bar drags. Bottom-right corner resizes.")
 
 -- The scrolling message frame with all the debug info.
 frame.msg = CreateFrame("ScrollingMessageFrame", nil, frame)
@@ -92,8 +98,6 @@ local function ScrollingFunction(self, arg)
 end
 frame.msg:SetScript("OnMouseWheel", ScrollingFunction)
 
-lib.frame = frame
-
 function lib:DebugStub(fmt, ...) end
 
 local function GetTimeShort()
@@ -116,8 +120,7 @@ mt.__call = lib.DebugStub
 setmetatable(lib, mt)
 
 function lib:IsDebugging()
-  local mt = getmetatable(self)
-  return mt.__call == lib.Debug
+  return isDebugging
 end
 
 function lib:EnableDebugging(val)
@@ -129,6 +132,7 @@ function lib:EnableDebugging(val)
     mt.__call = lib.Debug
     frame:Show()
   end
+  isDebugging = val
 end
 
-frame:Show()
+frame:Hide()
