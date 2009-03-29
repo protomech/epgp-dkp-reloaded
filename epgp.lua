@@ -156,6 +156,7 @@ EPGP:SetDefaultModulePrototype(modulePrototype)
 local version = GetAddOnMetadata('EPGP', 'Version')
 if not version or #version == 0 then
   version = "(development)"
+  Debug:EnableDebugging()
 end
 EPGP.version = version
 
@@ -850,8 +851,4 @@ function EPGP:OnEnable()
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
 
   GuildRoster()
-end
-
-if version == '(development)' then
-  Debug:EnableDebugging()
 end
