@@ -118,21 +118,14 @@ function lib:IsCurrentState()
   return state == "CURRENT"
 end
 
+-- This is kept for historical reasons. See:
+-- http://code.google.com/p/epgp/issues/detail?id=350.
 function lib:Snapshot(t)
   assert(type(t) == "table")
   t.guild_info = guild_info:match("%-EPGP%-\n(.*)\n\%-EPGP%-")
   t.roster_info = {}
   for name,info in pairs(cache) do
     table.insert(t.roster_info, {name, info.class, info.note})
-  end
-end
-
-function lib:Rollback(t)
-  assert(type(t) == "table")
-  SetGuildInfoText(guild_info:gsub("%-EPGP%-\n.*\n\%-EPGP%-",
-                                   "-EPGP-\n"..t.guild_info.."\n-EPGP-"))
-  for _,i in pairs(t.roster_info) do
-    lib:SetNote(i[1], i[3])
   end
 end
 

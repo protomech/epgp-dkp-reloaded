@@ -132,6 +132,8 @@ function mod:RedoLastUndo()
   return true
 end
 
+-- This is kept for historical reasons: see
+-- http://code.google.com/p/epgp/issues/detail?id=350.
 function mod:Snapshot()
   local t = self.db.profile.snapshot
   if not t then
@@ -140,15 +142,6 @@ function mod:Snapshot()
   end
   t.time = GetTimestamp()
   GS:Snapshot(t)
-end
-
-function mod:Rollback()
-  assert(self.db.profile.snapshot)
-  local t = self.db.profile.snapshot
-
-  -- Restore all notes
-  GS:Rollback(t)
-
 end
 
 function mod:Export()
@@ -264,4 +257,8 @@ function mod:OnEnable()
     self.db.profile.redo = EPGP.db.profile.redo
     EPGP.db.profile.redo = nil
   end
+
+  -- This is kept for historical reasons. See:
+  -- http://code.google.com/p/epgp/issues/detail?id=350.
+  EPGP.db.RegisterCallback(self, "OnDatabaseShutdown", "Snapshot")
 end
