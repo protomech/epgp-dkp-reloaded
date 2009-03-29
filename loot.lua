@@ -76,7 +76,7 @@ end
 
 local function LootReceived(event_name, player, itemLink, quantity)
   if IsRLorML() and CanEditOfficerNote() then
-    local itemID = tonumber(select(3, itemLink:find("item:(%d+)")) or 0)
+    local itemID = tonumber(itemLink:match("item:(%d+)") or 0)
     if not itemID then return end
 
     local itemRarity = select(3, GetItemInfo(itemID))
