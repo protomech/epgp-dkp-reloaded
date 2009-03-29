@@ -162,13 +162,13 @@ end
 function mod:Import(jsonStr)
   local success, d = pcall(JSON.Deserialize, jsonStr)
   if not success then
-    EPGP:Error(L["The imported data is invalid"])
+    EPGP:Print(L["The imported data is invalid"])
     return
   end
 
   if d.guild ~= select(1, GetGuildInfo("player")) or
      d.realm ~= GetRealmName() then
-    EPGP:Error(L["The imported data is invalid"])
+    EPGP:Print(L["The imported data is invalid"])
     return
   end
 
@@ -182,14 +182,14 @@ function mod:Import(jsonStr)
   }
   for k,t in pairs(types) do
     if type(d[k]) ~= t then
-      EPGP:Error(L["The imported data is invalid"])
+      EPGP:Print(L["The imported data is invalid"])
       return
     end
   end
 
   for _, entry in pairs(d.roster) do
     if type(entry) ~= "table" then
-      EPGP:Error(L["The imported data is invalid"])
+      EPGP:Print(L["The imported data is invalid"])
       return
     else
       local types = {
@@ -199,7 +199,7 @@ function mod:Import(jsonStr)
       }
       for k,t in pairs(types) do
         if type(entry[k]) ~= t then
-          EPGP:Error(L["The imported data is invalid"])
+          EPGP:Print(L["The imported data is invalid"])
           return
         end
       end

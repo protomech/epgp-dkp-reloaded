@@ -329,7 +329,7 @@ local function ParseGuildInfo(callback, info)
           Debug("Matched [%s]", line)
           v = def.parser(v)
           if v == nil or not def.validator(v) then
-            EPGP:Error(def.error)
+            EPGP:Print(def.error)
           else
             new_config[var] = v
           end

@@ -15,10 +15,10 @@ function EPGP:ModuleSetEnabledState(i, v)
   local m = self:GetModule(i[#i-1])
   if v ~= m:IsEnabled() then
     if v then
-      self:Info("Enabling module: %s", m:GetName())
+      Debug("Enabling module: %s", m:GetName())
       m:Enable()
     else
-      self:Info("Disabling module: %s", m:GetName())
+      Debug("Disabling module: %s", m:GetName())
       m:Disable()
     end
   end
