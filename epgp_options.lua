@@ -95,7 +95,7 @@ function EPGP:SetupOptions()
                                Debug:EnableDebugging()
                              end
                            else
-                             if EPGPFrame then
+                             if EPGPFrame and IsInGuild() then
                                if EPGPFrame:IsShown() then
                                  HideUIPanel(EPGPFrame)
                                else
