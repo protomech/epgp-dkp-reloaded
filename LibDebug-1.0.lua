@@ -137,12 +137,13 @@ function lib:EnableDebugging(val)
   local mt = getmetatable(self)
   if val == false then
     mt.__call = lib.DebugStub
+    isDebugging = false
     frame:Hide()
   else
     mt.__call = lib.Debug
+    isDebugging = true
     frame:Show()
   end
-  isDebugging = val ~= false
 end
 
 frame:Hide()
