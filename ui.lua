@@ -270,12 +270,11 @@ local function CreateEPGPLogFrame()
   sizer:SetWidth(16)
   sizer:SetNormalTexture("Interface\\Buttons\\CancelButton-Highlight")
   sizer:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
-  sizer:SetScript("OnMouseDown",
-                  function (self)
-                    self:GetParent():StartSizing("BOTTOMRIGHT")
-                  end)
-  sizer:SetScript("OnMouseUp",
-                  function (self) self:GetParent():StopMovingOrSizing() end)
+  sizer:SetScript(
+    "OnMouseDown",
+    function (self) self:GetParent():StartSizing("BOTTOMRIGHT") end)
+  sizer:SetScript(
+    "OnMouseUp", function (self) self:GetParent():StopMovingOrSizing() end)
 
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3)
@@ -288,10 +287,9 @@ local function CreateEPGPLogFrame()
   export:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 9, 13)
   export:SetText(L["Export"])
   export:SetWidth(export:GetTextWidth() + BUTTON_TEXT_PADDING)
-  export:SetScript("OnClick",
-                   function(self, button, down)
-                     StaticPopup_Show("EPGP_EXPORT")
-                   end)
+  export:SetScript(
+    "OnClick",
+    function(self, button, down) StaticPopup_Show("EPGP_EXPORT") end)
 
   local import = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   import:SetNormalFontObject("GameFontNormalSmall")
@@ -301,10 +299,9 @@ local function CreateEPGPLogFrame()
   import:SetPoint("LEFT", export, "RIGHT")
   import:SetText(L["Import"])
   import:SetWidth(import:GetTextWidth() + BUTTON_TEXT_PADDING)
-  import:SetScript("OnClick",
-                   function(self, button, down)
-                     StaticPopup_Show("EPGP_IMPORT")
-                   end)
+  import:SetScript(
+    "OnClick",
+    function(self, button, down) StaticPopup_Show("EPGP_IMPORT") end)
 
   local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   undo:SetNormalFontObject("GameFontNormalSmall")
@@ -314,18 +311,18 @@ local function CreateEPGPLogFrame()
   undo:SetText(L["Undo"])
   undo:SetWidth(undo:GetTextWidth() + BUTTON_TEXT_PADDING)
   undo:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -9, 13)
-  undo:SetScript("OnClick",
-                 function (self, value)
-                   EPGP:GetModule("log"):UndoLastAction()
-                 end)
-  undo:SetScript("OnUpdate",
-                 function (self)
-                   if EPGP:GetModule("log"):CanUndo() then
-                     self:Enable()
-                   else
-                     self:Disable()
-                   end
-                 end)
+  undo:SetScript(
+    "OnClick",
+    function (self, value) EPGP:GetModule("log"):UndoLastAction() end)
+  undo:SetScript(
+    "OnUpdate",
+    function (self)
+      if EPGP:GetModule("log"):CanUndo() then
+        self:Enable()
+      else
+        self:Disable()
+      end
+    end)
 
   local redo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   redo:SetNormalFontObject("GameFontNormalSmall")
@@ -335,18 +332,18 @@ local function CreateEPGPLogFrame()
   redo:SetText(L["Redo"])
   redo:SetWidth(redo:GetTextWidth() + BUTTON_TEXT_PADDING)
   redo:SetPoint("RIGHT", undo, "LEFT")
-  redo:SetScript("OnClick",
-                 function (self, value)
-                   EPGP:GetModule("log"):RedoLastUndo()
-                 end)
-  redo:SetScript("OnUpdate",
-                 function (self)
-                   if EPGP:GetModule("log"):CanRedo() then
-                     self:Enable()
-                   else
-                     self:Disable()
-                   end
-                 end)
+  redo:SetScript(
+    "OnClick",
+    function (self, value) EPGP:GetModule("log"):RedoLastUndo() end)
+  redo:SetScript(
+    "OnUpdate",
+    function (self)
+      if EPGP:GetModule("log"):CanRedo() then
+        self:Enable()
+      else
+        self:Disable()
+      end
+    end)
 
   local scrollParent = CreateFrame("Frame", nil, f)
   scrollParent:SetPoint("TOP", t, "TOP", 0, -16)
@@ -440,7 +437,6 @@ local function EPGPSideFrameGPDropDown_Initialize(dropDown)
                   parent.editBox:SetText(text)
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()
-                  parent.button:SetCurrentState()
                 end
     UIDropDownMenu_AddButton(info)
   end
@@ -494,18 +490,17 @@ local function AddGPControls(frame)
   editBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   editBox:SetPoint("RIGHT", button, "LEFT")
   editBox:SetPoint("TOP", label, "BOTTOM")
-  editBox:SetScript("OnTextChanged",
-                    function(self) button:SetCurrentState() end)
 
-  function button:SetCurrentState()
-    if EPGP:CanIncGPBy(UIDropDownMenu_GetText(dropDown),
-                       editBox:GetNumber()) then
-      self:Enable()
-    else
-      self:Disable()
-    end
-  end
-  GS.RegisterCallback(button, "StateChanged", "SetCurrentState")
+  button:SetScript(
+    "OnUpdate",
+    function(self)
+      if EPGP:CanIncGPBy(UIDropDownMenu_GetText(dropDown),
+                         editBox:GetNumber()) then
+        self:Enable()
+      else
+        self:Disable()
+      end
+    end)
 
   frame:SetHeight(
     reasonLabel:GetHeight() +
@@ -519,11 +514,12 @@ local function AddGPControls(frame)
   frame.button = button
   frame.editBox = editBox
 
-  frame:SetScript("OnShow",
-                  function(self)
-                    self.editBox:SetText("")
-                    UIDropDownMenu_ClearAll(self.dropDown)
-                  end)
+  frame:SetScript(
+    "OnShow",
+    function(self)
+      self.editBox:SetText("")
+      UIDropDownMenu_ClearAll(self.dropDown)
+    end)
 end
 
 local function EPGPSideFrameEPDropDown_Initialize(dropDown)
@@ -545,10 +541,6 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                     if last_award then
                       parent.editBox:SetText(last_award)
                     end
-                    parent.button:SetCurrentState()
-                    if parent.recurring then
-                      parent.recurring:SetCurrentState()
-                    end
                   end
       UIDropDownMenu_AddButton(info)
     end
@@ -567,10 +559,6 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
                 local last_award = EPGP.db.profile.last_awards[reason]
                 if last_award then
                   parent.editBox:SetText(last_award)
-                end
-                parent.button:SetCurrentState()
-                if parent.recurring then
-                  parent.recurring:SetCurrentState()
                 end
               end
   info.checked = false
@@ -605,18 +593,15 @@ local function AddEPControls(frame, withRecurring)
   otherEditBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   otherEditBox:SetPoint("RIGHT", frame, "RIGHT", -15, 0)
   otherEditBox:SetPoint("TOP", otherLabel, "BOTTOM")
-  otherEditBox:SetScript("OnTextChanged",
-                         function(self)
-                           local last_award =
-                             EPGP.db.profile.last_awards[self:GetText()]
-                           if last_award then
-                             frame.editBox:SetText(last_award)
-                           end
-                           frame.button:SetCurrentState()
-                           if frame.recurring then
-                             frame.recurring:SetCurrentState()
-                           end
-                         end)
+  otherEditBox:SetScript(
+    "OnTextChanged",
+    function(self)
+      local last_award =
+        EPGP.db.profile.last_awards[self:GetText()]
+      if last_award then
+        frame.editBox:SetText(last_award)
+      end
+    end)
 
   local label = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   label:SetText(L["Value"])
@@ -641,15 +626,8 @@ local function AddEPControls(frame, withRecurring)
   editBox:SetPoint("LEFT", frame, "LEFT", 25, 0)
   editBox:SetPoint("RIGHT", button, "LEFT")
   editBox:SetPoint("TOP", label, "BOTTOM")
-  editBox:SetScript("OnTextChanged",
-                    function(self)
-                      frame.button:SetCurrentState()
-                      if frame.recurring then
-                        frame.recurring:SetCurrentState()
-                      end
-                    end)
 
-  function button:SetCurrentState()
+  local function EnabledStatus(self)
     local reason = UIDropDownMenu_GetText(dropDown)
     if reason == L["Other"] then
       reason = otherEditBox:GetText()
@@ -661,7 +639,7 @@ local function AddEPControls(frame, withRecurring)
       self:Disable()
     end
   end
-  GS.RegisterCallback(button, "StateChanged", "SetCurrentState")
+  button:SetScript("OnUpdate", EnabledStatus)
 
   if withRecurring then
     local recurring =
@@ -670,15 +648,15 @@ local function AddEPControls(frame, withRecurring)
     recurring:SetHeight(20)
     recurring:SetPoint("TOP", editBox, "BOTTOMLEFT")
     recurring:SetPoint("LEFT", reasonLabel)
-
-    function recurring:SetCurrentState()
-      if EPGP:RunningRecurringEP() then
-        self:Enable()
-      else
-        button.SetCurrentState(self)
-      end
-    end
-    GS.RegisterCallback(recurring, "StateChanged", "SetCurrentState")
+    recurring:SetScript(
+      "OnUpdate",
+      function (self)
+        if EPGP:RunningRecurringEP() then
+          self:Enable()
+        else
+          EnabledStatus(self)
+        end
+      end)
 
     local label =
       frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -731,19 +709,21 @@ local function AddEPControls(frame, withRecurring)
       end
     end
 
-    incButton:SetScript("OnClick",
-                        function(self)
-                          local period_mins = EPGP:RecurringEPPeriodMinutes()
-                          EPGP:RecurringEPPeriodMinutes(period_mins + 1)
-                          self:GetParent():UpdateTimeControls()
-                        end)
+    incButton:SetScript(
+      "OnClick",
+      function(self)
+        local period_mins = EPGP:RecurringEPPeriodMinutes()
+        EPGP:RecurringEPPeriodMinutes(period_mins + 1)
+        self:GetParent():UpdateTimeControls()
+      end)
 
-    decButton:SetScript("OnClick",
-                        function(self)
-                          local period_mins = EPGP:RecurringEPPeriodMinutes()
-                          EPGP:RecurringEPPeriodMinutes(period_mins - 1)
-                          self:GetParent():UpdateTimeControls()
-                        end)
+    decButton:SetScript(
+      "OnClick",
+      function(self)
+        local period_mins = EPGP:RecurringEPPeriodMinutes()
+        EPGP:RecurringEPPeriodMinutes(period_mins - 1)
+        self:GetParent():UpdateTimeControls()
+      end)
 
     frame.recurring = recurring
     frame.incButton = incButton
@@ -767,18 +747,19 @@ local function AddEPControls(frame, withRecurring)
   frame.editBox = editBox
   frame.button = button
 
-  frame:SetScript("OnShow",
-                  function(self)
-                    self.editBox:SetText("")
-                    UIDropDownMenu_ClearAll(self.dropDown)
-                    self.otherLabel:SetAlpha(0.25)
-                    self.otherEditBox:SetAlpha(0.25)
-                    self.otherEditBox:EnableKeyboard(false)
-                    self.otherEditBox:EnableMouse(false)
-                    if self.UpdateTimeControls then
-                      self:UpdateTimeControls()
-                    end
-                  end)
+  frame:SetScript(
+    "OnShow",
+    function(self)
+      self.editBox:SetText("")
+      UIDropDownMenu_ClearAll(self.dropDown)
+      self.otherLabel:SetAlpha(0.25)
+      self.otherEditBox:SetAlpha(0.25)
+      self.otherEditBox:EnableKeyboard(false)
+      self.otherEditBox:EnableMouse(false)
+      if self.UpdateTimeControls then
+        self:UpdateTimeControls()
+      end
+    end)
 end
 
 local function CreateEPGPSideFrame(self)
@@ -845,10 +826,11 @@ local function CreateEPGPSideFrame(self)
       EPGP:IncEPBy(f.name, reason, amount)
     end)
 
-  f:SetScript("OnShow",
-              function(self)
-                self.title:SetText(self.name)
-              end)
+  f:SetScript(
+    "OnShow",
+    function(self)
+      self.title:SetText(self.name)
+    end)
 end
 
 local function CreateEPGPSideFrame2()
@@ -936,14 +918,16 @@ local function CreateEPGPFrameStandings()
   cb:SetWidth(20)
   cb:SetHeight(20)
   cb:SetPoint("RIGHT", f, "RIGHT", -8, 0)
-  cb:SetScript("OnShow",
-               function(self)
-                 self:SetChecked(EPGP:StandingsShowEveryone())
-               end)
-  cb:SetScript("OnClick",
-               function(self)
-                 EPGP:StandingsShowEveryone(not not self:GetChecked())
-               end)
+  cb:SetScript(
+    "OnShow",
+    function(self)
+      self:SetChecked(EPGP:StandingsShowEveryone())
+    end)
+  cb:SetScript(
+    "OnClick",
+    function(self)
+      EPGP:StandingsShowEveryone(not not self:GetChecked())
+    end)
   local t = cb:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   t:SetText(L["Show everyone"])
   t:SetPoint("RIGHT", cb, "LEFT", 0, 2)
@@ -985,10 +969,11 @@ local function CreateEPGPFrameStandings()
   award:SetText(L["Mass EP Award"])
   award:SetWidth(award:GetTextWidth() + BUTTON_TEXT_PADDING)
   award:RegisterEvent("RAID_ROSTER_UPDATE")
-  award:SetScript("OnClick",
-                  function()
-                    ToggleOnlySideFrame(EPGPSideFrame2)
-                  end)
+  award:SetScript(
+    "OnClick",
+    function()
+      ToggleOnlySideFrame(EPGPSideFrame2)
+    end)
 
   local log = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   log:SetNormalFontObject("GameFontNormalSmall")
@@ -998,10 +983,11 @@ local function CreateEPGPFrameStandings()
   log:SetPoint("BOTTOMRIGHT")
   log:SetText(GUILD_BANK_LOG)
   log:SetWidth(log:GetTextWidth() + BUTTON_TEXT_PADDING)
-  log:SetScript("OnClick",
-                function(self, button, down)
-                  ToggleOnlySideFrame(EPGPLogFrame)
-                end)
+  log:SetScript(
+    "OnClick",
+    function(self, button, down)
+      ToggleOnlySideFrame(EPGPLogFrame)
+    end)
 
   local decay = CreateFrame("Button", nil, main, "UIPanelButtonTemplate")
   decay:SetNormalFontObject("GameFontNormalSmall")
@@ -1011,20 +997,20 @@ local function CreateEPGPFrameStandings()
   decay:SetPoint("RIGHT", log, "LEFT")
   decay:SetText(L["Decay"])
   decay:SetWidth(decay:GetTextWidth() + BUTTON_TEXT_PADDING)
-  decay:SetScript("OnClick",
-                  function(self, button, down)
-                    StaticPopup_Show("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
-                  end)
-  function decay:SetCurrentState()
-    if EPGP:CanDecayEPGP() then
-      self:Enable()
-    else
-      self:Disable()
-    end
-  end
-  decay:SetScript("OnShow", decay.SetCurrentState)
-  EPGP.RegisterCallback(decay, "DecayPercentChanged", "SetCurrentState")
-  GS.RegisterCallback(decay, "StateChanged", "SetCurrentState")
+  decay:SetScript(
+    "OnClick",
+    function(self, button, down)
+      StaticPopup_Show("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
+    end)
+  decay:SetScript(
+    "OnUpdate",
+    function(self)
+      if EPGP:CanDecayEPGP() then
+        self:Enable()
+      else
+        self:Disable()
+      end
+    end)
 
   local fontHeight = select(2, GameFontNormal:GetFont())
 
@@ -1099,11 +1085,12 @@ local function CreateEPGPFrameStandings()
   tabl:SetPoint("TOPRIGHT")
   tabl:SetPoint("BOTTOM", modeText, "TOP")
   -- Also hook the status texts to update on show
-  tabl:SetScript("OnShow",
-                 function (self)
-                   statusText:TextUpdate()
-                   modeText:TextUpdate()
-                 end)
+  tabl:SetScript(
+    "OnShow",
+    function (self)
+      statusText:TextUpdate()
+      modeText:TextUpdate()
+    end)
 
   -- Populate the table
   CreateTable(tabl,
@@ -1130,57 +1117,51 @@ local function CreateEPGPFrameStandings()
     r.check:SetPoint("RIGHT", r.cells[1])
 
     r:RegisterForClicks("LeftButtonDown")
-    r:SetScript("OnClick",
-                function(self, value)
-                  if IsModifiedClick("QUESTWATCHTOGGLE") then
-                    if self.check:IsShown() then
-                      EPGP:DeSelectMember(self.name)
-                    else
-                      EPGP:SelectMember(self.name)
-                    end
-                  else
-                    if EPGPSideFrame.name ~= self.name then
-                      self:LockHighlight()
-                      EPGPSideFrame:Hide()
-                      EPGPSideFrame.name = self.name
-                    end
-                    ToggleOnlySideFrame(EPGPSideFrame)
-                  end
-                end)
+    r:SetScript(
+      "OnClick",
+      function(self, value)
+        if IsModifiedClick("QUESTWATCHTOGGLE") then
+          if self.check:IsShown() then
+            EPGP:DeSelectMember(self.name)
+          else
+            EPGP:SelectMember(self.name)
+          end
+        else
+          if EPGPSideFrame.name ~= self.name then
+            self:LockHighlight()
+            EPGPSideFrame:Hide()
+            EPGPSideFrame.name = self.name
+          end
+          ToggleOnlySideFrame(EPGPSideFrame)
+        end
+      end)
 
-    r:SetScript("OnEnter",
-                function(self)
-                  if EPGP:GetNumAlts(self.name) > 0 then
-                    GameTooltip_SetDefaultAnchor(GameTooltip, self)
-                    GameTooltip:AddLine(L["Alts"])
-                    for i=1,EPGP:GetNumAlts(self.name) do
-                      GameTooltip:AddLine(EPGP:GetAlt(self.name, i), 1, 1, 1)
-                    end
-                    GameTooltip:ClearAllPoints()
-                    GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
-                    GameTooltip:Show()
-                  end
-                end)
+    r:SetScript(
+      "OnEnter",
+      function(self)
+        if EPGP:GetNumAlts(self.name) > 0 then
+          GameTooltip_SetDefaultAnchor(GameTooltip, self)
+          GameTooltip:AddLine(L["Alts"])
+          for i=1,EPGP:GetNumAlts(self.name) do
+            GameTooltip:AddLine(EPGP:GetAlt(self.name, i), 1, 1, 1)
+          end
+          GameTooltip:ClearAllPoints()
+          GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
+          GameTooltip:Show()
+        end
+      end)
     r:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end
 
   -- Hook up the headers
-  tabl.headers[1]:SetScript("OnClick",
-                            function(self)
-                              EPGP:StandingsSort("NAME")
-                            end)
-  tabl.headers[2]:SetScript("OnClick",
-                            function(self)
-                              EPGP:StandingsSort("EP")
-                            end)
-  tabl.headers[3]:SetScript("OnClick",
-                            function(self)
-                              EPGP:StandingsSort("GP")
-                            end)
-  tabl.headers[4]:SetScript("OnClick",
-                            function(self)
-                              EPGP:StandingsSort("PR")
-                            end)
+  tabl.headers[1]:SetScript(
+    "OnClick", function(self) EPGP:StandingsSort("NAME") end)
+  tabl.headers[2]:SetScript(
+    "OnClick", function(self) EPGP:StandingsSort("EP") end)
+  tabl.headers[3]:SetScript(
+    "OnClick", function(self) EPGP:StandingsSort("GP") end)
+  tabl.headers[4]:SetScript(
+    "OnClick", function(self) EPGP:StandingsSort("PR") end)
 
   -- Install the update function on rowFrame.
   local function UpdateStandings()
@@ -1236,11 +1217,12 @@ local function CreateEPGPFrameStandings()
     FauxScrollFrame_Update(EPGPScrollFrame, numMembers, numDisplayedMembers,
                            rowFrame.rowHeight, nil, nil, nil, nil,
                            nil, nil, true)
-    EPGPSideFrame:SetScript("OnHide",
-                            function(self)
-                              self.name = nil
-                              UpdateStandings()
-                            end)
+    EPGPSideFrame:SetScript(
+      "OnHide",
+      function(self)
+        self.name = nil
+        UpdateStandings()
+      end)
     rowFrame.needUpdate = nil
   end
 
@@ -1248,12 +1230,13 @@ local function CreateEPGPFrameStandings()
   EPGP.RegisterCallback(rowFrame, "StandingsChanged",
                         function() rowFrame.needUpdate = true end)
   rowFrame:SetScript("OnShow", UpdateStandings)
-  scrollBar:SetScript("OnVerticalScroll",
-                      function(self, value)
-                        rowFrame.needUpdate = true
-                        FauxScrollFrame_OnVerticalScroll(
-                          self, value, rowFrame.rowHeight, UpdateStandings)
-                      end)
+  scrollBar:SetScript(
+    "OnVerticalScroll",
+    function(self, value)
+      rowFrame.needUpdate = true
+      FauxScrollFrame_OnVerticalScroll(
+        self, value, rowFrame.rowHeight, UpdateStandings)
+    end)
 end
 
 function mod:OnEnable()

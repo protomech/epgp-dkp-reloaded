@@ -806,14 +806,7 @@ function CheckForGuildInfo()
     EPGP.GetGuildInfoTimer = nil
     -- Check if we have a recurring award we can resume
     if EPGP:CanResumeRecurringEP() then
-      StaticPopup_Show(
-        "EPGP_RECURRING_RESUME",
-        -- We need to do the formatting here because static popups do
-        -- not allow for 3 arguments to the formatting function.
-        L["Do you want to resume recurring award (%s) %d EP/%s?"]:format(
-          EPGP.db.profile.next_award_reason,
-          EPGP.db.profile.next_award_amount,
-          EPGP:RecurringEPPeriodString()))
+      EPGP:ResumeRecurringEP()
     else
       EPGP:CancelRecurringEP()
     end

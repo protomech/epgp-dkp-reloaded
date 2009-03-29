@@ -44,16 +44,42 @@ function EPGP:StartRecurringEP(reason, amount)
   return true
 end
 
+StaticPopupDialogs["EPGP_RECURRING_RESUME"] = {
+  text = "%s",
+  button1 = YES,
+  button2 = NO,
+  timeout = 0,
+  hideOnEscape = 1,
+  whileDead = 1,
+  OnAccept = function()
+               callbacks:Fire("ResumeRecurringAward",
+                              EPGP.db.profile.next_award_reason,
+                              EPGP.db.profile.next_award_amount,
+                              EPGP.db.profile.recurring_ep_period_mins)
+               frame:Show()
+             end,
+  OnCancel = function(self, data, reason)
+               if reason ~= "override" then
+                 EPGP:StopRecurringEP()
+               end
+             end,
+}
+
 function EPGP:ResumeRecurringEP()
   local vars = EPGP.db.profile
-  assert(vars.next_award_reason)
-  assert(vars.next_award_amount)
-  assert(vars.next_award)
-  callbacks:Fire("ResumeRecurringAward",
-                 vars.next_award_reason,
-                 vars.next_award_amount,
-                 vars.recurring_ep_period_mins)
-  frame:Show()
+
+  local period_secs = vars.recurring_ep_period_mins * 60
+  local timeout = vars.next_award + period_secs - GetTime()
+  StaticPopupDialogs["EPGP_RECURRING_RESUME"].timeout = timeout
+
+  StaticPopup_Show(
+    "EPGP_RECURRING_RESUME",
+    -- We need to do the formatting here because static popups do
+    -- not allow for 3 arguments to the formatting function.
+    L["Do you want to resume recurring award (%s) %d EP/%s?"]:format(
+      vars.next_award_reason,
+      vars.next_award_amount,
+      EPGP:RecurringEPPeriodString()))
 end
 
 function EPGP:CanResumeRecurringEP()
@@ -70,6 +96,7 @@ function EPGP:CanResumeRecurringEP()
 end
 
 function EPGP:CancelRecurringEP()
+  StaticPopup_Hide("EPGP_RECURRING_RESUME")
   local vars = EPGP.db.profile
   vars.next_award_reason = nil
   vars.next_award_amount = nil
