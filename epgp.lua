@@ -133,20 +133,18 @@ local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
 
 EPGP = LibStub("AceAddon-3.0"):NewAddon(
-  "EPGP", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
+  "EPGP", "AceEvent-3.0", "AceConsole-3.0")
 local EPGP = EPGP
 EPGP:SetDefaultModuleState(false)
 local modulePrototype = {
   IsDisabled = function (self, i) return not self:IsEnabled() end,
   SetEnabled = function (self, i, v)
-                 if v ~= self:IsEnabled() then
-                   if v then
-                     Debug("Enabling module: %s", self:GetName())
-                     self:Enable()
-                   else
-                     Debug("Disabling module: %s", self:GetName())
-                     self:Disable()
-                   end
+                 if v then
+                   Debug("Enabling module: %s", self:GetName())
+                   self:Enable()
+                 else
+                   Debug("Disabling module: %s", self:GetName())
+                   self:Disable()
                  end
                  self.db.profile.enabled = v
                end,
@@ -807,41 +805,35 @@ function EPGP:RAID_ROSTER_UPDATE()
   DestroyStandings()
 end
 
-function CheckForGuildInfo()
-  local guild = GetGuildInfo("player")
-  if type(guild) == "string" then
-    if db:GetCurrentProfile() ~= guild then
-      db:SetProfile(guild)
-    end
-    EPGP.db = db
-    -- Enable all modules that are supposed to be enabled
-    for name, module in EPGP:IterateModules() do
-      if module.db.profile.enabled or not module.dbDefaults then
-        Debug("Enabling module (startup): %s", name)
-        module:Enable()
-      end
-    end
-    EPGP:CancelTimer(EPGP.GetGuildInfoTimer)
-    EPGP.GetGuildInfoTimer = nil
-    -- Check if we have a recurring award we can resume
-    if EPGP:CanResumeRecurringEP() then
-      EPGP:ResumeRecurringEP()
-    else
-      EPGP:CancelRecurringEP()
-    end
-  end
-end
-
 function EPGP:GUILD_ROSTER_UPDATE()
   if not IsInGuild() then
     for name, module in EPGP:IterateModules() do
       module:Disable()
     end
+    EPGP.db = nil
   else
     local guild = GetGuildInfo("player")
-    if type(guild) == "string" then
+    if not type(guild) == "string" then
+      GuildRoster()
+    else
       if db:GetCurrentProfile() ~= guild then
         db:SetProfile(guild)
+      end
+      if not EPGP.db then
+        EPGP.db = db
+        -- Enable all modules that are supposed to be enabled
+        for name, module in EPGP:IterateModules() do
+          if module.db.profile.enabled or not module.dbDefaults then
+            Debug("Enabling module (startup): %s", name)
+            module:Enable()
+          end
+        end
+        -- Check if we have a recurring award we can resume
+        if EPGP:CanResumeRecurringEP() then
+          EPGP:ResumeRecurringEP()
+        else
+          EPGP:CancelRecurringEP()
+        end
       end
     end
   end
@@ -857,9 +849,7 @@ function EPGP:OnEnable()
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
 
-  if IsInGuild() then
-    self.GetGuildInfoTimer = self:ScheduleRepeatingTimer(CheckForGuildInfo, 1)
-  end
+  GuildRoster()
 end
 
 if version == '(development)' then
