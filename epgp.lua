@@ -128,10 +128,32 @@
 -- the new value.
 --
 
+local Debug = LibStub("LibDebug-1.0")
+local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
+local GS = LibStub("LibGuildStorage-1.0")
+
 EPGP = LibStub("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0", "AceTimer-3.0")
 local EPGP = EPGP
 EPGP:SetDefaultModuleState(false)
+local modulePrototype = {
+  IsDisabled = function (self, i) return not self:IsEnabled() end,
+  SetEnabled = function (self, i, v)
+                 if v ~= self:IsEnabled() then
+                   if v then
+                     Debug("Enabling module: %s", self:GetName())
+                     self:Enable()
+                   else
+                     Debug("Disabling module: %s", self:GetName())
+                     self:Disable()
+                   end
+                 end
+                 self.db.profile.enabled = v
+               end,
+  GetDBVar = function (self, i) return self.db.profile[i[#i]] end,
+  SetDBVar = function (self, i, v) self.db.profile[i[#i]] = v end,
+}
+EPGP:SetDefaultModulePrototype(modulePrototype)
 
 local version = GetAddOnMetadata('EPGP', 'Version')
 if not version or #version == 0 then
@@ -139,15 +161,11 @@ if not version or #version == 0 then
 end
 EPGP.version = version
 
-local GS = LibStub("LibGuildStorage-1.0")
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not EPGP.callbacks then
   EPGP.callbacks = CallbackHandler:New(EPGP)
 end
 local callbacks = EPGP.callbacks
-
-local Debug = LibStub("LibDebug-1.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local global_config = {}
 local ep_data = {}

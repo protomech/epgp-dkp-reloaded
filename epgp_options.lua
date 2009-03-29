@@ -1,40 +1,6 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local Debug = LibStub("LibDebug-1.0")
 
-function EPGP:ModuleEnabled(i)
-  local m = self:GetModule(i[#i-1])
-  return m:IsEnabled()
-end
-
-function EPGP:ModuleDisabled(i)
-  local m = self:GetModule(i[#i-1])
-  return not m:IsEnabled()
-end
-
-function EPGP:ModuleSetEnabledState(i, v)
-  local m = self:GetModule(i[#i-1])
-  if v ~= m:IsEnabled() then
-    if v then
-      Debug("Enabling module: %s", m:GetName())
-      m:Enable()
-    else
-      Debug("Disabling module: %s", m:GetName())
-      m:Disable()
-    end
-  end
-  m.db.profile.enabled = v
-end
-
-function EPGP:ModuleGetDBVar(i)
-  local m = self:GetModule(i[#i-1])
-  return m.db.profile[i[#i]]
-end
-
-function EPGP:ModuleSetDBVar(i, v)
-  local m = self:GetModule(i[#i-1])
-  m.db.profile[i[#i]] = v
-end
-
 function EPGP:SetupOptions()
   local options = {
     name = "EPGP",
@@ -81,10 +47,10 @@ function EPGP:SetupOptions()
         if o.disabled then
           local old_disabled = o.disabled
           o.disabled = function(i)
-                         return old_disabled(i) or EPGP:ModuleDisabled(i)
+                         return old_disabled(i) or m:IsDisabled()
                        end
         else
-          o.disabled = "ModuleDisabled"
+          o.disabled = "IsDisabled"
         end
       end
       -- Add the enable/disable option.
@@ -93,20 +59,21 @@ function EPGP:SetupOptions()
         type = "toggle",
         width = "full",
         name = ENABLE,
-        get = "ModuleEnabled",
-        set = "ModuleSetEnabledState",
+        get = "IsEnabled",
+        set = "SetEnabled",
       }
     end
     if m.optionsName then
       -- Add this module's options.
       options.args[name] = {
+        handler = m,
         order = 100,
         type = "group",
         name = m.optionsName,
         desc = m.optionsDesc,
         args = m.optionsArgs,
-        get = "ModuleGetDBVar",
-        set = "ModuleSetDBVar",
+        get = "GetDBVar",
+        set = "SetDBVar",
       }
     end
   end
