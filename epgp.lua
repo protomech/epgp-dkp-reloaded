@@ -353,6 +353,7 @@ local function ParseGuildInfo(callback, info)
 end
 
 local function DeleteState(name)
+  ignored[name] = nil
   -- If this is was an alt we need to fix the alts state
   local main = main_data[name]
   if main then
