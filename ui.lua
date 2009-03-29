@@ -3,7 +3,7 @@
 local mod = EPGP:NewModule("ui")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
-local gptooltip = EPGP:GetModule("gptooltip")
+local GP = LibStub("LibGearPoints-1.0")
 
 local BUTTON_TEXT_PADDING = 20
 local BUTTON_HEIGHT = 22
@@ -426,15 +426,19 @@ end
 
 local function EPGPSideFrameGPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
-  for i=1,gptooltip:GetNumRecentItems() do
+  for i=1,GP:GetNumRecentItems() do
     local info = UIDropDownMenu_CreateInfo()
-    local _, itemLink = GetItemInfo(gptooltip:GetRecentItemID(i))
+    local itemLink = GP:GetRecentItemLink(i)
     info.text = itemLink
     info.arg1 = itemLink
     info.func = function(self, arg1)
                   UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                  local text = gptooltip:GetGPValueText(arg1)
-                  parent.editBox:SetText(text)
+                  local gp1, gp2 = GP:GetValue(itemLink)
+                  if gp2 then
+                    parent.editBox:SetText(L["%d or %d"]:format(gp1, gp2))
+                  else
+                    parent.editBox:SetText(tostring(gp1))
+                  end
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()
                 end

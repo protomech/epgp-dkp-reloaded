@@ -1,6 +1,6 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
+local GP = LibStub("LibGearPoints-1.0")
 local GS = LibStub("LibGuildStorage-1.0")
-local gptooltip = EPGP:GetModule("gptooltip")
 
 local function SaveAnchors(t, ...)
   for n=1,select('#', ...) do
@@ -54,8 +54,12 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
              self.button1:SetPoint(
                "TOPRIGHT", self.itemFrame, "BOTTOMRIGHT", 85, -6)
 
-             local text = gptooltip:GetGPValueText(self.itemFrame.link)
-             self.editBox:SetText(text)
+             local gp1, gp2 = GP:GetValue(self.itemFrame.link)
+             if gp2 then
+               self.editBox:SetText(L["%d or %d"]:format(gp1, gp2))
+             else
+               self.editBox:SetText(tostring(gp1))
+             end
              self.editBox:HighlightText()
            end,
 

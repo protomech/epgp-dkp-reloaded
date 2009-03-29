@@ -45,10 +45,10 @@ function mod:PopLootQueue()
     return
   end
 
-  local player, itemID = unpack(loot_queue[1])
+  local player, item = unpack(loot_queue[1])
 
   -- In theory this should never happen.
-  if not player or not itemID then
+  if not player or not item then
     tremove(loot_queue, 1)
     return
   end
@@ -60,7 +60,7 @@ function mod:PopLootQueue()
 
   tremove(loot_queue, 1)
 
-  local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(itemID)
+  local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(item)
   local r, g, b = GetItemQualityColor(itemRarity)
 
   local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
@@ -84,7 +84,7 @@ local function LootReceived(event_name, player, itemLink, quantity)
 
     if ignored_items[itemID] then return end
 
-    tinsert(loot_queue, {player, itemID, quantity})
+    tinsert(loot_queue, {player, itemLink, quantity})
     if not timer then
       timer = mod:ScheduleRepeatingTimer("PopLootQueue", 1)
     end
