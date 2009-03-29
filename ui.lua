@@ -236,6 +236,10 @@ local function CreateEPGPLogFrame()
   local f = CreateFrame("Frame", "EPGPLogFrame", EPGPFrame)
   table.insert(SIDEFRAMES, f)
 
+  f:SetResizable(true)
+  f:SetMinResize(435, 435)
+  f:SetMaxResize(800, 435)
+
   f:Hide()
   f:SetWidth(435)
   f:SetHeight(435)
@@ -260,6 +264,18 @@ local function CreateEPGPLogFrame()
       edgeSize = 32,
       insets = { left=11, right=12, top=12, bottom=11 }
     })
+
+  local sizer = CreateFrame("Button", nil, f)
+  sizer:SetHeight(16)
+  sizer:SetWidth(16)
+  sizer:SetNormalTexture("Interface\\Buttons\\CancelButton-Highlight")
+  sizer:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
+  sizer:SetScript("OnMouseDown",
+                  function (self)
+                    self:GetParent():StartSizing("BOTTOMRIGHT")
+                  end)
+  sizer:SetScript("OnMouseUp",
+                  function (self) self:GetParent():StopMovingOrSizing() end)
 
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3)
@@ -302,16 +318,14 @@ local function CreateEPGPLogFrame()
                  function (self, value)
                    EPGP:GetModule("log"):UndoLastAction()
                  end)
-  function undo:SetCurrentState()
-    if EPGP:GetModule("log"):CanUndo() then
-      self:Enable()
-    else
-      self:Disable()
-    end
-  end
-  EPGP:GetModule("log").RegisterCallback(
-    undo, "LogChanged", "SetCurrentState")
-  GS.RegisterCallback(undo, "StateChanged", "SetCurrentState")
+  undo:SetScript("OnUpdate",
+                 function (self)
+                   if EPGP:GetModule("log"):CanUndo() then
+                     self:Enable()
+                   else
+                     self:Disable()
+                   end
+                 end)
 
   local redo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   redo:SetNormalFontObject("GameFontNormalSmall")
@@ -325,21 +339,20 @@ local function CreateEPGPLogFrame()
                  function (self, value)
                    EPGP:GetModule("log"):RedoLastUndo()
                  end)
-  function redo:SetCurrentState()
-    if EPGP:GetModule("log"):CanRedo() then
-      self:Enable()
-    else
-      self:Disable()
-    end
-  end
-  EPGP:GetModule("log").RegisterCallback(
-    redo, "LogChanged", "SetCurrentState")
-  GS.RegisterCallback(redo, "StateChanged", "SetCurrentState")
+  redo:SetScript("OnUpdate",
+                 function (self)
+                   if EPGP:GetModule("log"):CanRedo() then
+                     self:Enable()
+                   else
+                     self:Disable()
+                   end
+                 end)
 
   local scrollParent = CreateFrame("Frame", nil, f)
-  scrollParent:SetWidth(f:GetWidth() - 20)
-  scrollParent:SetHeight(f:GetHeight() - 65)
-  scrollParent:SetPoint("TOPLEFT", f, "TOPLEFT", 11, -32)
+  scrollParent:SetPoint("TOP", t, "TOP", 0, -16)
+  scrollParent:SetPoint("BOTTOM", redo, "TOP", 0, 0)
+  scrollParent:SetPoint("LEFT", f, "LEFT", 16, 0)
+  scrollParent:SetPoint("RIGHT", f, "RIGHT", -16, 0)
   scrollParent:SetBackdrop(
     {
       bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
