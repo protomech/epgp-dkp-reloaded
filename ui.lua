@@ -268,13 +268,28 @@ local function CreateEPGPLogFrame()
   local sizer = CreateFrame("Button", nil, f)
   sizer:SetHeight(16)
   sizer:SetWidth(16)
-  sizer:SetNormalTexture("Interface\\Buttons\\CancelButton-Highlight")
   sizer:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 0)
   sizer:SetScript(
     "OnMouseDown",
     function (self) self:GetParent():StartSizing("BOTTOMRIGHT") end)
   sizer:SetScript(
     "OnMouseUp", function (self) self:GetParent():StopMovingOrSizing() end)
+
+  local line1 = sizer:CreateTexture(nil, "BACKGROUND")
+  line1:SetWidth(14)
+  line1:SetHeight(14)
+  line1:SetPoint("BOTTOMRIGHT", -8, 8)
+  line1:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+  local x = 0.1 * 14/17
+  line1:SetTexCoord(0.05 - x, 0.5, 0.05, 0.5 + x, 0.05, 0.5 - x, 0.5 + x, 0.5)
+
+  local line2 = sizer:CreateTexture(nil, "BACKGROUND")
+  line2:SetWidth(8)
+  line2:SetHeight(8)
+  line2:SetPoint("BOTTOMRIGHT", -8, 8)
+  line2:SetTexture("Interface\\Tooltips\\UI-Tooltip-Border")
+  local x = 0.1 * 8/17
+  line2:SetTexCoord(0.05 - x, 0.5, 0.05, 0.5 + x, 0.05, 0.5 - x, 0.5 + x, 0.5)
 
   local cb = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   cb:SetPoint("TOPRIGHT", f, "TOPRIGHT", -2, -3)
@@ -284,7 +299,7 @@ local function CreateEPGPLogFrame()
   export:SetHighlightFontObject("GameFontHighlightSmall")
   export:SetDisabledFontObject("GameFontDisableSmall")
   export:SetHeight(BUTTON_HEIGHT)
-  export:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 9, 13)
+  export:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 17, 13)
   export:SetText(L["Export"])
   export:SetWidth(export:GetTextWidth() + BUTTON_TEXT_PADDING)
   export:SetScript(
@@ -310,7 +325,7 @@ local function CreateEPGPLogFrame()
   undo:SetHeight(BUTTON_HEIGHT)
   undo:SetText(L["Undo"])
   undo:SetWidth(undo:GetTextWidth() + BUTTON_TEXT_PADDING)
-  undo:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -9, 13)
+  undo:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -17, 13)
   undo:SetScript(
     "OnClick",
     function (self, value) EPGP:GetModule("log"):UndoLastAction() end)
