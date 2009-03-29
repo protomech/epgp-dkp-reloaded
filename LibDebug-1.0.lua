@@ -16,8 +16,10 @@ local isDebugging = lib.isDebugging and lib:isDebugging() or false
 -- The main frame.
 frame:EnableMouse()
 
+frame:SetMinResize(300, 100)
+frame:SetWidth(400)
 frame:SetHeight(400)
-frame:SetWidth(500)
+
 frame:SetPoint("CENTER", UIParent)
 frame:SetFrameStrata("TOOLTIP")
 frame:SetBackdrop(
@@ -132,7 +134,7 @@ function lib:EnableDebugging(val)
     mt.__call = lib.Debug
     frame:Show()
   end
-  isDebugging = val
+  isDebugging = val ~= false
 end
 
 frame:Hide()
