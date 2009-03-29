@@ -1101,6 +1101,7 @@ local function CreateEPGPFrameStandings()
 
   -- Make the scrollbar
   local rowFrame = tabl.rowFrame
+  rowFrame.needUpdate = true
   local scrollBar = CreateFrame("ScrollFrame", "EPGPScrollFrame",
                                 rowFrame, "FauxScrollFrameTemplateLight")
   scrollBar:SetWidth(rowFrame:GetWidth())
