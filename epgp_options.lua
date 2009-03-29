@@ -81,10 +81,10 @@ function EPGP:SetupOptions()
         if o.disabled then
           local old_disabled = o.disabled
           o.disabled = function(i)
-                         return old_disabled(i) or ModuleDisabled(i)
+                         return old_disabled(i) or EPGP:ModuleDisabled(i)
                        end
         else
-          o.disabled = ModuleDisabled
+          o.disabled = "ModuleDisabled"
         end
       end
       -- Add the enable/disable option.
