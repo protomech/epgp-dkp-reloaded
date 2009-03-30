@@ -11,39 +11,39 @@ local Debug = LibStub("LibDebug-1.0")
 
 -- This is the high price equipslot multiplier.
 local EQUIPSLOT_MULTIPLIER_1 = {
-  ["INVTYPE_HEAD"] = 1,
-  ["INVTYPE_NECK"] = 0.5,
-  ["INVTYPE_SHOULDER"] = 0.75,
-  ["INVTYPE_CHEST"] = 1,
-  ["INVTYPE_ROBE"] = 1,
-  ["INVTYPE_WAIST"] = 0.75,
-  ["INVTYPE_LEGS"] = 1,
-  ["INVTYPE_FEET"] = 0.75,
-  ["INVTYPE_WRIST"] = 0.5,
-  ["INVTYPE_HAND"] = 0.75,
-  ["INVTYPE_FINGER"] = 0.5,
-  ["INVTYPE_TRINKET"] = 0.75,
-  ["INVTYPE_CLOAK"] = 0.5,
-  ["INVTYPE_WEAPON"] = 1.5,
-  ["INVTYPE_SHIELD"] = 1.5,
-  ["INVTYPE_2HWEAPON"] = 2,
-  ["INVTYPE_WEAPONMAINHAND"] = 1.5,
-  ["INVTYPE_WEAPONOFFHAND"] = 0.5,
-  ["INVTYPE_HOLDABLE"] = 0.5,
-  ["INVTYPE_RANGED"] = 1.5,
-  ["INVTYPE_RANGEDRIGHT"] = 1.5,
-  ["INVTYPE_THROWN"] = 0.5,
-  ["INVTYPE_RELIC"] = 0.5
+  INVTYPE_HEAD = 1,
+  INVTYPE_NECK = 0.5,
+  INVTYPE_SHOULDER = 0.75,
+  INVTYPE_CHEST = 1,
+  INVTYPE_ROBE = 1,
+  INVTYPE_WAIST = 0.75,
+  INVTYPE_LEGS = 1,
+  INVTYPE_FEET = 0.75,
+  INVTYPE_WRIST = 0.5,
+  INVTYPE_HAND = 0.75,
+  INVTYPE_FINGER = 0.5,
+  INVTYPE_TRINKET = 0.75,
+  INVTYPE_CLOAK = 0.5,
+  INVTYPE_WEAPON = 1.5,
+  INVTYPE_SHIELD = 1.5,
+  INVTYPE_2HWEAPON = 2,
+  INVTYPE_WEAPONMAINHAND = 1.5,
+  INVTYPE_WEAPONOFFHAND = 0.5,
+  INVTYPE_HOLDABLE = 0.5,
+  INVTYPE_RANGED = 1.5,
+  INVTYPE_RANGEDRIGHT = 1.5,
+  INVTYPE_THROWN = 0.5,
+  INVTYPE_RELIC = 0.5
 }
 
 -- This is the low price equipslot multiplier (off hand weapons, non
 -- tanking shields).
 local EQUIPSLOT_MULTIPLIER_2 = {
-  ["INVTYPE_WEAPON"] = 0.5,
-  ["INVTYPE_SHIELD"] = 0.5,
-  ["INVTYPE_2HWEAPON"] = 1,
-  ["INVTYPE_RANGED"] = 0.5,
-  ["INVTYPE_RANGEDRIGHT"] = 0.5,
+  INVTYPE_WEAPON = 0.5,
+  INVTYPE_SHIELD = 0.5,
+  INVTYPE_2HWEAPON = 1,
+  INVTYPE_RANGED = 0.5,
+  INVTYPE_RANGEDRIGHT = 0.5,
 }
 
 --Used to display GP values directly on tier tokens
@@ -214,16 +214,20 @@ function lib:GetValue(item)
   end
 
   -- Non-rare and above items do not have GP value
-  if not rarity or rarity < 2 then return end
+  if not rarity or rarity < 2 then
+    return nil, nil, level, rarity, equipLoc
+  end
 
   UpdateRecentLoot(itemLink)
 
   local slot_multiplier1 = EQUIPSLOT_MULTIPLIER_1[equipLoc]
   local slot_multiplier2 = EQUIPSLOT_MULTIPLIER_2[equipLoc]
 
-  if not slot_multiplier1 then return end
+  if not slot_multiplier1 then
+    return nil, nil, level, rarity, equipLoc
+  end
   local gp_base = 0.483 * 2 ^ (level/26 + (rarity - 4))
   local high = math.floor(gp_base * slot_multiplier1)
   local low = slot_multiplier2 and math.floor(gp_base * slot_multiplier2) or nil
-  return high, low, level
+  return high, low, level, rarity, equipLoc
 end
