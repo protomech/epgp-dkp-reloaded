@@ -494,3 +494,4 @@ function lib:DebugTestItem(itemID)
 end
 
 -- /script LibStub("LibItemUtils-1.0"):DebugTest()
+-- /script LibStub("LibItemUtils-1.0"):CacheItem(32386, function() end)
