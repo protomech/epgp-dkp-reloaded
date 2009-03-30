@@ -55,10 +55,12 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
                "TOPRIGHT", self.itemFrame, "BOTTOMRIGHT", 85, -6)
 
              local gp1, gp2 = GP:GetValue(self.itemFrame.link)
-             if gp2 then
-               self.editBox:SetText(L["%d or %d"]:format(gp1, gp2))
-             else
+             if not gp1 then
+               self.editBox:SetText("")
+             elseif not gp2 then
                self.editBox:SetText(tostring(gp1))
+             else
+               self.editBox:SetText(L["%d or %d"]:format(gp1, gp2))
              end
              self.editBox:HighlightText()
            end,

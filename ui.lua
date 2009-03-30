@@ -449,10 +449,12 @@ local function EPGPSideFrameGPDropDown_Initialize(dropDown)
     info.func = function(self, arg1)
                   UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
                   local gp1, gp2 = GP:GetValue(itemLink)
-                  if gp2 then
-                    parent.editBox:SetText(L["%d or %d"]:format(gp1, gp2))
-                  else
+                  if not gp1 then
+                    parent.editBox:SetText("")
+                  elseif not gp2 then
                     parent.editBox:SetText(tostring(gp1))
+                  else
+                    parent.editBox:SetText(L["%d or %d"]:format(gp1, gp2))
                   end
                   parent.editBox:SetFocus()
                   parent.editBox:HighlightText()
