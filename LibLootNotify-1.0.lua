@@ -80,7 +80,7 @@ function lib:DebugTest()
                LOOT_ITEM_SELF:format(select(2, GetItemInfo(32386))),
                '', '', '', '')
   EmulateEvent('CHAT_MSG_LOOT',
-               LOOT_ITEM_SELF:format(select(2, GetItemInfo(40753))),
+               LOOT_ITEM_SELF:format(select(2, GetItemInfo(43954))),
                '', '', '', '')
 end
 
