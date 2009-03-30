@@ -76,6 +76,12 @@ function lib:DebugTest()
                LOOT_ITEM:format(UnitName('player'),
                                 select(2, GetItemInfo(40592))),
                '', '', '', '')
+  EmulateEvent('CHAT_MSG_LOOT',
+               LOOT_ITEM_SELF:format(select(2, GetItemInfo(32386))),
+               '', '', '', '')
+  EmulateEvent('CHAT_MSG_LOOT',
+               LOOT_ITEM_SELF:format(select(2, GetItemInfo(40753))),
+               '', '', '', '')
 end
 
 -- /script LibStub("LibLootNotify-1.0"):DebugTest()
