@@ -47,8 +47,4 @@ def main():
   file.close()
 
 if __name__ == "__main__":
-  logging.basicConfig(format=("%(asctime)s %(levelname)s %(filename)s:"
-                              "%(lineno)s %(message)s "))
-  logging.getLogger().setLevel(logging.INFO)
-
   sys.exit(main())
