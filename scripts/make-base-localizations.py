@@ -12,19 +12,13 @@ import os.path
 import re
 import sys
 
-def FindEPGPRootDir():
-  if os.path.isfile('epgp.toc'):
-    return '.'
-  elif os.path.isfile('../epgp.toc'):
-    return '..'
-  else:
-    raise Exception, 'EPGP root not found!'
+import util
 
 _LOCALIZED_STRING_RE = re.compile(r'L\[.*\]')
 
 def main():
   strings = []
-  base_dir = FindEPGPRootDir()
+  base_dir = util.FindEPGPRootDir()
   logging.info('Extracting localization strings from files')
   for file in chain(iglob(os.path.join(base_dir, '*.lua')),
                     iglob(os.path.join(base_dir, '*.xml'))):

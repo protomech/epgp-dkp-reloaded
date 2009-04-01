@@ -14,6 +14,8 @@ import re
 import sys
 import urllib2
 
+import util
+
 # The multipart encoder
 def _multipart_encode(vars):
   CRLF = '\r\n'
@@ -88,7 +90,10 @@ def GetLocalization(locale):
 def main():
   for locale in non_enUS_locales:
     localization = GetLocalization(locale)
-    filename = 'localization.%s.lua' % locale
+    base_dir = util.FindEPGPRootDir()
+    filename = os.path.join(base_dir,
+                            'localization',
+                            'localization.%s.lua' % locale)
     logging.info('Writing %s' % filename)
     file = open(filename, 'w')
     file.writelines([
