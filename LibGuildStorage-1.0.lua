@@ -74,8 +74,10 @@ local SetState
 local state = "STALE_WAITING_FOR_ROSTER_UPDATE"
 local initialized
 local index
--- name -> {note=, pending_note=, seen=, class=}
+-- name -> {note=, seen=, class=}
 local cache = {}
+-- pending notes to write out
+local pending_note = {}
 local guild_info = ""
 
 function lib:GetNote(name)
@@ -86,7 +88,7 @@ end
 function lib:SetNote(name, note)
   local e = cache[name]
   if e then
-    if e.pending_note then
+    if pending_note[name] then
       DEFAULT_CHAT_FRAME:AddMessage(
         string.format("Ignoring attempt to set note before flushing pending "..
                       "note for %s! "..
@@ -95,10 +97,10 @@ function lib:SetNote(name, note)
                       "lead to this on http://epgp.googlecode.com",
                     tostring(name),
                     tostring(e.note),
-                    tostring(e.pending_note),
+                    tostring(pending_note[name]),
                     tostring(note)))
     else
-      e.pending_note = note
+      pending_note[name] = note
       SetState("FLUSHING")
     end
     return e.note
@@ -254,6 +256,7 @@ local function Frame_OnUpdate(self, elapsed)
     local name, _, _, _, _, _, _, note, _, _, class = GetGuildRosterInfo(i)
     if name then
       local entry = cache[name]
+      local pending = pending_note[name]
       if not entry then
         entry = {}
         cache[name] = entry
@@ -271,15 +274,14 @@ local function Frame_OnUpdate(self, elapsed)
         if initialized then
           callbacks:Fire("GuildNoteChanged", name, note)
         end
-        if entry.pending_note then
-          callbacks:Fire("InconsistentNote",
-                         name, note, entry.note, entry.pending_note)
+        if pending then
+          callbacks:Fire("InconsistentNote", name, note, entry.note, pending)
         end
       end
 
-      if entry.pending_note then
-        GuildRosterSetOfficerNote(i, entry.pending_note)
-        entry.pending_note = nil
+      if pending then
+        GuildRosterSetOfficerNote(i, pending)
+        pending_note[name] = nil
       end
     end
   end
@@ -308,14 +310,7 @@ local function Frame_OnUpdate(self, elapsed)
     if state == "STALE" then
       SetState("CURRENT")
     elseif state == "FLUSHING" then
-      local flushed = true
-      for name, t in pairs(cache) do
-        if t.pending_note then
-          flushed = false
-          break
-        end
-      end
-      if flushed then
+      if not next(pending_note) then
         SetState("STALE_WAITING_FOR_ROSTER_UPDATE")
         SendAddonMessage("EPGP", "CHANGES_FLUSHED", "GUILD")
       end
