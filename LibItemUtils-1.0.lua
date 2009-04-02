@@ -69,7 +69,7 @@ All item types we care about:
     Wands = true,
 --]]
 
-local dissallowed = {
+local disallowed = {
   DEATHKNIGHT = {
     Shields = true,
 
@@ -275,7 +275,7 @@ function lib:ClassCanUse(class, item)
 
   -- Check if players can equip this item.
   subType = LBIR[subType]
-  if dissallowed[class][subType] then
+  if disallowed[class][subType] then
     return false
   end
 
