@@ -114,7 +114,7 @@ def main(argv=None):
     sys.path.append(os.path.join(os.path.dirname(__file__), 'googlecode'))
     from googlecode_upload import upload_find_auth
     status, reason, url = upload_find_auth(
-      zip_name, 'epgp', 'epgp-%s' % version, 'Featured')
+      zip_name, 'epgp', 'epgp-%s' % version, ['Featured'])
     if url:
       print('The zip was uploaded successfully.')
       print('URL: %s' % url)
