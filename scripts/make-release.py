@@ -101,6 +101,7 @@ def main(argv=None):
   for file in ListFiles(stage_dir):
     arc_name = 'epgp' + file[len(stage_dir):]
     zip_file.write(file, arc_name, compress_type=zipfile.ZIP_DEFLATED)
+  zip_file.close()
 
   r = raw_input('Do you want to import this release to the repository [y/N]? ')
   if r in ('y', 'Y'):
