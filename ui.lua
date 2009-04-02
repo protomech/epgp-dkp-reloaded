@@ -414,8 +414,10 @@ local function CreateEPGPLogFrame()
     local offset = FauxScrollFrame_GetOffset(scrollBar)
     local numRecords = log:GetNumRecords()
     local numDisplayedRecords = math.min(numLogRecordFrames, numRecords - offset)
+    local recordWidth = scrollParent:GetWidth() - 35
     for i=1,numLogRecordFrames do
       local record = getglobal("EPGPLogRecordFrame"..i)
+      record:SetWidth(recordWidth)
       local logIndex = i + offset - 1
       if logIndex < numRecords then
         record:SetText(log:GetLogRecord(logIndex))
@@ -431,6 +433,7 @@ local function CreateEPGPLogFrame()
   end
 
   EPGPLogFrame:SetScript("OnShow", LogChanged)
+  EPGPLogFrame:SetScript("OnSizeChanged", LogChanged)
   scrollBar:SetScript(
     "OnVerticalScroll",
     function(self, value)
