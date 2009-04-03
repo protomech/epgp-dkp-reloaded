@@ -312,6 +312,46 @@ function lib:ClassesThatCannotUse(item, t)
   return t
 end
 
+local slot_table = {
+  INVTYPE_HEAD = {"HeadSlot", nil},
+  INVTYPE_NECK = {"NeckSlot", nil},
+  INVTYPE_SHOULDER = {"ShoulderSlot", nil},
+  INVTYPE_CLOAK = {"BackSlot", nil},
+  INVTYPE_CHEST = {"ChestSlot", nil},
+  INVTYPE_WRIST	= {"WristSlot", nil},
+  INVTYPE_HAND = {"HandsSlot", nil},
+  INVTYPE_WAIST = {"WaistSlot", nil},
+  INVTYPE_LEGS = {"LegsSlot", nil},
+  INVTYPE_FEET = {"FeetSlot", nil},
+  INVTYPE_SHIELD = {"SecondaryHandSlot", nil},
+  INVTYPE_ROBE = {"ChestSlot", nil},
+  INVTYPE_2HWEAPON = {"MainHandSlot", "SecondaryHandSlot"},
+  INVTYPE_WEAPONMAINHAND = {"MainHandSlot", nil},
+  INVTYPE_WEAPONOFFHAND	= {"SecondaryHandSlot", "MainHandSlot"},
+  INVTYPE_WEAPON = {"MainHandSlot","SecondaryHandSlot"},
+  INVTYPE_THROWN = {"RangedSlot", nil},
+  INVTYPE_RANGED = {"RangedSlot", nil},
+  INVTYPE_RANGEDRIGHT = {"RangedSlot", nil},
+  INVTYPE_FINGER = {"Finger0Slot", "Finger1Slot"},
+  INVTYPE_HOLDABLE = {"SecondaryHandSlot", "MainHandSlot"},
+  INVTYPE_TRINKET = {"Trinket0Slot", "Trinket1Slot"}
+}
+
+function lib:ItemsForSlot(invtype)
+  local t = slot_table[invtype]
+  if not t then return end
+
+  local first, second = unpack(t)
+  -- Translate to slot ids
+  first = first and GetInventorySlotInfo(first)
+  second = second and GetInventorySlotInfo(second)
+  -- Translate to item links
+  first = first and GetInventoryItemLink("player", first)
+  second = second and GetInventoryItemLink("player", second)
+
+  return first, second
+end
+
 -- binding is one of: ITEM_BIND_ON_PICKUP, ITEM_BIND_ON_EQUIP, ITEM_BIND_ON_USE, ITEM_BIND_TO_ACCOUNT
 function lib:IsBinding(binding, item)
   local link = select(2, GetItemInfo(item))
@@ -477,6 +517,17 @@ local items = {
 function lib:DebugTest()
   for _, itemID in ipairs(items) do
     self:CacheItem(itemID, self.DebugTestItem, self, itemID)
+  end
+
+  for slot, _ in pairs(slot_table) do
+    local first, second = self:ItemsForSlot(slot)
+    if first then
+      if second then
+        Debug("%s: %s or %s", slot, tostring(first), tostring(second))
+      else
+        Debug("%s: %s", slot, tostring(first))
+      end
+    end
   end
 end
 
