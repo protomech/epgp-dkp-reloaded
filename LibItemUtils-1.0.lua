@@ -37,6 +37,10 @@ local bindingFrame = getglobal(tooltip:GetName().."TextLeft2")
 local restrictedClassFrame = getglobal(tooltip:GetName().."TextLeft3")
 tooltip:Hide();
 
+-------------
+-- ITEM USAGE
+-------------
+
 --[[
 
 All item types we care about:
@@ -312,6 +316,10 @@ function lib:ClassesThatCannotUse(item, t)
   return t
 end
 
+-----------------
+-- ITEMS FOR SLOT
+-----------------
+
 local slot_table = {
   INVTYPE_HEAD = {"HeadSlot", nil},
   INVTYPE_NECK = {"NeckSlot", nil},
@@ -352,7 +360,12 @@ function lib:ItemsForSlot(invtype)
   return first, second
 end
 
--- binding is one of: ITEM_BIND_ON_PICKUP, ITEM_BIND_ON_EQUIP, ITEM_BIND_ON_USE, ITEM_BIND_TO_ACCOUNT
+----------------
+-- ITEM BINDINGS
+----------------
+
+-- binding is one of: ITEM_BIND_ON_PICKUP, ITEM_BIND_ON_EQUIP,
+-- ITEM_BIND_ON_USE, ITEM_BIND_TO_ACCOUNT
 function lib:IsBinding(binding, item)
   local link = select(2, GetItemInfo(item))
   tooltip:SetOwner(UIParent, "ANCHOR_NONE")
@@ -375,9 +388,9 @@ function lib:IsBoE(item)
   return lib:IsBinding(ITEM_BIND_ON_EQUIP, item)
 end
 
---[[###############################################--
-          ITEMCACHER STUFF
---###############################################]]--
+--------------
+-- ITEMCACHING
+--------------
 
 -- Reuse or create a table to store the lookup queue in
 lib.itemQueue = lib.itemQueue or {}
@@ -438,10 +451,14 @@ local function LookupItems(frame, elapsed)
 end
 frame:SetScript("OnUpdate", LookupItems)
 
---- Try to cache an item and call the callback function when the item is available
+--- Try to cache an item and call the callback function when the item
+--- is available
+--
 --  @param itemLink any itemLink in Hitem:1234 form
---  @param callback function pointer to the callback function that should be called when the item is available
---  @param ... a list of variables you would like to pass to the callback function.
+--  @param callback function pointer to the callback function that
+--  should be called when the item is available
+--  @param ... a list of variables you would like to pass to the
+--  callback function.
 --  @return boolean true if the item has been registered successfully
 function lib:CacheItem(itemLink, callback, ...)
   -- Reset the timeout for the itemQueue
@@ -468,9 +485,9 @@ function lib:CacheItem(itemLink, callback, ...)
   return true
 end
 
---[[###############################################--
-          UNIT TESTS
---###############################################]]--
+-------------
+-- UNIT TESTS
+-------------
 
 local items = {
   40558, -- Cloth
