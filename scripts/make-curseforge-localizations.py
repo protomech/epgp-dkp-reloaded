@@ -10,7 +10,6 @@ import cStringIO as StringIO
 import logging
 import mimetools
 import os.path
-import re
 import sys
 import urllib2
 
@@ -61,8 +60,6 @@ non_enUS_locales = [
   'zhTW',
 ]
 
-_TEXTAREA_RE = re.compile(r'(?si)<textarea[^>]*?>(.*?)</textarea>')
-
 def GetLocalization(locale):
   assert(locale in non_enUS_locales)
   params = {
@@ -74,18 +71,11 @@ def GetLocalization(locale):
     }
 
   logging.info('Fetching %s localization' % locale)
-  html = urllib2.urlopen(
-    'http://wow.curseforge.com/projects/epgp-dkp-reloaded/localization/export/',
+  localization = urllib2.urlopen(
+    'http://wow.curseforge.com/projects/epgp-dkp-reloaded/localization/export.txt',
     params).read()
 
-  # Remove all contents of script tags
-  logging.info('Grabbing localization from the html response')
-
-  localization = _TEXTAREA_RE.search(html)
-  if not localization:
-    raise Exception('Localization not found localization!')
-
-  return localization.group(1)
+  return localization
 
 def main():
   for locale in non_enUS_locales:
