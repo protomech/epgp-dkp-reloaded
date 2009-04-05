@@ -82,7 +82,7 @@ L["Resets EP and GP of all members of the guild. This will set all main toons' E
 L["Rollback EPGP"] = "EPGP Zur\195\188cksetzen"
 L["Rollbacks to the latest snapshot of EPGP taken at logout"] = "EPGP zum aktuellsten Stand vom letzten Logout zur\195\188cksetzen"
 L["Rollback to snapshot taken on %s?"] = "Zur\195\188cksetzen zum Stand vom %s?"
-L["%s: %+d EP (%s) to %s"] = "Copy  \009%s: %+d EP (%s) an %s"
+L["%s: %+d EP (%s) to %s"] = "%s: %+d EP (%s) an %s"
 L["%s: %+d GP (%s) to %s"] = "%s: %+d GP (%s) an %s"
 L["Sets automatic loot tracking threshold, to disable the popup on loot below this threshold quality."] = "W\195\164hle automatische Beuteverfolgungsschwelle um keine neues Fenster f\195\188r die Beuteverteilung unter dieser Qualit\195\164t anzuzeigen."
 -- L["Sets loot tracking threshold, to disable the popup on loot below this threshold quality."] = ""
