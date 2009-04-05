@@ -155,7 +155,7 @@ do
                 local nibble4 = byte3 % 16
                 
                 buffer[#buffer+1] = "\\u"
-                buffer[#buffer+1] = ("%04X"):format(nibble1 + nibble2 * 16 + nibble3 * 256 + nibble4 * 1024)
+                buffer[#buffer+1] = ("%04X"):format(nibble1 + nibble2 * 16 + nibble3 * 256 + nibble4 * 4096)
             
             else
                 error("Cannot serialize unicode greater than U+FFFF: %q"):format(self)
