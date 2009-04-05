@@ -1246,6 +1246,7 @@ local function CreateEPGPFrameStandings()
       "OnHide",
       function(self)
         self.name = nil
+        rowFrame.needUpdate = true
         UpdateStandings()
       end)
     rowFrame.needUpdate = nil
