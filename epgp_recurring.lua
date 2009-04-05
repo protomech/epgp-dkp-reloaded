@@ -89,7 +89,7 @@ function EPGP:CanResumeRecurringEP()
 
   -- Now check if we only missed at most one award period.
   local period_secs = vars.recurring_ep_period_mins * 60
-  if vars.next_award + period_secs < GetTime() then
+  if vars.next_award + period_secs < now or vars.next_award > now then
     return false
   end
   return true
