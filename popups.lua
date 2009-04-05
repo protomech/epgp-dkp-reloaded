@@ -160,7 +160,7 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
 
   OnUpdate = function(self, elapsed)
                local ep = tonumber(self.editBox:GetText())
-               if EPGP:CanIncEPBy("", ep) then
+               if EPGP:CanIncEPBy(self.reason, ep) then
                  self.button1:Enable()
                else
                  self.button1:Disable()
@@ -171,15 +171,6 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
                             self:GetParent().button1:Click()
                           end,
 
-  EditBoxOnTextChanged = function(self)
-                           local parent = self:GetParent()
-                           local ep = tonumber(parent.editBox:GetText())
-                           if EPGP:CanIncEPBy(parent.reason, ep) then
-                             parent.button1:Enable()
-                           else
-                             parent.button1:Disable()
-                           end
-                         end,
   EditBoxOnEscapePressed = function(self)
                              self:GetParent():Hide()
                            end,
