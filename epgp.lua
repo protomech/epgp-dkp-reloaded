@@ -645,6 +645,10 @@ function EPGP:IncEPBy(name, reason, amount, mass, undo)
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
+  if not ep then
+    self:Print(L["Ignoring EP change for unknown member %s"]:format(name))
+    return
+  end
   GS:SetNote(main or name, EncodeNote(ep + amount, gp))
   callbacks:Fire("EPAward", name, reason, amount, mass, undo)
   db.profile.last_awards[reason] = amount
@@ -671,6 +675,10 @@ function EPGP:IncGPBy(name, reason, amount, mass, undo)
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
+  if not ep then
+    self:Print(L["Ignoring GP change for unknown member %s"]:format(name))
+    return
+  end
   GS:SetNote(main or name, EncodeNote(ep, gp + amount))
   callbacks:Fire("GPAward", name, reason, amount, mass, undo)
 
