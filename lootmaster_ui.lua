@@ -15,15 +15,22 @@ local rows = {}
 local rowdata = {}
 local maxrows = 25
 
+-- This table defines all the columns and the formatting for the cells.
+-- Lets discuss whether we want this or not. The other option would be
+-- to stuff everything into separate functions. This table has the advantage
+-- of showing us how every cell is handled and allows us to tweak things quickly.
 local columns = {
   { text="C",          width=20,   name="class", align="CENTER",
-    popup="Click this column to sort by class."},
+    popup="Click this column to sort by class.",
+    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
 
   { text="Candidate",  width=80,   name="candidate",
-    popup="Click this column to sort by name of the candidate."},
+    popup="Click this column to sort by name of the candidate.",
+    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
 
   { text="Rank",       width=70,   name="guildrank",
-    popup="Click this column to sort by guildrank."},
+    popup="Click this column to sort by guildrank.",
+    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
 
   { text="Status",     width=90,   name="status",
     popup="Click this column to sort by response/status."},
@@ -49,6 +56,8 @@ local columns = {
 
 function mod:OnEnable()
   self:BuildUI()
+  
+  EPGP.RegisterCallback(self, "StandingsChanged", "UpdateTable")
 end
 
 --- TODO(mackatack) make a proper builder
@@ -151,6 +160,23 @@ function mod:BuildUI()
   lblItemInfo:SetPoint("TOP", lblItemLink, "TOP", 0, -5)
   lblItemInfo:SetVertexColor(1, 1, 1)
   lblItemInfo:SetText("GP 252 or 99, BoP, Lootmaster: Bushmaster")
+  
+  -- Create some data for the table
+  local lastRow
+  local num = GetNumGuildMembers(true)
+  
+  for i=1, num do
+    local name, guildrank, _, _, _, _, _, _, online = GetGuildRosterInfo(i)
+
+    tinsert(rowdata, {
+      name      = name,
+      guildrank = guildrank,
+      online    = online
+    })
+  end
+  self:SetTableNumItems(#rowdata)
+
+  self:UpdateTable()
 end
 
 function mod:CreateEPGPFrame()
@@ -260,22 +286,8 @@ function mod:CreateEPGPFrame()
   btnClose:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -8)
 
   self:CreateTable(f)
-
-  -- Create some data for the table
-  local lastRow
-  local num = GetNumGuildMembers(true)
-  self:SetTableNumItems(num)
-  for i=1, num do
-    local name, guildrank, _, _, _, _, _, _, online = GetGuildRosterInfo(i)
-
-    tinsert(rowdata, {
-      name      = name,
-      guildrank = guildrank,
-      online    = online
-    })
-  end
-
-  self:UpdateTable()
+  
+  f:SetScript("OnHide", ToggleOnlySideFrame)
 
   return f
 end
@@ -333,6 +345,17 @@ function mod:CreateTimeoutBar(parent)
   timerFrame:Show()
 
   return timerFrame
+end
+
+function mod:Call(func, ...)
+  if type(func) == 'string' then
+    func = mod[func]
+    if func then
+      func(mod, ...)
+    end
+  elseif func then
+    func(...)
+  end
 end
 
 function mod:SetTableNumItems(num)
@@ -408,8 +431,10 @@ function mod:UpdateRow(rowID, rowData, rowObj, rowNum)
   colObjs.roll:SetText(math.random(1, 99))
 end
 
-function mod:UpdateTable(offset)
-  local offset = offset or self.tableSlider:GetValue()
+function mod:UpdateTable()
+  if not self.table or not self.tableSlider then return end
+  
+  local offset = self.tableSlider:GetValue()
   local tableObj = self.table
 
   for rowNum=1, maxrows do
@@ -433,6 +458,8 @@ function mod:UpdateTable(offset)
     if rowData then
       -- show the row and update it
       rowObj:Show()
+      rowObj.rowID = rowID
+      rowObj.rowData = rowData
       self:UpdateRow(rowID, rowData, rowObj, rowNum)
     elseif rowObj then
       -- No data, just hide the row
@@ -441,16 +468,16 @@ function mod:UpdateTable(offset)
   end
 end
 
-function mod:CreateTableCell(parent, previousCell)
-  local cell = CreateFrame("Button", nil, parent)
+function mod:CreateTableCell(parentRow, previousCell)
+  local cell = CreateFrame("Button", nil, parentRow)
   cell:RegisterForClicks("AnyUp")
   cell:SetPushedTextOffset(0, 0)
-  cell:SetPoint("TOP", parent, "TOP")
-  cell:SetPoint("BOTTOM", parent, "BOTTOM")
+  cell:SetPoint("TOP", parentRow, "TOP")
+  cell:SetPoint("BOTTOM", parentRow, "BOTTOM")
   if previousCell then
     cell:SetPoint("LEFT", previousCell, "RIGHT")
   else
-    cell:SetPoint("LEFT", parent, "LEFT")
+    cell:SetPoint("LEFT", parentRow, "LEFT")
   end
 
   local text = cell:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -469,6 +496,14 @@ function mod:CreateTableRow(parent)
   row:SetPoint("RIGHT", parent, "RIGHT")
   row:SetHeight(14)
   row.colObjs = {}
+  
+  -- Mouseover highlight
+  local highlight = row:CreateTexture(nil, "OVERLAY")
+  highlight:SetPoint("TOPLEFT", row, "TOPLEFT", 3, 0)
+  highlight:SetPoint("BOTTOMRIGHT", row, "BOTTOMRIGHT", -25, 0)
+  highlight:Hide()
+  highlight:SetTexture(1.0, 0.9, 0.0, 0.5)
+  row.highlight = highlight
 
   -- I've used a table "columns" to define the columnswidths, names, alignments etc
   -- We could also create every cell manually, whatever you think is nicer.
@@ -478,6 +513,15 @@ function mod:CreateTableRow(parent)
 
     cell.text:SetJustifyH(colData.align or "LEFT")
     cell:SetWidth(colData.width or 20)
+    
+    cell:SetScript("OnEnter", function()
+      row.highlight:Show()
+      self:Call(colData.OnCellEnter, colData.name, cell, row)
+    end)
+    cell:SetScript("OnLeave", function()
+      row.highlight:Hide()
+      self:Call(colData.OnCellLeave, colData.name, cell, row)
+    end)
 
     if colData.name then
       row.colObjs[colData.name] = cell
@@ -549,6 +593,16 @@ function mod:CreateTable(parent)
     end
     lastHeader = header
   end
+end
+
+function mod:CellCandidateInfoPopup(cellName, cellObj, rowObj)
+  local rowData = rowObj.rowData
+  if not rowData then return end  
+  GameTooltip:SetOwner(self.frame, "ANCHOR_NONE")
+  GameTooltip:SetUnit(rowData.name)
+  GameTooltip:Show()
+  GameTooltip:ClearAllPoints()
+  GameTooltip:SetPoint("TOPLEFT", self.frame, "TOPRIGHT", -15, -13)
 end
 
 function mod:ShowInfoPopup(...)
