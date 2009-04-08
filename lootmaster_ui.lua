@@ -413,7 +413,7 @@ function mod:UpdateRow(rowID, rowData, rowObj, rowNum)
     local coords = CLASS_ICON_TCOORDS[class]
     if coords then
       classObj:Show()
-      classObj.classIcon:SetTexCoord(coords[1], coords[2], coords[3], coords[4]);
+      classObj.classIcon:SetTexCoord(coords[1], coords[2], coords[3], coords[4])
     else
       classObj:Hide()
     end
@@ -561,11 +561,11 @@ function mod:CreateTable(parent)
   -- Change the behaviour of the slider buttons a little
   EPGPLMScrollbarScrollDownButton:SetScript("OnClick", function()
     slider:SetValue(slider:GetValue() + 5)
-    PlaySound("UChatScrollButton");
+    PlaySound("UChatScrollButton")
   end)
   EPGPLMScrollbarScrollUpButton:SetScript("OnClick", function()
     slider:SetValue(slider:GetValue() - 5)
-    PlaySound("UChatScrollButton");
+    PlaySound("UChatScrollButton")
   end)
 
   -- Scroll the table when the user uses the mousewheel
