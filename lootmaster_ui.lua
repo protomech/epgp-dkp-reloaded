@@ -116,8 +116,8 @@ function mod:BuildUI()
   btn:SetText("Greed / Alt")
   btn:SetScript("OnEnter", function()
     self:ShowInfoPopup("Greed / Alt / Roll", "Use this selection if you wish to use this item for "..
-                                      "a third talent build or on an alt. Greeds are roll based by "..
-                                      "default, yet still take MinEP into account.")
+                                  "a third talent build or on an alt. Greeds are roll based by "..
+                                  "default, yet still take MinEP into account.")
   end)
   btn:SetScript("OnLeave", self.HideInfoPopup)
   local btnGreed = btn
@@ -151,7 +151,6 @@ function mod:BuildUI()
   lblItemInfo:SetPoint("TOP", lblItemLink, "TOP", 0, -5)
   lblItemInfo:SetVertexColor(1, 1, 1)
   lblItemInfo:SetText("GP 252 or 99, BoP, Lootmaster: Bushmaster")
-
 end
 
 function mod:CreateEPGPFrame()
@@ -178,7 +177,7 @@ function mod:CreateEPGPFrame()
   f:SetBackdrop({
     bgFile = "Interface\\Addons\\epgp\\images\\frame_bg",
     tile = true, tileSize = 128,
-    insets = { left = 13, right = 22, top = 15, bottom = 10 }
+    insets = {left = 13, right = 22, top = 15, bottom = 10}
   })
 
   local icon = f:CreateTexture(nil, "BORDER")
@@ -254,12 +253,12 @@ function mod:CreateEPGPFrame()
   caption:SetWidth(250)
   caption:SetHeight(16)
   caption:SetPoint("TOP", f, "TOP", 3, -16)
-  caption:SetText("EPGP Lootmaster (wip) "..EPGP.version)
+  caption:SetText("EPGP Lootmaster (wip) " .. EPGP.version)
   f.caption = caption
-  
+
   local btnClose = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   btnClose:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -8)
-  
+
   self:CreateTable(f)
 
   -- Create some data for the table
@@ -275,7 +274,7 @@ function mod:CreateEPGPFrame()
       online    = online
     })
   end
-  
+
   self:UpdateTable()
 
   return f
@@ -288,7 +287,7 @@ function mod:CreateTimeoutBar(parent)
   timerFrame:SetBackdrop({
     bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
     tile = true, tileSize = 64, edgeSize = 12,
-    insets = { left = 2, right = 1, top = 2, bottom = 2 }
+    insets = {left = 2, right = 1, top = 2, bottom = 2}
   })
   timerFrame:SetBackdropColor(1, 0, 0, 0.4)
   timerFrame:SetBackdropBorderColor(1, 0.6980392, 0, 0)
@@ -305,12 +304,12 @@ function mod:CreateTimeoutBar(parent)
   b:SetScript("OnUpdate", function(o, elapsed)
       if not lblTimeout then return end
       bElapse = bElapse + elapsed
-      if bElapse<1 then return end
+      if bElapse < 1 then return end
       bElapse = 0
       lblTimeout:SetText(format("Pass in %d secs", bCount))
       b:SetValue(bCount)
       bCount = bCount - 1
-      if bCount<0 then bCount=99 end
+      if bCount < 0 then bCount = 99 end
   end)
   timerFrame.progressBar = b
 
@@ -339,11 +338,11 @@ end
 function mod:SetTableNumItems(num)
   num = num - maxrows
   local slider = self.tableSlider
-  if num>0 then
+  if num > 0 then
     slider:Enable()
     slider:SetMinMaxValues(0, num)
     local offset = slider:GetValue()
-    if offset>num then
+    if offset > num then
       slider:SetValue(num)
     end
   else
@@ -366,15 +365,15 @@ function mod:UpdateRow(rowID, rowData, rowObj, rowNum)
   else
     colObjs.status:SetText("")
   end
-  
+
   local class = select(1,EPGP:GetClass(rowData.name)) or select(2,UnitClass(rowData.name))
-  local color = RAID_CLASS_COLORS[class];
+  local color = RAID_CLASS_COLORS[class]
   if not color then color = ITEM_QUALITY_COLORS[1] end
-  
+
   -- Set candidate name and color
   colObjs.candidate:SetText(rowData.name)
   colObjs.candidate.text:SetVertexColor(color.r, color.g, color.b)
-  
+
   -- Set candidate class icon
   if class then
     local classObj = colObjs.class
@@ -386,20 +385,19 @@ function mod:UpdateRow(rowID, rowData, rowObj, rowNum)
       classIcon:SetPoint("RIGHT", classObj, "RIGHT", -2, 0)
       classIcon:SetHeight(13)
       classIcon:SetWidth(13)
-      classObj.classIcon = classIcon      
+      classObj.classIcon = classIcon
     end
     local coords = CLASS_ICON_TCOORDS[class]
     if coords then
       classObj:Show()
-      classObj.classIcon:SetTexCoord(coords[1],coords[2],coords[3],coords[4]);
+      classObj.classIcon:SetTexCoord(coords[1], coords[2], coords[3], coords[4]);
     else
       classObj:Hide()
     end
   else
     colObjs.class:Hide()
   end
-  
-  
+
   colObjs.guildrank:SetText(rowData.guildrank)
 
   local ep, gp, main = EPGP:GetEPGP(rowData.name)
@@ -407,7 +405,7 @@ function mod:UpdateRow(rowID, rowData, rowObj, rowNum)
   colObjs.equipment:SetText(rowID)
   colObjs.gp:SetText(gp)
   colObjs.pr:SetText(pr)
-  colObjs.roll:SetText(math.random(1,99))
+  colObjs.roll:SetText(math.random(1, 99))
 end
 
 function mod:UpdateTable(offset)
@@ -416,7 +414,7 @@ function mod:UpdateTable(offset)
 
   for rowNum=1, maxrows do
     local rowID = rowNum + offset
-    
+
     local rowData = rowdata[rowID]
 
     -- Lazy creation of rows and cells
@@ -424,14 +422,14 @@ function mod:UpdateTable(offset)
     if not rowObj and rowData then
       rowObj = self:CreateTableRow(tableObj)
       rows[rowNum] = rowObj
-      if rowNum>1 then
+      if rowNum > 1 then
         rowObj:SetPoint("TOP", rows[rowNum-1], "BOTTOM", 0, 0)
       else
         rowObj:SetPoint("TOP", tableObj, "TOP", 0, -5)
       end
     end
 
-    -- Do we have data? 
+    -- Do we have data?
     if rowData then
       -- show the row and update it
       rowObj:Show()
@@ -446,7 +444,7 @@ end
 function mod:CreateTableCell(parent, previousCell)
   local cell = CreateFrame("Button", nil, parent)
   cell:RegisterForClicks("AnyUp")
-  cell:SetPushedTextOffset(0,0)
+  cell:SetPushedTextOffset(0, 0)
   cell:SetPoint("TOP", parent, "TOP")
   cell:SetPoint("BOTTOM", parent, "BOTTOM")
   if previousCell then
@@ -459,9 +457,9 @@ function mod:CreateTableCell(parent, previousCell)
   text:SetPoint("TOPLEFT", cell, "TOPLEFT", 3, 0)
   text:SetPoint("BOTTOMRIGHT", cell, "BOTTOMRIGHT", -3, 0)
   cell.text = text
-  cell.SetText = function (self, value) return text:SetText(value) end
-  cell.GetText = function (self) return text:GetText() end
-  
+  cell.SetText = function(self, value) return text:SetText(value) end
+  cell.GetText = function(self) return text:GetText() end
+
   return cell
 end
 
@@ -471,16 +469,16 @@ function mod:CreateTableRow(parent)
   row:SetPoint("RIGHT", parent, "RIGHT")
   row:SetHeight(14)
   row.colObjs = {}
-  
+
   -- I've used a table "columns" to define the columnswidths, names, alignments etc
   -- We could also create every cell manually, whatever you think is nicer.
   local previousCell
   for colNum, colData in ipairs(columns) do
     local cell = self:CreateTableCell(row, previousCell)
-    
+
     cell.text:SetJustifyH(colData.align or "LEFT")
     cell:SetWidth(colData.width or 20)
-    
+
     if colData.name then
       row.colObjs[colData.name] = cell
     end
@@ -496,11 +494,11 @@ function mod:CreateTable(parent)
     bgFile = "Interface\\RAIDFRAME\\UI-RaidFrame-GroupBg",
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
     tile = true, tileSize = 512, edgeSize = 12,
-    insets = { left = 2, right = 1, top = 1, bottom = 2 }
+    insets = {left = 2, right = 1, top = 1, bottom = 2}
   })
   tableBackground:SetPoint("TOPLEFT", parent, "TOPLEFT", 80, -140)
   tableBackground:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -25, 13)
-  tableBackground:EnableMouseWheel(true) 
+  tableBackground:EnableMouseWheel(true)
   self.table = tableBackground
 
   local slider = CreateFrame("Slider", "EPGPLMScrollbar", tableBackground, "UIPanelScrollBarTemplateLightBorder")
@@ -510,30 +508,30 @@ function mod:CreateTable(parent)
   slider:SetScript("OnValueChanged", function(obj, offset)
     self:UpdateTable(offset)
   end)
-  slider:SetMinMaxValues(0,0)
+  slider:SetMinMaxValues(0, 0)
   slider:SetValueStep(1)
   slider:SetValue(0)
   slider:SetWidth(15)
   slider:Disable()
-  
+
   -- Change the behaviour of the slider buttons a little
   EPGPLMScrollbarScrollDownButton:SetScript("OnClick", function()
-    slider:SetValue(slider:GetValue()+5)
+    slider:SetValue(slider:GetValue() + 5)
     PlaySound("UChatScrollButton");
   end)
   EPGPLMScrollbarScrollUpButton:SetScript("OnClick", function()
-    slider:SetValue(slider:GetValue()-5)
+    slider:SetValue(slider:GetValue() - 5)
     PlaySound("UChatScrollButton");
   end)
-  
+
   -- Scroll the table when the user uses the mousewheel
   tableBackground:SetScript("OnMouseWheel", function(obj, delta)
     local value = slider:GetValue()
-    if delta>0 and value == 0 then return end
+    if delta > 0 and value == 0 then return end
     --TODO(mackatack): also check upper bound
     slider:SetValue(value - delta)
   end)
-  
+
   -- Make column headers
   local lastHeader
   for i, colData in ipairs(columns) do
@@ -544,7 +542,7 @@ function mod:CreateTable(parent)
       self:ShowInfoPopup("Sorting", colData.popup)
     end)
     header:SetScript("OnLeave", self.HideInfoPopup)
-    if lastHeader then      
+    if lastHeader then
       header:SetPoint("TOPLEFT", lastHeader, "TOPRIGHT", 0, 0)
     else
       header:SetPoint("BOTTOMLEFT", tableBackground, "TOPLEFT", 0, -2)
@@ -592,7 +590,6 @@ function mod:CreateTableHeader(parent)
   tr:SetWidth(3)
   tr:SetHeight(20)
   tr:SetPoint("TOPRIGHT")
-  --tr:SetTexCoord(0.90625, 0.96875, 0, 0.625)
   tr:SetTexCoord(0.07815, 0, 0, 0.625)
 
   local tm = h:CreateTexture(nil, "BACKGROUND")
