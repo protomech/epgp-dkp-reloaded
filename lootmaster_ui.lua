@@ -56,7 +56,7 @@ local columns = {
 
 function mod:OnEnable()
   self:BuildUI()
-  
+
   EPGP.RegisterCallback(self, "StandingsChanged", "UpdateTable")
 end
 
@@ -160,11 +160,11 @@ function mod:BuildUI()
   lblItemInfo:SetPoint("TOP", lblItemLink, "TOP", 0, -5)
   lblItemInfo:SetVertexColor(1, 1, 1)
   lblItemInfo:SetText("GP 252 or 99, BoP, Lootmaster: Bushmaster")
-  
+
   -- Create some data for the table
   local lastRow
   local num = GetNumGuildMembers(true)
-  
+
   for i=1, num do
     local name, guildrank, _, _, _, _, _, _, online = GetGuildRosterInfo(i)
 
@@ -286,7 +286,7 @@ function mod:CreateEPGPFrame()
   btnClose:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -8)
 
   self:CreateTable(f)
-  
+
   f:SetScript("OnHide", ToggleOnlySideFrame)
 
   return f
@@ -433,7 +433,7 @@ end
 
 function mod:UpdateTable()
   if not self.table or not self.tableSlider then return end
-  
+
   local offset = self.tableSlider:GetValue()
   local tableObj = self.table
 
@@ -496,7 +496,7 @@ function mod:CreateTableRow(parent)
   row:SetPoint("RIGHT", parent, "RIGHT")
   row:SetHeight(14)
   row.colObjs = {}
-  
+
   -- Mouseover highlight
   local highlight = row:CreateTexture(nil, "OVERLAY")
   highlight:SetPoint("TOPLEFT", row, "TOPLEFT", 3, 0)
@@ -513,7 +513,7 @@ function mod:CreateTableRow(parent)
 
     cell.text:SetJustifyH(colData.align or "LEFT")
     cell:SetWidth(colData.width or 20)
-    
+
     cell:SetScript("OnEnter", function()
       row.highlight:Show()
       self:Call(colData.OnCellEnter, colData.name, cell, row)
@@ -597,7 +597,7 @@ end
 
 function mod:CellCandidateInfoPopup(cellName, cellObj, rowObj)
   local rowData = rowObj.rowData
-  if not rowData then return end  
+  if not rowData then return end
   GameTooltip:SetOwner(self.frame, "ANCHOR_NONE")
   GameTooltip:SetUnit(rowData.name)
   GameTooltip:Show()
