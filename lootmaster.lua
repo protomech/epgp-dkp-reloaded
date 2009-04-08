@@ -6,20 +6,22 @@ Implementation copied from the EPGPLootmaster addon by mackatack@gmail.com
 
 LootMasterChanged(newLootMaster): Triggers when someone in your group has been promoted to
     loot master. newLootMaster is nil when you leave your group or when loot master is disabled.
-
+    
 PlayerReceivesLoot(event, player, itemlink, quantity): Triggers when someone (player) in the raid receives
-    an item (itemlink) and itemcount (quantity).
+    an item (itemlink) and itemcount (quantity). 
 
 ]]--
 
-local mod = EPGP:NewModule("lootmaster", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
+local mod = EPGP:NewModule("lootmaster", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0", "LibRPC-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local GS = LibStub("LibGuildStorage-1.0")
 local gptooltip = EPGP:GetModule("gptooltip")
 local callbacks = EPGP.callbacks
+local Debug = LibStub("LibDebug-1.0", true)
 
 -- Initialise the main loot table
 local lootTable = {}
+
+local db = nil;
 
 -- Cache some math function for faster access and preventing
 -- other addons from screwing em up.
@@ -53,31 +55,34 @@ end
 --- Event triggered when the lootmaster module gets enabled
 function mod:OnEnable()
   -- Make a local pointer to the EPGP configuration table.
-  db = EPGP.db.profile.lootmaster
-
+  db = self.db
+  
   -- Register callback handlers
   EPGP.RegisterCallback(self, "LootMasterChanged", "OnLootMasterChange")      -- Triggered when loot master is changed
-  EPGP.RegisterCallback(self, "PlayerReceivesLoot", "OnPlayerReceivesLoot")   -- Triggered when someone receives loot
-
+  EPGP.RegisterCallback(self, "PlayerReceivesLoot", "OnPlayerReceivesLoot")   -- Triggered when someone receives loot 
+  
   -- Register events
   self:RegisterEvent("OPEN_MASTER_LOOT_LIST")   -- Trap event when ML rightclicks master loot
   self:RegisterEvent("CHAT_MSG_LOOT")           -- Trap event when items get looted
-
+  
   -- Trap some system messages here, we need these to detect any changes in loot master
   self:RegisterEvent("RAID_ROSTER_UPDATE",            "GROUP_UPDATE");
   self:RegisterEvent("PARTY_LOOT_METHOD_CHANGED",     "GROUP_UPDATE");
   self:RegisterEvent("PARTY_MEMBERS_CHANGED",         "GROUP_UPDATE");
   self:RegisterEvent("PLAYER_ENTERING_WORLD",         "GROUP_UPDATE");
   self:GROUP_UPDATE() -- update the group info immediately
-
+  
   -- Trap events when entering and leaving combat
   -- TODO(mackatack): implement these again
   -- self:RegisterEvent("PLAYER_REGEN_DISABLED", "EnterCombat")
   -- self:RegisterEvent("PLAYER_REGEN_ENABLED", "LeaveCombat")
-
-  -- Register communications
-  self:RegisterComm("EPGPLOOT", "OnCommandReceived")
-
+  
+  -- Setup RPC
+  --self:SetRPCKey("EPGPLMRPC")         -- set a prefix/channel for the communications
+  
+  -- Setup the public RPC methods
+  --self:RegisterRPC("RPC")
+  
   -- Enable the tracking by default
   self:EnableTracking()
 end
@@ -86,6 +91,7 @@ end
 function mod:OnDisable()
   -- Unregister all events again
   EPGP.UnregisterAllMessages(self)
+  self:UnregisterAllRPC()
 end
 
 --- Enable master loot tracking by just setting our boolean,
@@ -134,15 +140,15 @@ end
 function mod:AddLoot(link, mayDistribute, quantity)
   if not link then return end
   if not lootTable then return end
-
+    
   -- Cache a new randomseed for later use.
   -- math.random always has same values for seeds > 2^31, so lets modulate.
   mathCachedRandomSeed = floor((mathRandom()+1)*(GetTime()*1000)) % 2^31
-
+    
   if lootTable[link] then return link end
 
   local itemName, itemLink, _, _, itemMinLevel, itemType, itemSubType, itemStackCount, _, itemTexture = GetItemInfo(link)
-
+    
   local itemID = strmatch(itemLink, 'Hitem:(%d+)')
   if not itemID or not itemName then return end
 
@@ -156,7 +162,7 @@ function mod:AddLoot(link, mayDistribute, quantity)
   -- TODO(mackatack): implement this elsewhere
   -- local itemBind = LootMaster:GetItemBinding( itemLink )
   local itemBind = 'equip'
-
+    
   -- Find what classes are eligible for the loot
   -- TODO(mackatack): implement the following functions elsewhere
   -- local autoPassClasses = LootMaster:GetItemAutoPassClasses( itemLink )
@@ -185,19 +191,19 @@ function mod:AddLoot(link, mayDistribute, quantity)
 
     texture         = itemTexture or '',
     equipLoc        = itemEquipLoc or '',
-
+    
     candidates      = {},
     numResponses    = 0
   }
   lootTable[itemID] = itemCache
-
+  
   -- See if this item should be autolooted
   if db.auto_loot_threshold~=0 and db.auto_loot_candidate and db.auto_loot_candidate~='' then
       if (not itemBind or itemBind=='use' or itemBind=='equip') and itemRarity<=db.auto_loot_threshold then
           itemCache.autoLootable = true
       end
   end
-
+  
   --[[ TODO(mackatack): implement the monitor system again
   -- Are we lootmaster for this loot? Lets send out a monitor message about the added loot
   if lootTable[itemID].mayDistribute and self:MonitorMessageRequired(itemID) then
@@ -302,31 +308,16 @@ function mod:SendCandidateListToMonitors(itemID)
   -- TODO(mackatack): Needs implementation
 end
 
---- Gets called where there is a new addon message received
---  This function will try to decode a message sent using the SendCommand() function below
-function mod:OnCommandReceived(prefix, message, distribution, sender)
-  -- TODO(mackatack): Needs implementation
-end
-
---- Sends a command to the target.
---  @param string target either RAID, GUILD or player name.
---  @param string the command to send
---  @param string priority for this message: "ALERT", "NORMAL" or "BULK", if left nil will use "NORMAL"
---  @param ... list of values that get converted to strings (preserving nils and numbers) to send along with this command.
-function mod:SendCommand(target, command, priority, ...)
-  -- TODO(mackatack): Needs implementation
-end
-
 --- Handler for the LootMasterChange callback.
 --  Someone is lootmaster, see if it's the player, start loot tracking if so.
 function mod:OnLootMasterChange(event, newLootMaster)
-  -- TODO(mackatack): this is really ui stuff because this will only show the popup, move to lootmaster_ui
+  -- TODO(mackatack): this is really ui stuff because this will only show the popup, move to lootmaster_ui  
   -- if master looter is nil, return
   if not newLootMaster then return end
-
+  
   -- if player is not the current master looter, then just return.
   if newLootMaster~=UnitName('player') then return end
-
+  
   -- Show a message here, based on the current settings
   if db.use_lootmaster == 'enabled' then
       -- Always enable without asking
@@ -364,7 +355,7 @@ end
 function mod:GROUP_UPDATE()
   local lootmethod, mlPartyID, mlRaidID = GetLootMethod()
   local newLootMaster = nil
-
+  
   if lootmethod == 'master' then
     if mlRaidID then
         -- we're in raid
@@ -377,7 +368,7 @@ function mod:GROUP_UPDATE()
         newLootMaster = UnitName('party'..mlPartyID)
     end
   end
-
+  
   if self.current_ml ~= newLootMaster then
     -- Only trigger the event when there is a new lootmaster.
     self.current_ml = newLootMaster
