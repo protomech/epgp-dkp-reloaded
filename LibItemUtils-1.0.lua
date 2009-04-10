@@ -38,6 +38,18 @@ local restrictedClassFrame = getglobal(tooltip:GetName().."TextLeft3")
 tooltip:Hide();
 
 -------------
+-- OTHER
+-------------
+
+--- Convert an itemlink to itemID
+--  @param itemlink of which you want the itemID from
+--  @returns number or nils
+function lib:ItemlinkToID(itemlink)
+  if not itemlink then return nil
+  return tonumber(strmatch(slotLink, 'item:(%d+)') or 0)
+end
+
+-------------
 -- ITEM USAGE
 -------------
 
