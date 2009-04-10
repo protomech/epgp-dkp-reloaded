@@ -821,8 +821,8 @@ function EPGP:GUILD_ROSTER_UPDATE()
     end
     EPGP.db = nil
   else
-    local guild = GetGuildInfo("player")
-    if not type(guild) == "string" then
+    local guild = GetGuildInfo("player") or ""
+    if #guild == 0 then
       GuildRoster()
     else
       if db:GetCurrentProfile() ~= guild then
