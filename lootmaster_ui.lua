@@ -11,6 +11,23 @@ local lootmaster = EPGP:GetModule("lootmaster")
 local callbacks = EPGP.callbacks
 local Debug = LibStub("LibDebug-1.0", true)
 
+local EventFrame = CreateFrame("Frame", nil, UIParent)
+EventFrame:SetScript("OnEvent", function(obj, event, ...)
+  if strmatch(event, 'COMBAT_LOG') then return end
+  if strmatch(event, 'CHAT_MSG_ADDON') then return end
+  if strmatch(event, 'CRITERIA_') then return end
+  if strmatch(event, 'UPDATE_MOUSEOVER_UNIT') then return end
+  if strmatch(event, 'CURSOR_UPDATE') then return end
+  print(event, ...)
+end)
+--EventFrame:RegisterAllEvents()
+ 
+-- Local function definitions
+local CellCandidateInfoPopup
+local HideInfoPopup
+local ShowInfoPopup
+
+-- Definition for the ui table data.
 local rows = {}
 local rowdata = {}
 local maxrows = 25
@@ -22,15 +39,15 @@ local maxrows = 25
 local columns = {
   { text="C",          width=20,   name="class", align="CENTER",
     popup="Click this column to sort by class.",
-    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
+    OnCellEnter=CellCandidateInfoPopup, OnCellLeave=HideInfoPopup},
 
   { text="Candidate",  width=80,   name="candidate",
     popup="Click this column to sort by name of the candidate.",
-    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
+    OnCellEnter=CellCandidateInfoPopup, OnCellLeave=HideInfoPopup},
 
   { text="Rank",       width=70,   name="guildrank",
     popup="Click this column to sort by guildrank.",
-    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
+    OnCellEnter=CellCandidateInfoPopup, OnCellLeave=HideInfoPopup},
 
   { text="Status",     width=90,   name="status",
     popup="Click this column to sort by response/status."},
@@ -86,11 +103,11 @@ function mod:BuildUI()
   btn:SetWidth(85)
   btn:SetText("Mainspec")
   btn:SetScript("OnEnter", function()
-    self:ShowInfoPopup("Mainspec", "Use this selection if this item is a major upgrade "..
+    ShowInfoPopup("Mainspec", "Use this selection if this item is a major upgrade "..
                                    "for your main talent build and you wish to spend GP "..
                                    "on it. For small upgrades, use the Minor Upgrade button instead.")
   end)
-  btn:SetScript("OnLeave", self.HideInfoPopup)
+  btn:SetScript("OnLeave", HideInfoPopup)
   local btnMainspec = btn
 
   btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
@@ -99,11 +116,11 @@ function mod:BuildUI()
   btn:SetWidth(115)
   btn:SetText("Minor upgrade")
   btn:SetScript("OnEnter", function()
-  self:ShowInfoPopup("Minor Upgrade", "Use this selection if the item is only a small upgrade "..
+    ShowInfoPopup("Minor Upgrade", "Use this selection if the item is only a small upgrade "..
                                       "for your main talent build and you wish to give the item "..
                                       "to players if they need it more than you.")
   end)
-  btn:SetScript("OnLeave", self.HideInfoPopup)
+  btn:SetScript("OnLeave", HideInfoPopup)
   local btnUpgrade = btn
 
   btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
@@ -112,10 +129,10 @@ function mod:BuildUI()
   btn:SetWidth(70)
   btn:SetText("Offspec")
   btn:SetScript("OnEnter", function()
-    self:ShowInfoPopup("Offspec", "Use this selection if this item is an upgrade for your secondary "..
+    ShowInfoPopup("Offspec", "Use this selection if this item is an upgrade for your secondary "..
                                   "talent build.")
   end)
-  btn:SetScript("OnLeave", self.HideInfoPopup)
+  btn:SetScript("OnLeave", HideInfoPopup)
   local btnOffspec = btn
 
   btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
@@ -124,11 +141,11 @@ function mod:BuildUI()
   btn:SetWidth(95)
   btn:SetText("Greed / Alt")
   btn:SetScript("OnEnter", function()
-    self:ShowInfoPopup("Greed / Alt / Roll", "Use this selection if you wish to use this item for "..
+    ShowInfoPopup("Greed / Alt / Roll", "Use this selection if you wish to use this item for "..
                                   "a third talent build or on an alt. Greeds are roll based by "..
                                   "default, yet still take MinEP into account.")
   end)
-  btn:SetScript("OnLeave", self.HideInfoPopup)
+  btn:SetScript("OnLeave", HideInfoPopup)
   local btnGreed = btn
 
   btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
@@ -137,10 +154,10 @@ function mod:BuildUI()
   btn:SetWidth(55)
   btn:SetText("Pass")
   btn:SetScript("OnEnter", function()
-    self:ShowInfoPopup("Pass", "Use this selection if you do not wish to bid "..
+    ShowInfoPopup("Pass", "Use this selection if you do not wish to bid "..
                                    "on the item. Another player will receive it.")
   end)
-  btn:SetScript("OnLeave", self.HideInfoPopup)
+  btn:SetScript("OnLeave", HideInfoPopup)
   local btnPass = btn
 
   local timer = self:CreateTimeoutBar(lmf)
@@ -583,9 +600,9 @@ function mod:CreateTable(parent)
     header:SetText(colData.text)
     header:SetWidth(colData.width)
     header:SetScript("OnEnter", function()
-      self:ShowInfoPopup("Sorting", colData.popup)
+      ShowInfoPopup("Sorting", colData.popup)
     end)
-    header:SetScript("OnLeave", self.HideInfoPopup)
+    header:SetScript("OnLeave", HideInfoPopup)
     if lastHeader then
       header:SetPoint("TOPLEFT", lastHeader, "TOPRIGHT", 0, 0)
     else
@@ -595,19 +612,19 @@ function mod:CreateTable(parent)
   end
 end
 
-function mod:CellCandidateInfoPopup(cellName, cellObj, rowObj)
+function CellCandidateInfoPopup(cellName, cellObj, rowObj)
   local rowData = rowObj.rowData
   if not rowData then return end
-  GameTooltip:SetOwner(self.frame, "ANCHOR_NONE")
+  GameTooltip:SetOwner(mod.frame, "ANCHOR_NONE")
   GameTooltip:SetUnit(rowData.name)
   GameTooltip:Show()
   GameTooltip:ClearAllPoints()
-  GameTooltip:SetPoint("TOPLEFT", self.frame, "TOPRIGHT", -15, -13)
+  GameTooltip:SetPoint("TOPLEFT", mod.frame, "TOPRIGHT", -15, -13)
 end
 
-function mod:ShowInfoPopup(...)
-  if not self.frame then return end
-  GameTooltip:SetOwner(self.frame, "ANCHOR_NONE")
+function ShowInfoPopup(...)
+  if not mod.frame then return end
+  GameTooltip:SetOwner(mod.frame, "ANCHOR_NONE")
   for i=1, select("#", ...) do
     if i==1 then
       GameTooltip:AddLine(tostring(select(i, ...)), 1, 1, 1)
@@ -617,10 +634,10 @@ function mod:ShowInfoPopup(...)
   end
   GameTooltip:Show()
   GameTooltip:ClearAllPoints()
-  GameTooltip:SetPoint("TOPLEFT", self.frame , "TOPRIGHT", -15, -13)
+  GameTooltip:SetPoint("TOPLEFT", mod.frame , "TOPRIGHT", -15, -13)
 end
 
-function mod:HideInfoPopup()
+function HideInfoPopup()
   GameTooltip:Hide()
 end
 
@@ -629,7 +646,7 @@ function mod:CreateTableHeader(parent)
   h:SetHeight(20)
 
   h:SetNormalFontObject("GameFontHighlightSmall")
-  h:GetNormalFontObject():SetJustifyH("CENTER")
+  --h:GetNormalFontObject():SetJustifyH("CENTER")
   h:SetHighlightTexture("Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
 
   local tl = h:CreateTexture(nil, "BACKGROUND")
