@@ -46,7 +46,9 @@ tooltip:Hide();
 --  @returns number or nils
 function lib:ItemlinkToID(itemlink)
   if not itemlink then return nil
-  return tonumber(strmatch(slotLink, 'item:(%d+)') or 0)
+  local itemID = strmatch(slotLink, 'item:(%d+)')
+  if not itemID then return end
+  return tonumber(itemID)
 end
 
 -------------
