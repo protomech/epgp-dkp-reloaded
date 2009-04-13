@@ -88,20 +88,21 @@ function lib:UnregisterAllRPC()
 end
 
 --- Calls a remote function on target, this does not return any values.
---  @param target string either PARTY, RAID, BATTLEGROUND, GUILD or any player name.
---  @param methodName name of the remote function to call
+--  @param distribution: PARTY, RAID, BATTLEGROUND, GUILD, or WHISPER
+--  @param target: player name if distribution == WHISPER
 --  @param ... list of arguments to pass to the remote function.
-function lib:CallRPC(target, methodName, ...)
-  return self:CallPrioritizedRPC(nil, target, methodName, ...)
+function lib:CallRPC(distribution, target, methodName, ...)
+  return self:CallPrioritizedRPC(nil, distribution, target, methodName, ...)
 end
 
 --- Calls a remote function on target with a specific priority, this does not return any values.
 --  @param priority either BULK, NORMAL or ALERT whereas BULK has the lowest priority and ALERT the highest.
---  @param target string either PARTY, RAID, BATTLEGROUND, GUILD or any player name.
+--  @param distribution: PARTY, RAID, BATTLEGROUND, GUILD, or WHISPER
+--  @param target: player name if distribution == WHISPER
 --  @param methodName name of the remote function to call
 --  @param ... list of arguments to pass to the remote function.
-function lib:CallPrioritizedRPC(priority, target, methodName, ...)
-  assert(target, "Could not send command, no target specified")
+function lib:CallPrioritizedRPC(priority, distribution, target, methodName, ...)
+  assert(distribution, "Could not send command, no distribution specified")
   assert(methodName, "Could not send command, no methodName specified")
   local message = Serializer:Serialize(methodName, ...)
 
@@ -114,28 +115,8 @@ function lib:CallPrioritizedRPC(priority, target, methodName, ...)
               tostring(self))
   end
 
-  if target == 'RAID' or target == 'PARTY' then
-    -- Only send if we're grouped, otherwise use the fallback
-    if GetNumPartyMembers() > 0 or GetNumRaidMembers() > 0 then
-      return AceComm:SendCommMessage(self._rpckey, message, target, nil, priority)
-    end
-  elseif target == 'BATTLEGROUND' then
-    local inInstance, instanceType = IsInInstance()
-    if inInstance and instanceType == 'pvp' then
-      -- if the player is not inside a battleground, use the fallback below.
-      return AceComm:SendCommMessage(self._rpckey, message, target, nil, priority)
-    end
-  elseif target == 'GUILD' and IsInGuild() then
-    -- if player is not in a guild then use the fallback below, we need this check
-    -- otherwise the player will receive a "You're not in a guild message".
-    return AceComm:SendCommMessage(self._rpckey, message, target, nil, priority)
-  elseif target ~= UnitName('player') then
-    -- Only whisper messages that go to other players than self.
-    return AceComm:SendCommMessage(self._rpckey, message, "WHISPER", target, priority)
-  end
-
-  --we're not grouped, send message to self by calling the method right away.
-  return lib.OnRawRPCReceived(self, self._rpckey, message, 'WHISPER', UnitName("player"))
+  return AceComm:SendCommMessage(
+    self._rpckey, message, distribution, target, priority)
 end
 
 --- We've received a message on the rpc channel.
@@ -284,8 +265,8 @@ function lib:UnitTest()
   EPGP:RegisterRPC("print", print)    -- Register _G.print to be public method "print"
 
   -- Call the registered functions by sending it to the RAID channel
-  EPGP:CallRPC('GUILD', 'Print', 123, nil, "test", "Yeah!!!! this is a remote call! :P")
-  EPGP:CallRPC('GUILD', 'print', "this is _G.print speaking!")
+  EPGP:CallRPC('GUILD', nil, 'Print', 123, nil, "test", "Yeah!!!! this is a remote call! :P")
+  EPGP:CallRPC('GUILD', nil, 'print', "this is _G.print speaking!")
 
   -- Just as easy to send this command to one specific someone:
   --EPGP:CallRPC(UnitName('player'), 'Print', 123, nil, "test", "Yeah!!!! this is a remote call! :P")
