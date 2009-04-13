@@ -359,7 +359,7 @@ local slot_table = {
   INVTYPE_TRINKET = {"Trinket0Slot", "Trinket1Slot"}
 }
 
-function lib:ItemsForSlot(invtype)
+function lib:ItemsForSlot(invtype, unit)
   local t = slot_table[invtype]
   if not t then return end
 
@@ -368,8 +368,8 @@ function lib:ItemsForSlot(invtype)
   first = first and GetInventorySlotInfo(first)
   second = second and GetInventorySlotInfo(second)
   -- Translate to item links
-  first = first and GetInventoryItemLink("player", first)
-  second = second and GetInventoryItemLink("player", second)
+  first = first and GetInventoryItemLink(unit or "player", first)
+  second = second and GetInventoryItemLink(unit or "player", second)
 
   return first, second
 end
