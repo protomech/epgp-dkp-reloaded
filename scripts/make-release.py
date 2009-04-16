@@ -37,7 +37,7 @@ _VERSION_RE = re.compile(r'^\d+\.\d+(\.\d+)?(-beta\d+)?$')
 
 def CopyEPGPDirectory(epgp_root, dst):
   ignored_dirs = ('scripts', '.svn')
-  ignored_files = ('.pkgmeta')
+  ignored_files = ('.pkgmeta', 'WowMatrix.dat', 'debug.xml')
   for root, dirs, files in os.walk(epgp_root):
     if not os.path.exists(os.path.join(dst, root)):
       os.makedirs(os.path.join(dst, root))
