@@ -196,6 +196,24 @@ local function EncodeNote(ep, gp)
                        math.max(gp - global_config.base_gp, 0))
 end
 
+local function AddEPGP(name, ep, gp)
+  local total_ep = ep_data[name]
+  local total_gp = gp_data[name]
+  assert(total_ep ~= nil and total_gp ~=nil,
+         string.format("%s is not a main!", tostring(name)))
+
+  -- Compute the actual amounts we can add/subtract.
+  if (total_ep + ep) < 0 then
+    ep = -total_ep
+  end
+  if (total_gp + gp) < 0 then
+    gp = -total_gp
+  end
+
+  GS:SetNote(name, EncodeNote(total_ep + ep, total_gp + gp))
+  return ep, gp
+end
+
 -- A wrapper function to handle sort logic for selected
 local function ComparatorWrapper(f)
   return function(a, b)
@@ -600,7 +618,7 @@ function EPGP:DecayEPGP()
     assert(main == nil, "Corrupt alt data!")
     local decay_ep = math.ceil(ep * decay)
     local decay_gp = math.ceil(gp * decay)
-    GS:SetNote(name, EncodeNote(ep - decay_ep, gp - decay_gp))
+    decay_ep, decay_gp = AddEPGP(name, -decay_ep, -decay_gp)
     if decay_ep ~= 0 then
       callbacks:Fire("EPAward", name, reason, -decay_ep, true)
     end
@@ -649,8 +667,10 @@ function EPGP:IncEPBy(name, reason, amount, mass, undo)
     self:Print(L["Ignoring EP change for unknown member %s"]:format(name))
     return
   end
-  GS:SetNote(main or name, EncodeNote(ep + amount, gp))
-  callbacks:Fire("EPAward", name, reason, amount, mass, undo)
+  amount = AddEPGP(main or name, amount, 0)
+  if amount then
+    callbacks:Fire("EPAward", name, reason, amount, mass, undo)
+  end
   db.profile.last_awards[reason] = amount
   return main or name
 end
@@ -679,8 +699,10 @@ function EPGP:IncGPBy(name, reason, amount, mass, undo)
     self:Print(L["Ignoring GP change for unknown member %s"]:format(name))
     return
   end
-  GS:SetNote(main or name, EncodeNote(ep, gp + amount))
-  callbacks:Fire("GPAward", name, reason, amount, mass, undo)
+  _, amount = AddEPGP(main or name, 0, amount)
+  if amount then
+    callbacks:Fire("GPAward", name, reason, amount, mass, undo)
+  end
 
   return main or name
 end
