@@ -621,10 +621,10 @@ function EPGP:DecayEPGP()
     local decay_gp = math.ceil(gp * decay)
     decay_ep, decay_gp = AddEPGP(name, -decay_ep, -decay_gp)
     if decay_ep ~= 0 then
-      callbacks:Fire("EPAward", name, reason, -decay_ep, true)
+      callbacks:Fire("EPAward", name, reason, decay_ep, true)
     end
     if decay_gp ~= 0 then
-      callbacks:Fire("GPAward", name, reason, -decay_gp, true)
+      callbacks:Fire("GPAward", name, reason, decay_gp, true)
     end
   end
   callbacks:Fire("Decay", global_config.decay_p)
