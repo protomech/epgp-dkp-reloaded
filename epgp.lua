@@ -210,7 +210,8 @@ local function AddEPGP(name, ep, gp)
     gp = -total_gp
   end
 
-  GS:SetNote(name, EncodeNote(total_ep + ep, total_gp + gp))
+  GS:SetNote(name, EncodeNote(total_ep + ep,
+                              total_gp + gp + global_config.base_gp))
   return ep, gp
 end
 
