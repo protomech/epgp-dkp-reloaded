@@ -35,10 +35,10 @@ import util
 
 _VERSION_RE = re.compile(r'^\d+\.\d+(\.\d+)?(-beta\d+)?$')
 
-def CopyEPGPDirectory(epgp_root, dst):
+def CopyAddonDirectory(addon_root, dst):
   ignored_dirs = ('scripts', '.svn')
   ignored_files = ('.pkgmeta', 'WowMatrix.dat', 'debug.xml')
-  for root, dirs, files in os.walk(epgp_root):
+  for root, dirs, files in os.walk(addon_root):
     if not os.path.exists(os.path.join(dst, root)):
       os.makedirs(os.path.join(dst, root))
     for file in files:
@@ -88,9 +88,9 @@ def main(argv=None):
   zip_name = os.path.join(tmp_dir, 'epgp-%s.zip' % version)
   logging.info('Release zip location: %s' % zip_name)
 
-  epgp_root = util.FindEPGPRootDir()
+  epgp_root = util.FindAddonRootDir('epgp')
   logging.info('Copying %s to %s', epgp_root, stage_dir)
-  CopyEPGPDirectory(epgp_root, stage_dir)
+  CopyAddonDirectory(epgp_root, stage_dir)
 
   epgp_toc = os.path.join(stage_dir, 'epgp.toc')
   logging.info('Updating %s with version info' % epgp_toc)

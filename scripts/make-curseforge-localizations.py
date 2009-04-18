@@ -80,7 +80,7 @@ def GetLocalization(locale):
 def main():
   for locale in non_enUS_locales:
     localization = GetLocalization(locale)
-    base_dir = util.FindEPGPRootDir()
+    base_dir = util.FindAddonRootDir('epgp')
     filename = os.path.join(base_dir,
                             'localization',
                             'localization.%s.lua' % locale)

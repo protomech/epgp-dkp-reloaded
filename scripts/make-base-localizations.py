@@ -18,7 +18,7 @@ _LOCALIZED_STRING_RE = re.compile(r'L\[.*\]')
 
 def main():
   strings = []
-  base_dir = util.FindEPGPRootDir()
+  base_dir = util.FindAddonRootDir('epgp')
   logging.info('Extracting localization strings from files')
   for file in chain(iglob(os.path.join(base_dir, '*.lua')),
                     iglob(os.path.join(base_dir, '*.xml'))):

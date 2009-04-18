@@ -8,13 +8,13 @@ Created by Alkis Evlogimenos on 2009-04-01.
 import os.path
 import logging
 
-def FindEPGPRootDir():
-  if os.path.isfile('epgp.toc'):
+def FindAddonRootDir(addon):
+  if os.path.isfile('%s.toc' % addon):
     return '.'
-  elif os.path.isfile('../epgp.toc'):
+  elif os.path.isfile('../%s.toc' % addon):
     return '..'
   else:
-    raise Exception, 'EPGP root not found!'
+    raise Exception, '%s root not found!' % addon
 
 logging.basicConfig(format=("%(asctime)s %(levelname)s %(filename)s:"
                               "%(lineno)s %(message)s "))
