@@ -172,6 +172,40 @@ local CUSTOM_ITEM_DATA = {
   -- Key to the Focusing Iris
   [44569] = { 4, 213, "INVTYPE_NECK" },
   [44577] = { 4, 226, "INVTYPE_NECK" },
+
+  -- T8
+  [45635] = { 4, 219, "INVTYPE_CHEST" },
+  [45636] = { 4, 219, "INVTYPE_CHEST" },
+  [45637] = { 4, 219, "INVTYPE_CHEST" },
+  [45647] = { 4, 219, "INVTYPE_HEAD" },
+  [45648] = { 4, 219, "INVTYPE_HEAD" },
+  [45649] = { 4, 219, "INVTYPE_HEAD" },
+  [45644] = { 4, 219, "INVTYPE_HAND" },
+  [45645] = { 4, 219, "INVTYPE_HAND" },
+  [45646] = { 4, 219, "INVTYPE_HAND" },
+  [45650] = { 4, 219, "INVTYPE_LEGS" },
+  [45651] = { 4, 219, "INVTYPE_LEGS" },
+  [45652] = { 4, 219, "INVTYPE_LEGS" },
+  [45659] = { 4, 219, "INVTYPE_SHOULDER" },
+  [45660] = { 4, 219, "INVTYPE_SHOULDER" },
+  [45661] = { 4, 219, "INVTYPE_SHOULDER" },
+
+  -- T8 (heroic)
+  [45632] = { 4, 226, "INVTYPE_CHEST" },
+  [45633] = { 4, 226, "INVTYPE_CHEST" },
+  [45634] = { 4, 226, "INVTYPE_CHEST" },
+  [45638] = { 4, 226, "INVTYPE_HEAD" },
+  [45639] = { 4, 226, "INVTYPE_HEAD" },
+  [45640] = { 4, 226, "INVTYPE_HEAD" },
+  [45641] = { 4, 226, "INVTYPE_HAND" },
+  [45642] = { 4, 226, "INVTYPE_HAND" },
+  [45643] = { 4, 226, "INVTYPE_HAND" },
+  [45653] = { 4, 226, "INVTYPE_LEGS" },
+  [45654] = { 4, 226, "INVTYPE_LEGS" },
+  [45655] = { 4, 226, "INVTYPE_LEGS" },
+  [45656] = { 4, 226, "INVTYPE_SHOULDER" },
+  [45657] = { 4, 226, "INVTYPE_SHOULDER" },
+  [45658] = { 4, 226, "INVTYPE_SHOULDER" },
 }
 
 local recent_items_queue = {}
