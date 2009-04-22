@@ -787,15 +787,18 @@ function EPGP:OnInitialize()
     }
   }
   db:RegisterDefaults(defaults)
-  local moduleDefaults = {
-    profile = {
-      enabled = true
-    }
-  }
   for name, module in self:IterateModules() do
     -- Each module gets its own namespace. If a module needs to set
-    -- defaults, module.defaults needs to be a table with defaults.
-    module.db = db:RegisterNamespace(name, module.dbDefaults or moduleDefaults)
+    -- defaults, module.dbDefaults needs to be a table with
+    -- defaults. Otherwise we initialize it to be enabled by default.
+    if not module.dbDefaults then
+      module.dbDefaults = {
+        profile = {
+          enabled = true
+        }
+      }
+    end
+    module.db = db:RegisterNamespace(name, module.dbDefaults)
   end
   -- After the database objects are created, we setup the
   -- options. Each module can inject its own options by defining:
