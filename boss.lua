@@ -32,6 +32,23 @@ local BOSSES = {
 
   -- Vault of Archavon
   [31125] = "Archavon the Stone Watcher",
+  [33993] = "Emalon the Storm Watcher",
+
+  -- Ulduar
+  [33113] = "Flame Leviathan",
+  [33118] = "Ignis the Furnace Master",
+  [33186] = "Razorscale",
+  [33293] = "XT-002 Deconstructor",
+  -- TODO(alkis): Add Assembly of Iron
+  [32930] = "Kologarn",
+  [33515] = "Auriaya",
+  [33412] = "Mimiron",
+  [32845] = "Hodir",
+  [32865] = "Thorim",
+  [32906] = "Freya",
+  [33271] = "General Vezax",
+  [33288] = "Yogg-Saron",
+  -- TODO(alkis): Add Algalon the Observer
 }
 
 local function IsRLorML()
