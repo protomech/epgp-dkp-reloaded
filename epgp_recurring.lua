@@ -7,6 +7,10 @@ local callbacks = EPGP.callbacks
 local frame = CreateFrame("Frame", "EPGP_RecurringAwardFrame")
 local timeout = 0
 local function RecurringTicker(self, elapsed)
+  -- EPGP's db is available after GUILD_ROSTER_UPDATE. So we have a
+  -- guard.
+  if not EPGP.db then return end
+
   local vars = EPGP.db.profile
   local now = GetTime()
   if now > vars.next_award and GS:IsCurrentState() then
