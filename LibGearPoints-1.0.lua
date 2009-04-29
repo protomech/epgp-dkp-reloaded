@@ -206,6 +206,10 @@ local CUSTOM_ITEM_DATA = {
   [45656] = { 4, 226, "INVTYPE_SHOULDER" },
   [45657] = { 4, 226, "INVTYPE_SHOULDER" },
   [45658] = { 4, 226, "INVTYPE_SHOULDER" },
+
+  -- Archivum Data Disc
+  [45857] = { 4, 239, "INVTYPE_RING" },
+  [45506] = { 4, 239, "INVTYPE_RING" },
 }
 
 local recent_items_queue = {}
