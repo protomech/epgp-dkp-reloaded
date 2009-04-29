@@ -64,6 +64,7 @@ L["Mass EP Award"] = true
 L["Min EP should be a positive number"] = true
 L["Next award in "] = true
 L["Other"] = true
+L["Paste import data here"] = true
 L["Personal Action Log"] = true
 L["Provide a proposed GP value of armor on tooltips. Quest items or tokens that can be traded for armor will also have a proposed GP value."] = true
 L["Recurring awards resume"] = true
