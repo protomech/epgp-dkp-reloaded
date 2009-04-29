@@ -101,6 +101,96 @@ local function CreateEPGPFrame()
   f:SetScript("OnHide", ToggleOnlySideFrame)
 end
 
+local function CreateEPGPExportImportFrame()
+  local f = CreateFrame("Frame", "EPGPExportImportFrame", UIParent)
+  f:Hide()
+  f:SetPoint("CENTER")
+  f:SetFrameStrata("TOOLTIP")
+  f:SetHeight(350)
+  f:SetWidth(500)
+  f:SetBackdrop({
+                  bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+                  edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+                  tile = true, tileSize = 32, edgeSize = 32,
+                  insets = { left=11, right=12, top=12, bottom=11 },
+                })
+  f:SetBackdropColor(0, 0, 0, 1)
+  local help = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+  help:SetText(L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"])
+  help:SetPoint("TOP", f, "TOP", 0, -20)
+  help:SetWidth(f:GetWidth() - 40)
+  f.help = help
+
+  local button1 = CreateFrame("Button", nil, f, "StaticPopupButtonTemplate")
+  button1:SetPoint("BOTTOM", f, "BOTTOM", 0, 15)
+  local button2 = CreateFrame("Button", nil, f, "StaticPopupButtonTemplate")
+  button2:SetPoint("BOTTOM", button1, "BOTTOM")
+  f.button1 = button1
+  f.button2 = button2
+
+  local s = CreateFrame("ScrollFrame", "EPGPExportScrollFrame",
+                        f, "UIPanelScrollFrameTemplate2")
+  s:SetPoint("TOPLEFT", help, "BOTTOMLEFT", 0, -10)
+  s:SetPoint("TOPRIGHT", help, "BOTTOMRIGHT", -20, 0)
+  s:SetPoint("BOTTOM", button1, "TOP", 0, 10)
+
+  local b = CreateFrame("EditBox", nil, s)
+  b:SetPoint("TOPLEFT")
+  b:SetWidth(425)
+  b:SetHeight(s:GetHeight())
+  b:SetMultiLine(true)
+  b:SetAutoFocus(false)
+  b:SetFontObject(GameFontHighlight)
+  b:SetScript("OnEscapePressed", function (self) self:ClearFocus() end)
+  s:SetScrollChild(b)
+  f.editbox = b
+
+  f:SetScript(
+    "OnShow",
+    function (self)
+      if self.export then
+        self.help:SetText(L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"])
+        self.button1:Show()
+        self.button1:SetText(CLOSE)
+        self.button1:SetPoint("CENTER", self, "CENTER")
+        self.button1:SetScript("OnClick",
+                               function (self) self:GetParent():Hide() end)
+        self.button2:Hide()
+        self.editbox:SetText(EPGP:GetModule("log"):Export())
+        self.editbox:HighlightText()
+        self.editbox:SetScript("OnTextChanged",
+                               function (self)
+                                 local text = EPGP:GetModule("log"):Export()
+                                 self:SetText(text)
+                               end)
+      else
+        self.help:SetText(L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http://epgpweb.appspot.com here"])
+        self.editbox:SetText(L["Paste import data here"])
+        self.button1:Show()
+        self.button1:SetText(ACCEPT)
+        self.button1:SetPoint("CENTER", self, "CENTER",
+                              -self.button1:GetWidth()/2 - 5, 0)
+        self.button1:SetScript("OnClick",
+                               function (self)
+                                 local text = self:GetText()
+                                 EPGP:GetModule("log"):Import(text)
+                                 self:GetParent():Hide()
+                               end)
+        self.button2:Show()
+        self.button2:SetText(CANCEL)
+        self.button2:SetPoint("LEFT", self.button1, "RIGHT", 10, 0)
+        self.button2:SetScript("OnClick",
+                               function (self) self:GetParent():Hide() end)
+        self.editbox:SetScript("OnTextChanged", nil)
+      end
+    end)
+  f:SetScript(
+    "OnHide",
+    function (self)
+      self.editbox:SetText("")
+    end)
+end
+
 local function CreateTableHeader(parent)
   local h = CreateFrame("Button", nil, parent)
   h:SetHeight(24)
@@ -304,7 +394,10 @@ local function CreateEPGPLogFrame()
   export:SetWidth(export:GetTextWidth() + BUTTON_TEXT_PADDING)
   export:SetScript(
     "OnClick",
-    function(self, button, down) StaticPopup_Show("EPGP_EXPORT") end)
+    function(self, button, down)
+      EPGPExportImportFrame.export = true
+      EPGPExportImportFrame:Show()
+    end)
 
   local import = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   import:SetNormalFontObject("GameFontNormalSmall")
@@ -316,7 +409,10 @@ local function CreateEPGPLogFrame()
   import:SetWidth(import:GetTextWidth() + BUTTON_TEXT_PADDING)
   import:SetScript(
     "OnClick",
-    function(self, button, down) StaticPopup_Show("EPGP_IMPORT") end)
+    function(self, button, down)
+      EPGPExportImportFrame.export = false
+      EPGPExportImportFrame:Show()
+    end)
 
   local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   undo:SetNormalFontObject("GameFontNormalSmall")
@@ -1269,6 +1365,7 @@ function mod:OnEnable()
   if not EPGPFrame then
     CreateEPGPFrame()
     CreateEPGPFrameStandings()
+    CreateEPGPExportImportFrame()
   end
 
   HideUIPanel(EPGPFrame)

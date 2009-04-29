@@ -176,45 +176,6 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
                            end,
 }
 
-StaticPopupDialogs["EPGP_EXPORT"] = {
-  text = L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"],
-  timeout = 0,
-  whileDead = 1,
-  hasEditBox = 1,
-  OnShow = function(self)
-             self.editBox:SetText(EPGP:GetModule("log"):Export())
-             self.editBox:HighlightText()
-           end,
-  OnHide = function(self)
-             self.editBox:SetText("")
-           end,
-  EditBoxOnEscapePressed = function(self)
-                             self:GetParent():Hide()
-                           end,
-}
-
-StaticPopupDialogs["EPGP_IMPORT"] = {
-  text = L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http://epgpweb.appspot.com here"],
-  button1 = ACCEPT,
-  button2 = CANCEL,
-  timeout = 0,
-  hideOnEscape = 1,
-  whileDead = 1,
-  hasEditBox = 1,
-  OnAccept = function(self)
-               EPGP:GetModule("log"):Import(self.editBox:GetText())
-             end,
-  OnHide = function(self)
-             self.editBox:SetText("")
-           end,
-  EditBoxOnEnterPressed = function(self)
-                            self:GetParent().button1:Click()
-                          end,
-  EditBoxOnEscapePressed = function(self)
-                             self:GetParent():Hide()
-                           end,
-}
-
 StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
   text = "You are the Loot Master, would you like to use EPGP Lootmaster to distribute loot?\r\n\r\n(You will be asked again next time. Use the configuration panel to change this behaviour)",
   button1 = YES,
