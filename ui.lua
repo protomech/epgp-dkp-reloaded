@@ -5,6 +5,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
 local GP = LibStub("LibGearPoints-1.0")
 
+local EPGPWEB = "http://www.epgpweb.com"
+
 local BUTTON_TEXT_PADDING = 20
 local BUTTON_HEIGHT = 22
 local ROW_TEXT_PADDING = 5
@@ -116,7 +118,6 @@ local function CreateEPGPExportImportFrame()
                 })
   f:SetBackdropColor(0, 0, 0, 1)
   local help = f:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-  help:SetText(L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"])
   help:SetPoint("TOP", f, "TOP", 0, -20)
   help:SetWidth(f:GetWidth() - 40)
   f.help = help
@@ -149,7 +150,7 @@ local function CreateEPGPExportImportFrame()
     "OnShow",
     function (self)
       if self.export then
-        self.help:SetText(L["To export the current standings, copy the text below and post it to the webapp: http://epgpweb.appspot.com"])
+        self.help:SetText(L["To export the current standings, copy the text below and post it to: %s"]:format(EPGPWEB))
         self.button1:Show()
         self.button1:SetText(CLOSE)
         self.button1:SetPoint("CENTER", self, "CENTER")
@@ -164,7 +165,7 @@ local function CreateEPGPExportImportFrame()
                                  self:SetText(text)
                                end)
       else
-        self.help:SetText(L["To restore to an earlier version of the standings, copy and paste the text from the webapp: http://epgpweb.appspot.com here"])
+        self.help:SetText(L["To restore to an earlier version of the standings, copy and paste the text from: %s"]:format(EPGPWEB))
         self.editbox:SetText(L["Paste import data here"])
         self.button1:Show()
         self.button1:SetText(ACCEPT)
@@ -396,6 +397,7 @@ local function CreateEPGPLogFrame()
     "OnClick",
     function(self, button, down)
       EPGPExportImportFrame.export = true
+      EPGPExportImportFrame:Hide()
       EPGPExportImportFrame:Show()
     end)
 
@@ -411,6 +413,7 @@ local function CreateEPGPLogFrame()
     "OnClick",
     function(self, button, down)
       EPGPExportImportFrame.export = false
+      EPGPExportImportFrame:Hide()
       EPGPExportImportFrame:Show()
     end)
 
