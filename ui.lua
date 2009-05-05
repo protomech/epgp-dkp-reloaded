@@ -173,7 +173,7 @@ local function CreateEPGPExportImportFrame()
                               -self.button1:GetWidth()/2 - 5, 0)
         self.button1:SetScript("OnClick",
                                function (self)
-                                 local text = self:GetText()
+                                 local text = self:GetParent().editbox:GetText()
                                  EPGP:GetModule("log"):Import(text)
                                  self:GetParent():Hide()
                                end)
