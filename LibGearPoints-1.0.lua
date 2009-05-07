@@ -209,7 +209,7 @@ local CUSTOM_ITEM_DATA = {
 
   -- Archivum Data Disc
   [45857] = { 4, 239, "INVTYPE_RING" },
-  [45506] = { 4, 239, "INVTYPE_RING" },
+  [45506] = { 4, 226, "INVTYPE_RING" },
 }
 
 local recent_items_queue = {}
