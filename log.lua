@@ -146,6 +146,7 @@ end
 
 function mod:Export()
   local d = {}
+  d.region = GetCVar("portal")
   d.guild = select(1, GetGuildInfo("player"))
   d.realm = GetRealmName()
   d.base_gp = EPGP:GetBaseGP()
@@ -162,6 +163,11 @@ end
 function mod:Import(jsonStr)
   local success, d = pcall(JSON.Deserialize, jsonStr)
   if not success then
+    EPGP:Print(L["The imported data is invalid"])
+    return
+  end
+
+  if d.region and d.region ~= GetCVar("portal") then
     EPGP:Print(L["The imported data is invalid"])
     return
   end
