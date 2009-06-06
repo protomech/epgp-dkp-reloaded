@@ -121,7 +121,7 @@ local function BossKilled(event_name, boss_name)
   if CanEditOfficerNote() and IsRLorML() then
     tinsert(award_queue, boss_name)
     if not timer then
-      timer = mod:ScheduleRepeatingTimer("PopAwardQueue", 1)
+      timer = mod:ScheduleRepeatingTimer("PopAwardQueue", 0.1)
     end
   end
 end
