@@ -91,12 +91,13 @@ function EPGP:CanResumeRecurringEP()
   local now = GetTime()
   if not vars.next_award then return false end
 
-  -- Now check if we only missed at most one award period.
   local period_secs = vars.recurring_ep_period_mins * 60
-  if vars.next_award + period_secs < now or vars.next_award > now then
-    return false
+  local last_award = vars.next_award - period_secs
+  local next_next_award = vars.next_award + period_secs
+  if last_award < now and now < next_next_award then
+    return true
   end
-  return true
+  return false
 end
 
 function EPGP:CancelRecurringEP()
