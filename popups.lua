@@ -197,3 +197,11 @@ StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
   whileDead = 1,
   showAlert = 1
 }
+
+StaticPopupDialogs["EPGP_NEW_VERSION"] = {
+  text = "|cFFFFFF00EPGP " .. EPGP.version .. "|r\n" ..
+    L["You can now check your epgp standings on the web: http://www.epgpweb.com"], -- /script EPGP.db.profile.last_version = nil
+  button1 = CLOSE,
+  hideOnEscape = 1,
+  whileDead = 1,
+}

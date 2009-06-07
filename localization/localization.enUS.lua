@@ -91,3 +91,4 @@ L["Undo"] = true
 L["Using DBM for boss kill tracking"] = true
 L["Value"] = true
 L["Whisper"] = true
+L["You can now check your epgp standings on the web: http://www.epgpweb.com"] = true

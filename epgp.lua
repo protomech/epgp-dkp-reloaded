@@ -856,6 +856,12 @@ function EPGP:GUILD_ROSTER_UPDATE()
       end
       if not EPGP.db then
         EPGP.db = db
+        -- New version note
+        if EPGP.db.profile.last_version ~= EPGP.version then
+          EPGP.db.profile.last_version = EPGP.version
+          StaticPopup_Show("EPGP_NEW_VERSION")
+        end
+
         -- Enable all modules that are supposed to be enabled
         for name, module in EPGP:IterateModules() do
           if module.db.profile.enabled or not module.dbDefaults then
