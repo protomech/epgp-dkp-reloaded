@@ -89,11 +89,7 @@ function EPGP:SetupOptions()
                            if msg == "config" then
                              InterfaceOptionsFrame_OpenToCategory("EPGP")
                            elseif msg == "debug" then
-                             if Debug:IsDebugging() then
-                               Debug:EnableDebugging(false)
-                             else
-                               Debug:EnableDebugging()
-                             end
+                             Debug:Toggle()
                            else
                              if EPGPFrame and IsInGuild() then
                                if EPGPFrame:IsShown() then

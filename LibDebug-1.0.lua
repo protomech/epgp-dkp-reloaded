@@ -138,10 +138,16 @@ function lib:EnableDebugging(val)
   if val == false then
     mt.__call = lib.DebugStub
     isDebugging = false
-    frame:Hide()
   else
     mt.__call = lib.Debug
     isDebugging = true
+  end
+end
+
+function lib:Toggle()
+  if frame:IsShown() then
+    frame:Hide()
+  else
     frame:Show()
   end
 end

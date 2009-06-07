@@ -129,6 +129,7 @@
 --
 
 local Debug = LibStub("LibDebug-1.0")
+Debug:EnableDebugging()
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
 
@@ -156,7 +157,6 @@ EPGP:SetDefaultModulePrototype(modulePrototype)
 local version = GetAddOnMetadata('EPGP', 'Version')
 if not version or #version == 0 then
   version = "(development)"
-  Debug:EnableDebugging()
 end
 EPGP.version = version
 
