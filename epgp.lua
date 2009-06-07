@@ -446,7 +446,7 @@ function EPGP:ExportRoster()
   for name,_ in pairs(ep_data) do
     local ep, gp, main = self:GetEPGP(name)
     if ep ~= 0 or gp ~= base_gp then
-      table.insert(t, {name, self:GetClass(name), ep, gp})
+      table.insert(t, {name, ep, gp})
     end
   end
   return t
