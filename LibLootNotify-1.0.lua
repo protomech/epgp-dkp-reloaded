@@ -110,14 +110,14 @@ local function OnLootTimer(slotData)
 
   if not timerName then return end
   lootTimers[timerName] = null
-  
+
   print(format('No loot message received while %s received %sx%s, player was probably out of range. Emulating loot message locally:',
                candidate,
                itemLink,
                quantity))
 
   -- Emulate the event so other addons can benefit from it aswell.
-  if quantity==1 then
+  if quantity == 1 then
     EmulateEvent('CHAT_MSG_LOOT', LOOT_ITEM:format(candidate, itemLink), '', '', '', '')
   else
     EmulateEvent('CHAT_MSG_LOOT', LOOT_ITEM_MULTIPLE:format(candidate, itemLink, quantity), '', '', '', '')
