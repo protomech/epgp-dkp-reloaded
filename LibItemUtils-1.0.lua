@@ -34,7 +34,7 @@ lib.tooltip = lib.tooltip or CreateFrame("GameTooltip",
                                          frame, "GameTooltipTemplate")
 local tooltip = lib.tooltip
 local bindingFrame = getglobal(tooltip:GetName().."TextLeft2")
-local restrictedClassFrame = getglobal(tooltip:GetName().."TextLeft3")
+local restrictedClassFrameNameFormat = tooltip:GetName().."TextLeft%d"
 tooltip:Hide();
 
 -------------
@@ -272,20 +272,24 @@ function lib:ClassCanUse(class, item)
   local link = select(2, GetItemInfo(item))
   tooltip:SetOwner(UIParent, "ANCHOR_NONE")
   tooltip:SetHyperlink(link)
-  if tooltip:NumLines() > 2 then
-    local text = restrictedClassFrame:GetText()
-    tooltip:Hide()
-
-    if text then
-      local classList = deformat(text, ITEM_CLASSES_ALLOWED)
-      if classList then
-        for _, restrictedClass in pairs({strsplit(',', classList)}) do
-          restrictedClass = strupper(LBCR[strtrim(restrictedClass)])
-          if class == restrictedClass then
-            return true
+  -- lets see if we can find a 'Classes: Mage, Druid' string on the itemtooltip
+  -- Only scanning line 2 is not enough, we need to scan all the lines
+  for lineID = 1, tooltip:NumLines(), 1 do
+    local line = _G[restrictedClassFrameNameFormat:format(lineID)]
+    if line then
+      local text = line:GetText()
+      if text then
+        local classList = deformat(text, ITEM_CLASSES_ALLOWED)
+        if classList then
+          tooltip:Hide()
+          for _, restrictedClass in pairs({strsplit(',', classList)}) do
+            restrictedClass = strupper(LBCR[strtrim(restrictedClass)])
+            if class == restrictedClass then
+              return true
+            end
           end
+          return false
         end
-        return false
       end
     end
   end
