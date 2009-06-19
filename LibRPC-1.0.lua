@@ -107,11 +107,12 @@ function lib:CallPrioritizedRPC(priority, distribution, target, methodName, ...)
   local message = Serializer:Serialize(methodName, ...)
 
   if IsDebugging() then
-    Debug("Tx: Calling %s(%s) via %s/%s (self=%s)",
+    Debug("Tx: Calling %s(%s) via %s/%s/%s (self=%s)",
               tostring(methodName),
-              tostring(tableconcatstr({...})),
-              tostring(target),
+              tostring(tableconcatstr({...})),              
               tostring(self._rpckey),
+              tostring(distribution),
+              tostring(target),
               tostring(self))
   end
 
