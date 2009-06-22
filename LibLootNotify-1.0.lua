@@ -26,6 +26,7 @@ frame:SetScript("OnEvent", nil)
 -- Some tables we need to cache the contents of the loot slots
 local slotCache = {}
 local lootTimers = {}
+local lootCache = {}
 
 -- Sets the timeout before emulating a loot message
 local EMULATE_TIMEOUT = 5
@@ -74,6 +75,17 @@ local function HandleLootMessage(msg)
       lootTimers[timerName] = null
     end
 
+    -- See if we can find a entry in the lootCache.
+    -- This happens when the loot message is sent before the LOOT_SLOT_CLEARED event
+    local slotData = lootCache[timerName]
+    if slotData then
+      -- The loot message for this item has been sent before the slot cleared event.
+      -- Clear out the slotCache
+      Debug('STOPPING all handling for %s, loot message sent before LOOT_SLOT_CLEARED.', timerName)
+      slotCache[slotData.slotID] = null
+      lootCache[timerName] = null
+    end
+
     callbacks:Fire("LootReceived", player, itemLink, quantity)
   end
 end
@@ -110,6 +122,7 @@ local function OnLootTimer(slotData)
 
   if not timerName then return end
   lootTimers[timerName] = null
+  lootCache[timerName] = null
 
   print(format('No loot message received while %s received %sx%s, player was probably out of range. Emulating loot message locally:',
                candidate,
@@ -138,8 +151,7 @@ local function LOOT_SLOT_CLEARED(event, slotID, ...)
     -- doesn't start timers for any normal loot.
 
     -- Generate a name for the timer and store it in the slotData
-    local timerName = GetTimerName(slotData.candidate, slotData.itemLink, slotData.quantity)
-    slotData.timerName = timerName
+    local timerName = slotData.timerName
     Debug("LibLootNotify: (%s) creating timer %s", event, timerName)
 
     -- Schedule a timer for this loot
@@ -154,7 +166,7 @@ end
 local function LOOT_CLOSED(event, ...)
   -- Clear the cache of loot slots
   Debug('LOOT_CLOSED')
-  wipe(slotCache)
+  wipe(lootCache)
 end
 
 -- PreHook the GiveMasterLoot function so we can intercept the slotID and candidate
@@ -166,9 +178,15 @@ GiveMasterLoot = function(slotID, candidateID, ...)
   local slotData = {
     candidate   = candidate,
     itemLink    = itemLink,
-    quantity    = select(3, GetLootSlotInfo(slotID)) or 1
+    quantity    = select(3, GetLootSlotInfo(slotID)) or 1,
+    slotID      = slotID
   }
+  local timerName = GetTimerName(candidate, itemLink, slotData.quantity)
+  slotData.timerName = timerName
+
   slotCache[slotID] = slotData
+  lootCache[timerName] = slotData
+
   _GiveMasterLoot(slotID, candidateID, ...)
   Debug("LibLootNotify: GiveMasterLoot(%s, %s)", itemLink, candidate)
 end
