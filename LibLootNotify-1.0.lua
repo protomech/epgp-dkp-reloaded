@@ -10,6 +10,8 @@ if not lib then return end
 local Debug = LibStub("LibDebug-1.0")
 
 local AceTimer = LibStub("AceTimer-3.0")
+local AceHook = LibStub("AceHook-3.0")
+AceHook:Embed(lib)
 
 local deformat = AceLibrary("Deformat-2.0")
 local CallbackHandler = LibStub("CallbackHandler-1.0")
@@ -163,12 +165,11 @@ local function LOOT_SLOT_CLEARED(event, slotID, ...)
   distributionCache[slotID] = nil
 end
 
--- PreHook the GiveMasterLoot function so we can intercept the slotID and candidate
-local _GiveMasterLoot = lib.origGiveMasterLoot or GiveMasterLoot
-lib.origGiveMasterLoot = _GiveMasterLoot
-GiveMasterLoot = function(slotID, candidateID, ...)
+-- Hook the GiveMasterLoot function so we can intercept the slotID and candidate
+local function GiveMasterLootHandler(slotID, candidateID, ...)
   local candidate = tostring(GetMasterLootCandidate(candidateID))
   local itemLink = tostring(GetLootSlotLink(slotID))
+  Debug("LibLootNotify: GiveMasterLoot(%s, %s)", itemLink, candidate)
   local slotData = {
     candidate   = candidate,
     itemLink    = itemLink,
@@ -184,11 +185,11 @@ GiveMasterLoot = function(slotID, candidateID, ...)
   -- overlap so it's safe to store them in the same table.
   distributionCache[slotID] = slotData
   distributionCache[distributionID] = slotData
-
-  -- Call the original function.
-  Debug("LibLootNotify: GiveMasterLoot(%s, %s)", itemLink, candidate)
-  _GiveMasterLoot(slotID, candidateID, ...)
 end
+
+-- Unhook the function if it's already hooked by older versions of the library
+if lib:IsHooked("GiveMasterLoot") then lib:Unhook("GiveMasterLoot") end
+lib:Hook("GiveMasterLoot", GiveMasterLootHandler, true)
 
 -- There's no need to wipe the tables on the LOOT_CLOSED event,
 -- the LOOT_SLOT_CLEARED and CHAT_MSG_LOOT events will clear the
