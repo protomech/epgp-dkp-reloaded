@@ -24,15 +24,14 @@ frame:UnregisterAllEvents()
 frame:SetScript("OnEvent", nil)
 
 -- Some tables we need to cache the contents of the loot slots
-local slotCache = {}
-local lootTimers = {}
-local lootCache = {}
+local distributionCache = {}
+local distributionTimers = {}
 
 -- Sets the timeout before emulating a loot message
 local EMULATE_TIMEOUT = 5
 
 -- Create a handle for a emulation timer
-local function GetTimerName(player, itemLink, quantity)
+local function GenerateDistributionID(player, itemLink, quantity)
   return format('%s:%s:%s',
                 tostring(player),
                 tostring(itemLink),
@@ -67,23 +66,24 @@ local function HandleLootMessage(msg)
     Debug('Firing LootReceived(%s, %s, %d)', player, itemLink, quantity)
 
     -- See if we can find a timer for the out of range bug
-    local timerName = GetTimerName(player, itemLink, quantity)
-    if lootTimers[timerName] then
+    local distributionID = GenerateDistributionID(player, itemLink, quantity)
+    if distributionTimers[distributionID] then
       -- A timer has been found for this item, stop that timer asap
-      Debug('Stopping loot message emulate timer %s', timerName)
-      AceTimer:CancelTimer(lootTimers[timerName], true)
-      lootTimers[timerName] = null
+      Debug('Stopping loot message emulate timer %s', distributionID)
+      AceTimer:CancelTimer(distributionTimers[distributionID], true)
+      distributionTimers[distributionID] = null
+      distributionCache[distributionID] = null
     end
 
-    -- See if we can find a entry in the lootCache.
+    -- See if we can find a entry in the distributionCache.
     -- This happens when the loot message is sent before the LOOT_SLOT_CLEARED event
-    local slotData = lootCache[timerName]
+    local slotData = distributionCache[distributionID]
     if slotData then
       -- The loot message for this item has been sent before the slot cleared event.
-      -- Clear out the slotCache
-      Debug('STOPPING all handling for %s, loot message sent before LOOT_SLOT_CLEARED.', timerName)
-      slotCache[slotData.slotID] = null
-      lootCache[timerName] = null
+      -- Clear out the distributionCache
+      Debug('STOPPING all handling for %s, loot message sent before LOOT_SLOT_CLEARED.', distributionID)
+      distributionCache[slotData.slotID] = null
+      distributionCache[distributionID] = null
     end
 
     callbacks:Fire("LootReceived", player, itemLink, quantity)
@@ -118,12 +118,13 @@ local function OnLootTimer(slotData)
   local candidate = slotData.candidate
   local itemLink = slotData.itemLink
   local quantity = slotData.quantity
-  local timerName = slotData.timerName
+  local distributionID = slotData.distributionID
 
-  if not timerName then return end
-  lootTimers[timerName] = null
-  lootCache[timerName] = null
+  if not distributionID then return end
+  distributionTimers[distributionID] = null
+  distributionCache[distributionID] = null
 
+  Debug('Emulating lootmessage for %s', distributionID)
   print(format('No loot message received while %s received %sx%s, player was probably out of range. Emulating loot message locally:',
                candidate,
                itemLink,
@@ -141,7 +142,7 @@ end
 --  This is where we detect who got the item
 local function LOOT_SLOT_CLEARED(event, slotID, ...)
   -- Someone looted a slot, lets see if we have someone registered for it
-  local slotData = slotCache[slotID]
+  local slotData = distributionCache[slotID]
   if slotData then
     -- Ok, we know who got the item but the server might also still send the
     -- 'player X receives Item Y' message. We'll need to wait for a little while
@@ -150,23 +151,16 @@ local function LOOT_SLOT_CLEARED(event, slotID, ...)
     -- only starts timers for loot that was handed out using GiveMasterLoot() and
     -- doesn't start timers for any normal loot.
 
-    -- Generate a name for the timer and store it in the slotData
-    local timerName = slotData.timerName
-    Debug("LibLootNotify: (%s) creating timer %s", event, timerName)
+    -- Fetch the name for the timer from the slotData
+    local distributionID = slotData.distributionID
+    Debug("LibLootNotify: (%s) creating timer %s", event, distributionID)
 
     -- Schedule a timer for this loot
-    lootTimers[timerName] = AceTimer:ScheduleTimer(OnLootTimer, EMULATE_TIMEOUT, slotData)
+    distributionTimers[distributionID] = AceTimer:ScheduleTimer(OnLootTimer, EMULATE_TIMEOUT, slotData)
   end
 
   -- Clear our slot entry since the slot is now empty
-  slotCache[slotID] = nil
-end
-
---- This handler gets called when the native loot frame gets closed
-local function LOOT_CLOSED(event, ...)
-  -- Clear the cache of loot slots
-  Debug('LOOT_CLOSED')
-  wipe(lootCache)
+  distributionCache[slotID] = nil
 end
 
 -- PreHook the GiveMasterLoot function so we can intercept the slotID and candidate
@@ -181,15 +175,24 @@ GiveMasterLoot = function(slotID, candidateID, ...)
     quantity    = select(3, GetLootSlotInfo(slotID)) or 1,
     slotID      = slotID
   }
-  local timerName = GetTimerName(candidate, itemLink, slotData.quantity)
-  slotData.timerName = timerName
+  local distributionID = GenerateDistributionID(candidate, itemLink, slotData.quantity)
+  slotData.distributionID = distributionID
 
-  slotCache[slotID] = slotData
-  lootCache[timerName] = slotData
+  -- Sometimes the CHAT_MSG_LOOT event is called before the LOOT_SLOT_CLEARED and sometimes
+  -- it's the way around. We're registering two ways of looking up the item in our table.
+  -- One way is by slotID and the other is by player:itemlink:quantity. These keys will never
+  -- overlap so it's safe to store them in the same table.
+  distributionCache[slotID] = slotData
+  distributionCache[distributionID] = slotData
 
-  _GiveMasterLoot(slotID, candidateID, ...)
+  -- Call the original function.
   Debug("LibLootNotify: GiveMasterLoot(%s, %s)", itemLink, candidate)
+  _GiveMasterLoot(slotID, candidateID, ...)
 end
+
+-- There's no need to wipe the tables on the LOOT_CLOSED event,
+-- the LOOT_SLOT_CLEARED and CHAT_MSG_LOOT events will clear the
+-- table keys themselves.
 
 --[[###############################################--
       REGISTER EVENTS
@@ -197,15 +200,12 @@ end
 
 frame:RegisterEvent("CHAT_MSG_LOOT")
 frame:RegisterEvent("LOOT_SLOT_CLEARED")
-frame:RegisterEvent("LOOT_CLOSED")
 frame:SetScript("OnEvent",
                 function(self, event, ...)
                   if event == "CHAT_MSG_LOOT" then
                     HandleLootMessage(...)
                   elseif event == "LOOT_SLOT_CLEARED" then
                     LOOT_SLOT_CLEARED(event, ...)
-                  elseif event == "LOOT_CLOSED" then
-                    LOOT_CLOSED(event, ...)
                   end
                 end)
 frame:Show()
@@ -227,4 +227,69 @@ function lib:DebugTest()
                '', '', '', '')
 end
 
+-- Print the content of the distribution caches
+function lib:PrintDistributionCaches()
+  Debug('distributionCache:')
+  for id=1, 20 do
+    local data = distributionCache[id]
+    if data then Debug(' - %s :: %s', id, data.distributionID) end
+  end
+  for id, data in pairs(distributionCache) do
+    if data then Debug(' - %s :: %s', id, data.distributionID) end
+  end
+  Debug('distributionTimers:')
+  for id, data in pairs(distributionTimers) do
+    Debug(' - %s :: %s', id, tostring(data))
+  end
+end
+
+-- This tests all the possible situations for the loot detection patch.
+function lib:LootTest()
+  -- Make a little array of itemlinks for testing purposes.
+  local items = {40592, 32386, 40244}
+  for id, itemID in pairs(items) do
+    local item = select(2, GetItemInfo(itemID))
+    if not item then return print(format('DEBUG ITEM %d NOT FOUND!', itemID)) end
+    items[id] = item
+  end
+
+  -- Backup all the functions we use for the looting patch and replace them with the unit test functions
+  local _GetMasterLootCandidate = GetMasterLootCandidate
+  GetMasterLootCandidate = function() return UnitName('player') end
+  local _GetLootSlotLink = GetLootSlotLink
+  GetLootSlotLink = function(slotID) return items[slotID] end
+  local _GetLootSlotInfo = GetLootSlotInfo
+  GetLootSlotInfo = function(slotID) return 1, 1, 1, 1, 1, 1 end
+  local ___GiveMasterLoot = _GiveMasterLoot
+  _GiveMasterLoot = function() end
+
+  -- Send an item with LOOT_SLOT_CLEARED event AFTER the loot message
+  Debug('--- ITEM 1 ---')
+  GiveMasterLoot(1, 1)
+  HandleLootMessage(LOOT_ITEM_SELF:format(items[1]), '', '', '', '')
+  LOOT_SLOT_CLEARED("LOOT_SLOT_CLEARED", 1)
+
+  -- Send an item with LOOT_SLOT_CLEARED event BEFORE the loot message
+  Debug('--- ITEM 2 ---')
+  GiveMasterLoot(2, 1)
+  LOOT_SLOT_CLEARED("LOOT_SLOT_CLEARED", 2)
+  HandleLootMessage(LOOT_ITEM_SELF:format(items[2]), '', '', '', '')
+
+  -- Sends an item without sending a loot message, this will trigger the emulated loot message
+  Debug('--- ITEM 3 ---')
+  GiveMasterLoot(3, 1)
+  LOOT_SLOT_CLEARED("LOOT_SLOT_CLEARED", 3)
+
+  Debug('Showing tables, only %s should show up here.', items[3])
+  lib:PrintDistributionCaches()
+
+  -- Restore the old functions
+  _GiveMasterLoot = __GiveMasterLoot
+  GetMasterLootCandidate = _GetMasterLootCandidate
+  GetLootSlotLink = _GetLootSlotLink
+  GetLootSlotInfo = _GetLootSlotInfo
+end
+
+-- /script LibStub("LibLootNotify-1.0"):PrintDistributionCaches()
+-- /script LibStub("LibLootNotify-1.0"):LootTest()
 -- /script LibStub("LibLootNotify-1.0"):DebugTest()
