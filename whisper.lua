@@ -6,7 +6,10 @@ local senderMap = {}
 
 function mod:CHAT_MSG_WHISPER(event_name, msg, sender)
   if not UnitInRaid("player") then return end
-  if not msg:match("epgp standby") then return end
+
+  -- We're going to capitalize the name of the player if it's needed anyway.
+  msg = msg:lower()
+  if msg:sub(1, 12) ~= 'epgp standby' then return end
 
   local member = msg:match("epgp standby ([^ ]+)")
   if member then
