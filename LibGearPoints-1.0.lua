@@ -212,6 +212,16 @@ local CUSTOM_ITEM_DATA = {
   [45506] = { 4, 226, "INVTYPE_RING" },
 }
 
+-- The default quality threshold:
+-- 0 - Poor
+-- 1 - Uncommon
+-- 2 - Common
+-- 3 - Rare
+-- 4 - Epic
+-- 5 - Legendary
+-- 6 - Artifact
+local quality_threshold = 4
+
 local recent_items_queue = {}
 local recent_items_map = {}
 
@@ -236,6 +246,22 @@ function lib:GetRecentItemLink(i)
   return recent_items_queue[i]
 end
 
+--- Return the currently set quality threshold.
+function lib:GetQualityThreshold()
+  return quality_threshold
+end
+
+--- Set the minimum quality threshold.
+-- @param itemQuality Lowest allowed item quality.
+function lib:SetQualityThreshold(itemQuality)
+  itemQuality = itemQuality and tonumber(itemQuality)
+  if not itemQuality or itemQuality > 6 or itemQuality < 0 then
+    return error("Usage: SetQualityThreshold(itemQuality): 'itemQuality' - number [0,6].", 3)
+  end
+
+  quality_threshold = itemQuality
+end
+
 function lib:GetValue(item)
   if not item then return end
 
@@ -252,8 +278,8 @@ function lib:GetValue(item)
     rarity, level, equipLoc = unpack(CUSTOM_ITEM_DATA[itemID])
   end
 
-  -- Non-rare and above items do not have GP value
-  if not rarity or rarity < 2 then
+  -- Is the item above our minimum threshold?
+  if not rarity or rarity < quality_threshold then
     return nil, nil, level, rarity, equipLoc
   end
 
