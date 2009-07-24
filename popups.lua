@@ -176,6 +176,44 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
                            end,
 }
 
+StaticPopupDialogs["EPGP_BOSS_ATTEMPT"] = {
+  text = L["Wiped on %s. Award EP?"],
+  button1 = ACCEPT,
+  button2 = CANCEL,
+  timeout = 0,
+  whileDead = 1,
+  hasEditBox = 1,
+  OnAccept = function(self)
+               local ep = tonumber(self.editBox:GetText())
+               EPGP:IncMassEPBy(self.reason .. " (attempt)", ep)
+             end,
+
+  OnHide = function(self)
+             if ChatFrameEditBox:IsShown() then
+               ChatFrameEditBox:SetFocus()
+             end
+             self.editBox:SetText("")
+             self.reason = nil
+           end,
+
+  OnUpdate = function(self, elapsed)
+               local ep = tonumber(self.editBox:GetText())
+               if EPGP:CanIncEPBy(self.reason, ep) then
+                 self.button1:Enable()
+               else
+                 self.button1:Disable()
+               end
+             end,
+
+  EditBoxOnEnterPressed = function(self)
+                            self:GetParent().button1:Click()
+                          end,
+
+  EditBoxOnEscapePressed = function(self)
+                             self:GetParent():Hide()
+                           end,
+}
+
 StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
   text = "You are the Loot Master, would you like to use EPGP Lootmaster to distribute loot?\r\n\r\n(You will be asked again next time. Use the configuration panel to change this behaviour)",
   button1 = YES,

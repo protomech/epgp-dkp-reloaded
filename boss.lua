@@ -73,7 +73,7 @@ function mod:COMBAT_LOG_EVENT_UNFILTERED(event_name,
   if event == "UNIT_DIED" and dest:sub(5, 5) == "3" then
     local npc_id = tonumber(string.sub(dest, -12, -7), 16)
     if BOSSES[npc_id] then
-      self:SendMessage("BossKilled", dest_name)
+      self:SendMessage("BossKilled", dest_name, "kill")
     end
   end
 end
@@ -91,7 +91,7 @@ local function IsRLorML()
   return false
 end
 
-function mod:PopAwardQueue()
+function mod:PopAwardQueue(event_name)
   if in_combat then return end
 
   if #award_queue == 0 then
@@ -102,26 +102,30 @@ function mod:PopAwardQueue()
     return
   end
 
-  if StaticPopup_Visible("EPGP_BOSS_DEAD") then
+  if StaticPopup_Visible("EPGP_BOSS_DEAD") or StaticPopup_Visible("EPGP_BOSS_ATTEMPT") then
     return
   end
 
   local boss_name = table.remove(award_queue, 1)
-  local dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
+  if event_name == "kill" then
+	local dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
+  else
+	local dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
+  end
   if dialog then
     dialog.reason = boss_name
   end
 end
 
-local function BossKilled(event_name, boss_name)
-  Debug("Boss killed: %s", boss_name)
+local function BossAttempt(event_name, boss_name)
+  Debug("Boss attempt: %s (%s)", boss_name, event_name)
   -- Temporary fix since we cannot unregister DBM callbacks
   if not mod:IsEnabled() then return end
 
   if CanEditOfficerNote() and IsRLorML() then
     tinsert(award_queue, boss_name)
     if not timer then
-      timer = mod:ScheduleRepeatingTimer("PopAwardQueue", 0.1)
+      timer = mod:ScheduleRepeatingTimer("PopAwardQueue", 0.1, event_name)
     end
   end
 end
@@ -141,6 +145,7 @@ end
 mod.dbDefaults = {
   profile = {
     enabled = false,
+	wipedetection = false,
   },
 }
 
@@ -152,6 +157,13 @@ mod.optionsArgs = {
     type = "description",
     name = L["Automatic boss tracking by means of a popup to mass award EP to the raid and standby when a boss is killed."]
   },
+  wipedetection = {
+	type = "toggle",
+	name = L["Wipe awards"],
+	desc = L["Awards for wipes on bosses. Requires Deadly Boss Mods"],
+	order = 2,
+	disabled = function(v) return not DBM end,
+  },
 }
 
 function mod:OnEnable()
@@ -161,10 +173,14 @@ function mod:OnEnable()
     EPGP:Print(L["Using DBM for boss kill tracking"])
     DBM:RegisterCallback("kill",
                          function (mod)
-                           BossKilled("kill", mod.combatInfo.name)
+                           BossAttempt("kill", mod.combatInfo.name)
+                         end)
+    DBM:RegisterCallback("wipe",
+                         function (mod)
+                           BossAttempt("wipe", mod.combatInfo.name)
                          end)
   else
     self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    self:RegisterMessage("BossKilled", BossKilled)
+    self:RegisterMessage("BossKilled", BossAttempt)
   end
 end
