@@ -3,8 +3,9 @@ local mod = EPGP:NewModule("announce")
 local Debug = LibStub("LibDebug-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
-function mod:Announce(fmt, ...)
-  local medium = self.db.profile.medium
+function mod:AnnounceTo(medium, fmt, ...)
+  if not medium then return end
+
   local channel = self.db.profile.channel or 0
 
   -- Override raid and party if we are not grouped
@@ -30,6 +31,12 @@ function mod:Announce(fmt, ...)
   end
 
   SendChatMessage(str, medium, nil, GetChannelName(channel))
+end
+
+function mod:Announce(fmt, ...)
+  local medium = self.db.profile.medium
+
+  return mod:AnnounceTo(medium, fmt, ...)
 end
 
 function mod:EPAward(event_name, name, reason, amount, mass)
