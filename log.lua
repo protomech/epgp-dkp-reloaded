@@ -58,6 +58,9 @@ local function LogRecordToString(record)
   elseif kind == "GP" then
     return string.format(L["%s: %+d GP (%s) to %s"],
                          date("%Y-%m-%d %H:%M", timestamp), amount, reason, name)
+  elseif kind == "BI" then
+    return string.format(L["%s: %s to %s"],
+                         date("%Y-%m-%d %H:%M", timestamp), reason, name)
   else
     assert(false, "Unknown record in the log")
   end
@@ -95,6 +98,8 @@ function mod:UndoLastAction()
     EPGP:IncEPBy(name, L["Undo"].." "..reason, -amount, false, true)
   elseif kind == "GP" then
     EPGP:IncGPBy(name, L["Undo"].." "..reason, -amount, false, true)
+  elseif kind == "BI" then
+    EPGP:BankItem(L["Undo"].." "..reason, true)
   else
     assert(false, "Unknown record in the log")
   end
@@ -156,6 +161,17 @@ function mod:Export()
   d.timestamp = GetTimestamp()
 
   d.roster = EPGP:ExportRoster()
+
+  d.loot = {}
+  for i, record in ipairs(self.db.profile.log) do
+    local timestamp, kind, name, reason, amount = unpack(record)
+    if kind == "GP" or kind == "BI" then
+      local id = tonumber(reason:match("item:(%d+)"))
+      if id then
+        table.insert(d.loot, {timestamp, name, id, amount})
+      end
+    end
+  end
 
   return JSON.Serialize(d):gsub("\124", "\124\124")
 end
@@ -253,6 +269,7 @@ mod.dbDefaults = {
 function mod:OnEnable()
   EPGP.RegisterCallback(mod, "EPAward", AppendToLog, "EP")
   EPGP.RegisterCallback(mod, "GPAward", AppendToLog, "GP")
+  EPGP.RegisterCallback(mod, "BankedItem", AppendToLog, "BI")
 
   -- Upgrade the logs from older dbs
   if EPGP.db.profile.log then

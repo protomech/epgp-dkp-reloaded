@@ -104,6 +104,10 @@
 -- GPAward(name, reason, amount, mass): Fired when a GP award is
 -- made. mass is set to true if this is a mass award or decay.
 --
+-- BankedItem(name, reason, amount, mass): Fired when an item is
+-- disenchanted or deposited directly to the Guild Bank. Name is
+-- always the content of GUILD_BANK, amount is 0 and mass always nil.
+--
 -- StartRecurringAward(reason, amount, mins): Fired when recurring
 -- awards are started.
 --
@@ -706,6 +710,10 @@ function EPGP:IncGPBy(name, reason, amount, mass, undo)
   end
 
   return main or name
+end
+
+function EPGP:BankItem(reason, undo)
+  callbacks:Fire("BankedItem", GUILD_BANK, reason, 0, false, undo)
 end
 
 function EPGP:GetDecayPercent()

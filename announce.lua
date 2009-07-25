@@ -49,6 +49,10 @@ function mod:GPAward(event_name, name, reason, amount, mass)
   mod:Announce(L["%+d GP (%s) to %s"], amount, reason, name)
 end
 
+function mod:BankedItem(event_name, name, reason, amount, mass)
+  mod:Announce(L["%s to %s"], reason, name)
+end
+
 function mod:MassEPAward(event_name, names, reason, amount)
   local first = true
   local awarded
@@ -133,6 +137,7 @@ mod.optionsArgs = {
       EPAward = L["A member is awarded EP"],
       MassEPAward = L["Guild or Raid are awarded EP"],
       GPAward = L["A member is credited GP"],
+      BankedItem = L["An item was disenchanted or deposited into the guild bank"],
       Decay = L["EPGP decay"],
       StartRecurringAward = L["Recurring awards start"],
       StopRecurringAward = L["Recurring awards stop"],
