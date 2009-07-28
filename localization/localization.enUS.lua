@@ -87,6 +87,7 @@ L["Sets the announce medium EPGP will use to announce EPGP actions."] = true
 L["Sets the custom announce channel name used to announce EPGP actions."] = true
 L["Show everyone"] = true
 L["Standby whispers in raid"] = true
+L["Standby"] = true
 L["Start recurring award (%s) %d EP/%s"] = true
 L["Stop recurring award"] = true
 L["The imported data is invalid"] = true

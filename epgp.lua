@@ -99,7 +99,9 @@
 -- EPAward(name, reason, amount, mass): Fired when an EP award is
 -- made.  mass is set to true if this is a mass award or decay.
 --
--- MassEPAward(names, reason, amount): Fired when a mass EP award is made.
+-- MassEPAward(names, reason, amount,
+--             extras_names, extras_reason, extras_amount): Fired
+-- when a mass EP award is made.
 --
 -- GPAward(name, reason, amount, mass): Fired when a GP award is
 -- made. mass is set to true if this is a mass award or decay.
@@ -759,18 +761,32 @@ end
 
 function EPGP:IncMassEPBy(reason, amount)
   local awarded = {}
+  local extras_awarded = {}
   local extras_amount = math.floor(global_config.extras_p * 0.01 * amount)
+  local extras_reason = reason .. " - " .. L["Standby"]
+
   for i=1,EPGP:GetNumMembers() do
     local name = EPGP:GetMember(i)
     if EPGP:IsMemberInAwardList(name) then
       local main = EPGP:GetMain(name)
-      if not awarded[main] then
-        local award_amount = EPGP:IsMemberInExtrasList(name) and extras_amount or amount
-        awarded[EPGP:IncEPBy(name, reason, award_amount, true)] = true
+      if not awarded[main] or not extras_awarded[main] then
+        if EPGP:IsMemberInExtrasList(name) then
+          extras_awarded[EPGP:IncEPBy(name, extras_reason,
+                                      extras_amount, true)] = true
+        else
+          awarded[EPGP:IncEPBy(name, reason, amount, true)] = true
+        end
       end
     end
   end
-  callbacks:Fire("MassEPAward", awarded, reason, amount)
+  if next(awarded) then
+    if next(extras_awarded) then
+      callbacks:Fire("MassEPAward", awarded, reason, amount,
+                     extras_awarded, extras_reason, extras_amount)
+    else
+      callbacks:Fire("MassEPAward", awarded, reason, amount)
+    end
+  end
 end
 
 function EPGP:ReportErrors(outputFunc)

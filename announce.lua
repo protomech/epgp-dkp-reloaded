@@ -53,11 +53,11 @@ function mod:BankedItem(event_name, name, reason, amount, mass)
   mod:Announce(L["%s to %s"], reason, name)
 end
 
-function mod:MassEPAward(event_name, names, reason, amount)
+local function MakeCommaSeparated(t)
   local first = true
-  local awarded
+  local awarded = ""
 
-  for name in pairs(names) do
+  for name in pairs(t) do
     if first then
       awarded = name
       first = false
@@ -66,7 +66,15 @@ function mod:MassEPAward(event_name, names, reason, amount)
     end
   end
 
-  mod:Announce(L["%+d EP (%s) to %s"], amount, reason, awarded)
+  return awarded
+end
+
+function mod:MassEPAward(event_name, names, reason, amount,
+                         extras_names, extras_reason, extras_amount)
+  local normal = MakeCommaSeparated(names)
+  local extras = MakeCommaSeparated(extras_names)
+  mod:Announce(L["%+d EP (%s) to %s"], amount, reason, normal)
+  mod:Announce(L["%+d EP (%s) to %s"], extras_amount, extras_reason, extras)
 end
 
 function mod:Decay(event_name, decay_p)
