@@ -243,7 +243,7 @@ StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
 
 StaticPopupDialogs["EPGP_NEW_VERSION"] = {
   text = "|cFFFFFF00EPGP " .. EPGP.version .. "|r\n" ..
-    L["You can now check your epgp standings on the web: http://www.epgpweb.com"], -- /script EPGP.db.profile.last_version = nil
+    L["You can now check your epgp standings and loot on the web: http://www.epgpweb.com"], -- /script EPGP.db.profile.last_version = nil
   button1 = OKAY,
   hideOnEscape = 1,
   timeout = 0,

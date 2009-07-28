@@ -28,12 +28,19 @@ end
 local callbacks = mod.callbacks
 
 local timestamp_t = {}
-local function GetTimestamp()
+local function GetTimestamp(diff)
   timestamp_t.month = select(2, CalendarGetDate())
   timestamp_t.day = select(3, CalendarGetDate())
   timestamp_t.year = select(4, CalendarGetDate())
   timestamp_t.hour = select(1, GetGameTime())
   timestamp_t.min = select(2, GetGameTime())
+  if diff then
+    timestamp_t.month = timestamp_t.month + (diff.month or 0)
+    timestamp_t.day = timestamp_t.day + (diff.day or 0)
+    timestamp_t.year = timestamp_t.year + (diff.year or 0)
+    timestamp_t.hour = timestamp_t.hour + (diff.hour or 0)
+    timestamp_t.min = timestamp_t.min + (diff.min or 0)
+  end
   return time(timestamp_t)
 end
 
@@ -147,6 +154,41 @@ function mod:Snapshot()
   end
   t.time = GetTimestamp()
   GS:Snapshot(t)
+end
+
+local function swap(t, i, j)
+  t[i], t[j] = t[j], t[i]
+end
+
+local function reverse(t)
+  for i=1,math.floor(#t / 2) do
+    swap(t, i, #t - i + 1)
+  end
+end
+
+function mod:TrimToOneMonth()
+  -- The log is sorted in reverse timestamp. We do not want to remove
+  -- one item at a time since this will result in O(n^2) time. So we
+  -- build it anew.
+  local new_log = {}
+  local last_timestamp = GetTimestamp({ month = -1 })
+
+  -- Go through the log in reverse order and stop when we reach an
+  -- entry older than one month.
+  for i=#self.db.profile.log,1,-1 do
+    local record = self.db.profile.log[i]
+    if record[1] < last_timestamp then
+      break
+    end
+    table.insert(new_log, record)
+  end
+
+  -- The new log is in reverse order now so reverse it.
+  reverse(new_log)
+
+  self.db.profile.log = new_log
+
+  callbacks:Fire("LogChanged", #self.db.profile.log)
 end
 
 function mod:Export()

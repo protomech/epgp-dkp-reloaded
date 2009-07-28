@@ -417,6 +417,32 @@ local function CreateEPGPLogFrame()
       EPGPExportImportFrame:Show()
     end)
 
+  local trim_log = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+  trim_log:SetNormalFontObject("GameFontNormalSmall")
+  trim_log:SetHighlightFontObject("GameFontHighlightSmall")
+  trim_log:SetDisabledFontObject("GameFontDisableSmall")
+  trim_log:SetHeight(BUTTON_HEIGHT)
+  trim_log:SetPoint("CENTER", f, "CENTER")
+  trim_log:SetPoint("BOTTOM", import, "BOTTOM")
+  trim_log:SetText(L["Trim Log"])
+  trim_log:SetWidth(import:GetTextWidth() + BUTTON_TEXT_PADDING)
+  trim_log:SetScript(
+    "OnClick",
+    function(self, button, down)
+      EPGP:GetModule("log"):TrimToOneMonth()
+    end)
+  trim_log:SetScript(
+    "OnEnter",
+    function(self)
+      GameTooltip_SetDefaultAnchor(GameTooltip, self)
+      GameTooltip:AddLine(L["Trims log to only entries in the last month."])
+      GameTooltip:AddLine(L["You cannot undo this action!"])
+      GameTooltip:ClearAllPoints()
+      GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
+      GameTooltip:Show()
+    end)
+  trim_log:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
   local undo = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
   undo:SetNormalFontObject("GameFontNormalSmall")
   undo:SetHighlightFontObject("GameFontHighlightSmall")
