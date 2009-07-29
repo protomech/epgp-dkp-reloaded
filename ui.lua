@@ -429,7 +429,7 @@ local function CreateEPGPLogFrame()
   trim_log:SetScript(
     "OnClick",
     function(self, button, down)
-      EPGP:GetModule("log"):TrimToOneMonth()
+      StaticPopup_Show("EPGP_TRIM_LOG")
     end)
   trim_log:SetScript(
     "OnEnter",

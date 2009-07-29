@@ -22,6 +22,7 @@ L["Announce when:"] = true
 L["Announce"] = true
 L["Announcement of EPGP actions"] = true
 L["Announces EPGP actions to the specified medium."] = true
+L["Are you sure you want to delete log entries older than one month?"] = true
 L["Automatic boss tracking by means of a popup to mass award EP to the raid and standby when a boss is killed."] = true
 L["Automatic boss tracking"] = true
 L["Automatic handling of the standby list through whispers when in raid. When this is enabled, the standby list is cleared after each reward."] = true
