@@ -7,13 +7,13 @@ local senderMap = {}
 function mod:CHAT_MSG_WHISPER(event_name, msg, sender)
   if not UnitInRaid("player") then return end
 
-  -- We're going to capitalize the name of the player if it's needed anyway.
-  msg = msg:lower()
-  if msg:sub(1, 12) ~= 'epgp standby' then return end
+  if msg:sub(1, 12):lower() ~= 'epgp standby' then return end
 
   local member = msg:match("epgp standby ([^ ]+)")
   if member then
-    member = member:sub(1,1):upper()..member:sub(2):lower()
+    -- http://lua-users.org/wiki/LuaUnicode
+    local firstChar, offset = member:match("([%z\1-\127\194-\244][\128-\191]*)()")
+    member = firstChar:upper()..member:sub(offset):lower()
   else
     member = sender
   end
