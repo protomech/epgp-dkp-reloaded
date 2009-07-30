@@ -34,18 +34,6 @@ def _multipart_encode(vars):
 
   return boundary, buf.getvalue()
 
-class MultipartHTTPPostPreprocessor(urllib2.HTTPHandler):
-  def http_request(self, req):
-    vars = req.get_data()
-    assert type(vars) == dict
-
-    boundary, data = _multipart_encode(vars)
-    content_type = 'multipart/form-data; boundary=%s' % boundary
-    req.add_unredirected_header('Content-type', content_type)
-    req.add_data(data)
-
-    return urllib2.HTTPHandler.http_request(self, req)
-
 # All non enUS locales. We do not want to fetch the enUS locale as
 # that is our master locale and it might hold data that is not on
 # curseforge yet.
@@ -71,9 +59,15 @@ def GetLocalization(locale):
     }
 
   logging.info('Fetching %s localization' % locale)
-  localization = urllib2.urlopen(
-    'http://wow.curseforge.com/projects/epgp-dkp-reloaded/localization/export.txt',
-    params).read()
+  req = urllib2.Request(
+    'http://wow.curseforge.com/addons/epgp-dkp-reloaded/localization/export.txt')
+  boundary, data = _multipart_encode(params)
+  content_type = 'multipart/form-data; boundary=%s' % boundary
+  req.add_unredirected_header('Content-type', content_type)
+  req.add_data(data)
+
+  http_handler = urllib2.HTTPHandler()
+  localization = http_handler.http_open(req).read()
 
   return localization
 
@@ -97,6 +91,4 @@ def main():
     file.close()
 
 if __name__ == "__main__":
-  urllib2.install_opener(urllib2.build_opener(MultipartHTTPPostPreprocessor))
-
   sys.exit(main())
