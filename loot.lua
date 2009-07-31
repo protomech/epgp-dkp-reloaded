@@ -64,14 +64,16 @@ function mod:PopLootQueue()
   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(item)
   local r, g, b = GetItemQualityColor(itemRarity)
 
-  local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
-                                    texture = itemTexture,
-                                    name = itemName,
-                                    color = {r, g, b, 1},
-                                    link = itemLink
-                                  })
-  if dialog then
-    dialog.name = player
+  if EPGP:GetEPGP(player) then
+    local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
+                                      texture = itemTexture,
+                                      name = itemName,
+                                      color = {r, g, b, 1},
+                                      link = itemLink
+                                    })
+    if dialog then
+      dialog.name = player
+    end
   end
 end
 
