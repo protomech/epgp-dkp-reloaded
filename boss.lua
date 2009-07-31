@@ -108,9 +108,9 @@ function mod:PopAwardQueue(event_name)
 
   local boss_name = table.remove(award_queue, 1)
   if event_name == "kill" then
-	local dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
+    local dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
   else
-	local dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
+    local dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
   end
   if dialog then
     dialog.reason = boss_name
@@ -145,7 +145,7 @@ end
 mod.dbDefaults = {
   profile = {
     enabled = false,
-	wipedetection = false,
+    wipedetection = false,
   },
 }
 
@@ -158,11 +158,11 @@ mod.optionsArgs = {
     name = L["Automatic boss tracking by means of a popup to mass award EP to the raid and standby when a boss is killed."]
   },
   wipedetection = {
-	type = "toggle",
-	name = L["Wipe awards"],
-	desc = L["Awards for wipes on bosses. Requires Deadly Boss Mods"],
-	order = 2,
-	disabled = function(v) return not DBM end,
+    type = "toggle",
+    name = L["Wipe awards"],
+    desc = L["Awards for wipes on bosses. Requires Deadly Boss Mods"],
+    order = 2,
+    disabled = function(v) return not DBM end,
   },
 }
 
