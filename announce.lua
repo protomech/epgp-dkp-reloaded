@@ -72,9 +72,12 @@ end
 function mod:MassEPAward(event_name, names, reason, amount,
                          extras_names, extras_reason, extras_amount)
   local normal = MakeCommaSeparated(names)
-  local extras = MakeCommaSeparated(extras_names)
   mod:Announce(L["%+d EP (%s) to %s"], amount, reason, normal)
-  mod:Announce(L["%+d EP (%s) to %s"], extras_amount, extras_reason, extras)
+
+  if extras_names then
+    local extras = MakeCommaSeparated(extras_names)
+    mod:Announce(L["%+d EP (%s) to %s"], extras_amount, extras_reason, extras)
+  end
 end
 
 function mod:Decay(event_name, decay_p)
