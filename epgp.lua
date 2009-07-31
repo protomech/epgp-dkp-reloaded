@@ -768,7 +768,13 @@ function EPGP:IncMassEPBy(reason, amount)
   for i=1,EPGP:GetNumMembers() do
     local name = EPGP:GetMember(i)
     if EPGP:IsMemberInAwardList(name) then
-      local main = EPGP:GetMain(name)
+      -- EPGP:GetMain() will return the input name if it doesn't find a main,
+      -- so we can't use it to validate that this actually is a character who
+      -- can recieve EP.
+      --
+      -- EPGP:GetEPGP() returns nil if it can't find a valid member based on
+      -- the name however.
+      local _, _, main = EPGP:GetEPGP(name)
       if not awarded[main] or not extras_awarded[main] then
         if EPGP:IsMemberInExtrasList(name) then
           extras_awarded[EPGP:IncEPBy(name, extras_reason,
