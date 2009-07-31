@@ -107,11 +107,13 @@ function mod:PopAwardQueue(event_name)
   end
 
   local boss_name = table.remove(award_queue, 1)
+  local dialog
   if event_name == "kill" then
-    local dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
+    dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
   else
-    local dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
+    dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
   end
+
   if dialog then
     dialog.reason = boss_name
   end
