@@ -1289,16 +1289,17 @@ local function CreateEPGPFrameStandings()
     r:SetScript(
       "OnEnter",
       function(self)
+        GameTooltip_SetDefaultAnchor(GameTooltip, self)
+        GameTooltip:AddLine(GS:GetRank(self.name))
         if EPGP:GetNumAlts(self.name) > 0 then
-          GameTooltip_SetDefaultAnchor(GameTooltip, self)
-          GameTooltip:AddLine(L["Alts"])
+          GameTooltip:AddLine("\n"..L["Alts"])
           for i=1,EPGP:GetNumAlts(self.name) do
             GameTooltip:AddLine(EPGP:GetAlt(self.name, i), 1, 1, 1)
           end
-          GameTooltip:ClearAllPoints()
-          GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
-          GameTooltip:Show()
         end
+        GameTooltip:ClearAllPoints()
+        GameTooltip:SetPoint("TOPLEFT", self, "TOPRIGHT")
+        GameTooltip:Show()
       end)
     r:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end

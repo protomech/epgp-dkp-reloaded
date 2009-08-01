@@ -112,6 +112,11 @@ function lib:GetClass(name)
   if e then return e.class end
 end
 
+function lib:GetRank(name)
+  local e = cache[name]
+  if e then return e.rank end
+end
+
 function lib:GetGuildInfo()
   return guild_info
 end
@@ -253,7 +258,7 @@ local function Frame_OnUpdate(self, elapsed)
   Debug("Processing from %d to %d members", index, last_index)
 
   for i = index, last_index do
-    local name, _, _, _, _, _, _, note, _, _, class = GetGuildRosterInfo(i)
+    local name, rank, _, _, _, _, _, note, _, _, class = GetGuildRosterInfo(i)
     if name then
       local entry = cache[name]
       local pending = pending_note[name]
@@ -262,11 +267,13 @@ local function Frame_OnUpdate(self, elapsed)
         cache[name] = entry
       end
 
+      entry.rank = rank
+      entry.class = class
+
       -- Mark this note as seen
       entry.seen = true
       if entry.note ~= note then
         entry.note = note
-        entry.class = class
         -- We want to delay all GuildNoteChanged calls until we have a
         -- complete view of the guild, otherwise alts might not be
         -- rejected (we read alts note before we even know about the
