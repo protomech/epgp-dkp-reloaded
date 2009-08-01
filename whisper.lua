@@ -9,7 +9,7 @@ function mod:CHAT_MSG_WHISPER(event_name, msg, sender)
 
   if msg:sub(1, 12):lower() ~= 'epgp standby' then return end
 
-  local member = msg:match("epgp standby ([^ ]+)")
+  local member = msg:sub(13):match("([^ ]+)")
   if member then
     -- http://lua-users.org/wiki/LuaUnicode
     local firstChar, offset = member:match("([%z\1-\127\194-\244][\128-\191]*)()")
