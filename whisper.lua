@@ -33,20 +33,25 @@ function mod:CHAT_MSG_WHISPER(event_name, msg, sender)
   end
 end
 
-local function SendNotifiesAndClearExtras(event_name, names, reason, amount)
+local function SendNotifiesAndClearExtras(
+    event_name, names, reason, amount,
+    extras_awarded, extras_reason, extras_amount)
   EPGP:GetModule("announce"):AnnounceTo(
     "GUILD",
     L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"])
-  for member, sender in pairs(senderMap) do
-    if EPGP:IsMemberInExtrasList(member) then
-      SendChatMessage(L["%+d EP (%s) to %s"]:format(amount, reason, member),
-                      "WHISPER", nil, sender)
-      SendChatMessage(
-        L["%s is now removed from the award list"]:format(member),
-        "WHISPER", nil, sender)
-      EPGP:DeSelectMember(member)
+  if extras_awarded then
+    for member,_ in pairs(extras_awarded) do
+      local sender = senderMap[member]
+      if sender then
+        SendChatMessage(L["%+d EP (%s) to %s"]:format(
+                          extras_amount, extras_reason, member),
+                        "WHISPER", nil, sender)
+        SendChatMessage(
+          L["%s is now removed from the award list"]:format(member),
+          "WHISPER", nil, sender)
+      end
+      senderMap[member] = nil
     end
-    senderMap[member] = nil
   end
 end
 
