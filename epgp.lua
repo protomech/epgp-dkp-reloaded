@@ -666,7 +666,7 @@ end
 function EPGP:IncEPBy(name, reason, amount, mass, undo)
   -- When we do mass EP or decay we know what we are doing even though
   -- CanIncEPBy returns false
-  assert(EPGP:CanIncEPBy(reason, amount) or mass)
+  assert(EPGP:CanIncEPBy(reason, amount) or mass or undo)
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
@@ -698,7 +698,7 @@ end
 function EPGP:IncGPBy(name, reason, amount, mass, undo)
   -- When we do mass GP or decay we know what we are doing even though
   -- CanIncGPBy returns false
-  assert(EPGP:CanIncGPBy(reason, amount) or mass)
+  assert(EPGP:CanIncGPBy(reason, amount) or mass or undo)
   assert(type(name) == "string")
 
   local ep, gp, main = self:GetEPGP(name)
