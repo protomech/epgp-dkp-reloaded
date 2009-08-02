@@ -110,7 +110,7 @@ function mod:PopAwardQueue(event_name)
   local dialog
   if event_name == "kill" then
     dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
-  else
+  elseif event_name == "wipe" and mod.db.profile.wipedetection then
     dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
   end
 
