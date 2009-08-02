@@ -775,7 +775,7 @@ function EPGP:IncMassEPBy(reason, amount)
       -- EPGP:GetEPGP() returns nil if it can't find a valid member based on
       -- the name however.
       local _, _, main = EPGP:GetEPGP(name)
-      if not awarded[main] or not extras_awarded[main] then
+      if not awarded[main] and not extras_awarded[main] then
         if EPGP:IsMemberInExtrasList(name) then
           extras_awarded[EPGP:IncEPBy(name, extras_reason,
                                       extras_amount, true)] = true
