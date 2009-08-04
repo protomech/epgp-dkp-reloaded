@@ -46,6 +46,7 @@ local function SendNotifiesAndClearExtras(
         SendChatMessage(L["%+d EP (%s) to %s"]:format(
                           extras_amount, extras_reason, member),
                         "WHISPER", nil, sender)
+        EPGP:DeSelectMember(member)
         SendChatMessage(
           L["%s is now removed from the award list"]:format(member),
           "WHISPER", nil, sender)
