@@ -33,7 +33,9 @@ local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_RANGED = 1.5,
   INVTYPE_RANGEDRIGHT = 1.5,
   INVTYPE_THROWN = 0.5,
-  INVTYPE_RELIC = 0.5
+  INVTYPE_RELIC = 0.5,
+  -- Hack for Tier 9 25M heroic tokens.
+  INVTYPE_CUSTOM_MULTISLOT_TIER = 0.9,
 }
 
 -- This is the low price equipslot multiplier (off hand weapons, non
@@ -210,6 +212,11 @@ local CUSTOM_ITEM_DATA = {
   -- Archivum Data Disc
   [45857] = { 4, 239, "INVTYPE_RING" },
   [45506] = { 4, 226, "INVTYPE_RING" },
+
+  -- T9 (25M heroic)
+  [47557] = { 4, 258, "INVTYPE_CUSTOM_MULTISLOT_TIER" },
+  [47558] = { 4, 258, "INVTYPE_CUSTOM_MULTISLOT_TIER" },
+  [47559] = { 4, 258, "INVTYPE_CUSTOM_MULTISLOT_TIER" },
 }
 
 -- The default quality threshold:
