@@ -360,7 +360,7 @@ local slot_table = {
   INVTYPE_RANGEDRIGHT = {"RangedSlot", nil},
   INVTYPE_FINGER = {"Finger0Slot", "Finger1Slot"},
   INVTYPE_HOLDABLE = {"SecondaryHandSlot", "MainHandSlot"},
-  INVTYPE_TRINKET = {"Trinket0Slot", "Trinket1Slot"}
+  INVTYPE_TRINKET = {"Trinket0Slot", "Trinket1Slot"},
   -- Hack for Tier 9 25M heroic tokens.
   -- TODO(alkis): Fix this to return more than 2 slots because these tokens
   -- can go in any of 5 slots.
