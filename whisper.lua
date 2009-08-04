@@ -33,12 +33,23 @@ function mod:CHAT_MSG_WHISPER(event_name, msg, sender)
   end
 end
 
+local function AnnounceMedium()
+  local medium = mod.db.profile.medium
+  if medium ~= "NONE" then
+    return medium
+  end
+end
+
 local function SendNotifiesAndClearExtras(
     event_name, names, reason, amount,
     extras_awarded, extras_reason, extras_amount)
-  EPGP:GetModule("announce"):AnnounceTo(
-    "GUILD",
-    L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"])
+  local medium = AnnounceMedium()
+  if medium then
+    EPGP:GetModule("announce"):AnnounceTo(
+      medium,
+      L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"])
+  end
+
   if extras_awarded then
     for member,_ in pairs(extras_awarded) do
       local sender = senderMap[member]
@@ -59,6 +70,7 @@ end
 mod.dbDefaults = {
   profile = {
     enable = false,
+    memdium = "GUILD",
   }
 }
 
@@ -69,6 +81,17 @@ mod.optionsArgs = {
     order = 1,
     type = "description",
     name = L["Automatic handling of the standby list through whispers when in raid. When this is enabled, the standby list is cleared after each reward."],
+  },
+  medium = {
+    order = 10,
+    type = "select",
+    name = L["Announce medium"],
+    desc = L["Sets the announce medium EPGP will use to announce EPGP actions."],
+    values = {
+      ["GUILD"] = CHAT_MSG_GUILD,
+      ["CHANNEL"] = CUSTOM,
+      ["NONE"] = NONE,
+    },
   },
 }
 
