@@ -9,9 +9,7 @@ function mod:AnnounceTo(medium, fmt, ...)
   local channel = self.db.profile.channel or 0
 
   -- Override raid and party if we are not grouped
-  if medium == "RAID" and not UnitInRaid("player") then
-    medium = "GUILD"
-  elseif medium == "PARTY" and not UnitInRaid("player") then
+  if (medium == "RAID" or medium == "GUILD") and not UnitInRaid("player") then
     medium = "GUILD"
   end
 
@@ -30,7 +28,12 @@ function mod:AnnounceTo(medium, fmt, ...)
     str = str .. " " .. s
   end
 
-  SendChatMessage(str, medium, nil, GetChannelName(channel))
+  if ChatThrottleLib then
+    ChatThrottleLib:SendChatMessage(
+      "NORMAL", "EPGP", str, medium, nil, GetChannelName(channel))
+  else
+    SendChatMessage(str, medium, nil, GetChannelName(channel))
+  end
 end
 
 function mod:Announce(fmt, ...)
