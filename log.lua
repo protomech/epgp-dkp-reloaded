@@ -67,6 +67,7 @@ function mod:LogSync(prefix, msg, distribution, sender)
     if timestamp then
       local entry = {tonumber(timestamp), kind, name, reason, tonumber(amount)}
       table.insert(mod.db.profile.log, entry)
+      callbacks:Fire("LogChanged", #self.db.profile.log)
     end
   end
 end
