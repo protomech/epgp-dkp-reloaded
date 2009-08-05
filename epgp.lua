@@ -657,6 +657,9 @@ function EPGP:CanIncEPBy(reason, amount)
   if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
     return false
   end
+  if amount ~= math.floor(amount + 0.5) then
+    return false
+  end
   if amount < -99999 or amount > 99999 or amount == 0 then
     return false
   end
@@ -687,6 +690,9 @@ function EPGP:CanIncGPBy(reason, amount)
     return false
   end
   if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
+    return false
+  end
+  if amount ~= math.floor(amount + 0.5) then
     return false
   end
   if amount < -99999 or amount > 99999 or amount == 0 then
