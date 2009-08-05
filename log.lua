@@ -15,11 +15,12 @@
 -- the log.
 --
 
-local mod = EPGP:NewModule("log")
+local mod = EPGP:NewModule("log", "AceComm-3.0")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
 local JSON = LibStub("LibJSON-1.0")
+local deformat = AceLibrary("Deformat-2.0")
 
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not mod.callbacks then
@@ -44,15 +45,29 @@ local function GetTimestamp(diff)
   return time(timestamp_t)
 end
 
+local LOG_FORMAT = "LOG:%d\31%s\31%s\31%s\31%d"
+
 local function AppendToLog(kind, event_type, name, reason, amount, mass, undo)
   if not undo then
     -- Clear the redo table
     for k,_ in ipairs(mod.db.profile.redo) do
       mod.db.profile.redo[k] = nil
     end
-    table.insert(mod.db.profile.log,
-                 {GetTimestamp(), kind, name, reason, amount})
+    local entry = {GetTimestamp(), kind, name, reason, amount}
+    table.insert(mod.db.profile.log, entry)
+    mod:SendCommMessage("EPGP", string.format(LOG_FORMAT, unpack(entry)),
+                        "GUILD", nil, "BULK")
     callbacks:Fire("LogChanged", #mod.db.profile.log)
+  end
+end
+
+function mod:LogSync(prefix, msg, distribution, sender)
+  if prefix == "EPGP" and sender ~= UnitName("player") then
+    local timestamp, kind, name, reason, amount = deformat(msg, LOG_FORMAT)
+    if timestamp then
+      local entry = {tonumber(timestamp), kind, name, reason, tonumber(amount)}
+      table.insert(mod.db.profile.log, entry)
+    end
   end
 end
 
@@ -312,6 +327,7 @@ function mod:OnEnable()
   EPGP.RegisterCallback(mod, "EPAward", AppendToLog, "EP")
   EPGP.RegisterCallback(mod, "GPAward", AppendToLog, "GP")
   EPGP.RegisterCallback(mod, "BankedItem", AppendToLog, "BI")
+  mod:RegisterComm("EPGP", "LogSync")
 
   -- Upgrade the logs from older dbs
   if EPGP.db.profile.log then
