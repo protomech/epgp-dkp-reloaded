@@ -51,8 +51,8 @@ L["Export"] = true
 L["Extras Percent should be a number between 0 and 100"] = true
 L["GP Reason"] = true
 L["GP on tooltips"] = true
-L["GP: %d [ItemLevel=%d]"] = true
-L["GP: %d or %d [ItemLevel=%d]"] = true
+L["GP: %d or %d"] = true
+L["GP: %d"] = true
 L["Guild or Raid are awarded EP"] = true
 L["Hint: You can open these options by typing /epgp config"] = true
 L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"] = true

@@ -10,11 +10,11 @@ function OnTooltipSetItem(tooltip, ...)
   if gp1 then
     if gp2 then
       tooltip:AddLine(
-        L["GP: %d or %d [ItemLevel=%d]"]:format(gp1, gp2, ilvl),
+        L["GP: %d or %d"]:format(gp1, gp2),
         NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
     else
       tooltip:AddLine(
-        L["GP: %d [ItemLevel=%d]"]:format(gp1, ilvl),
+        L["GP: %d"]:format(gp1),
         NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
     end
   end
