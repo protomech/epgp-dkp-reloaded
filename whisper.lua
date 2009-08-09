@@ -4,6 +4,13 @@ local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 local senderMap = {}
 
+local SendChatMessage = _G.SendChatMessage
+if ChatThrottleLib then
+  SendChatMessage = function(...)
+                      ChatThrottleLib:SendChatMessage("NORMAL", "EPGP", ...)
+                    end
+end
+
 function mod:CHAT_MSG_WHISPER(event_name, msg, sender)
   if not UnitInRaid("player") then return end
 

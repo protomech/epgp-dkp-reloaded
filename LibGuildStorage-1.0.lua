@@ -65,6 +65,13 @@ frame:SetScript("OnEvent",
                   lib[event](lib, ...)
                 end)
 
+local SendChatMessage = _G.SendChatMessage
+if ChatThrottleLib then
+  SendChatMessage = function(...)
+                      ChatThrottleLib:SendChatMessage("ALERT", "LGS", ...)
+                    end
+end
+
 local SetState
 
 -- state of the cache: UNINITIALIZED, STALE,

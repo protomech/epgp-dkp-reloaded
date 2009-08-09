@@ -3,10 +3,17 @@ local mod = EPGP:NewModule("announce")
 local Debug = LibStub("LibDebug-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
+local SendChatMessage = _G.SendChatMessage
+if ChatThrottleLib then
+  SendChatMessage = function(...)
+                      ChatThrottleLib:SendChatMessage("NORMAL", "EPGP", ...)
+                    end
+end
+
 function mod:AnnounceTo(medium, fmt, ...)
   if not medium then return end
 
-  local channel = self.db.profile.channel or 0
+  local channel = GetChannelName(self.db.profile.channel or 0)
 
   -- Override raid and party if we are not grouped
   if (medium == "RAID" or medium == "GUILD") and not UnitInRaid("player") then
@@ -17,23 +24,13 @@ function mod:AnnounceTo(medium, fmt, ...)
   local str = "EPGP:"
   for _,s in pairs({strsplit(" ", msg)}) do
     if #str + #s >= 250 then
-      if ChatThrottleLib then
-        ChatThrottleLib:SendChatMessage(
-          "NORMAL", "EPGP", str, medium, nil, GetChannelName(channel))
-      else
-        SendChatMessage(str, medium, nil, GetChannelName(channel))
-      end
+      SendChatMessage(str, medium, nil, channel)
       str = "EPGP:"
     end
     str = str .. " " .. s
   end
 
-  if ChatThrottleLib then
-    ChatThrottleLib:SendChatMessage(
-      "NORMAL", "EPGP", str, medium, nil, GetChannelName(channel))
-  else
-    SendChatMessage(str, medium, nil, GetChannelName(channel))
-  end
+  SendChatMessage(str, medium, nil, channel)
 end
 
 function mod:Announce(fmt, ...)
