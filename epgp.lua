@@ -893,6 +893,7 @@ function EPGP:GUILD_ROSTER_UPDATE()
       GuildRoster()
     else
       if db:GetCurrentProfile() ~= guild then
+        Debug("Setting DB profile to: %s", guild)
         db:SetProfile(guild)
       end
       -- This means we didn't initialize the db yet.
