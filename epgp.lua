@@ -887,7 +887,6 @@ function EPGP:GUILD_ROSTER_UPDATE()
     for name, module in EPGP:IterateModules() do
       module:Disable()
     end
-    EPGP.db = nil
   else
     local guild = GetGuildInfo("player") or ""
     if #guild == 0 then
@@ -896,6 +895,7 @@ function EPGP:GUILD_ROSTER_UPDATE()
       if db:GetCurrentProfile() ~= guild then
         db:SetProfile(guild)
       end
+      -- This means we didn't initialize the db yet.
       if not EPGP.db then
         EPGP.db = db
 
