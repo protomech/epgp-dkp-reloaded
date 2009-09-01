@@ -11,26 +11,16 @@ local lootmaster = EPGP:GetModule("lootmaster")
 local callbacks = EPGP.callbacks
 local Debug = LibStub("LibDebug-1.0", true)
 
-local EventFrame = CreateFrame("Frame", nil, UIParent)
-EventFrame:SetScript("OnEvent", function(obj, event, ...)
-  if strmatch(event, 'COMBAT_LOG') then return end
-  if strmatch(event, 'CHAT_MSG_ADDON') then return end
-  if strmatch(event, 'CRITERIA_') then return end
-  if strmatch(event, 'UPDATE_MOUSEOVER_UNIT') then return end
-  if strmatch(event, 'CURSOR_UPDATE') then return end
-  print(event, ...)
-end)
---EventFrame:RegisterAllEvents()
- 
--- Local function definitions
-local CellCandidateInfoPopup
-local HideInfoPopup
-local ShowInfoPopup
-
 -- Definition for the ui table data.
 local rows = {}
-local rowdata = {}
+local rowdata = nil
 local maxrows = 25
+local currentItem = nil
+
+-- some constants
+local LOOTBUTTON_SIZE = 30
+local LOOTBUTTON_MAXNUM = 8
+local LOOTBUTTON_PADDING = 4
 
 -- This table defines all the columns and the formatting for the cells.
 -- Lets discuss whether we want this or not. The other option would be
@@ -39,15 +29,15 @@ local maxrows = 25
 local columns = {
   { text="C",          width=20,   name="class", align="CENTER",
     popup="Click this column to sort by class.",
-    OnCellEnter=CellCandidateInfoPopup, OnCellLeave=HideInfoPopup},
+    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
 
   { text="Candidate",  width=80,   name="candidate",
     popup="Click this column to sort by name of the candidate.",
-    OnCellEnter=CellCandidateInfoPopup, OnCellLeave=HideInfoPopup},
+    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
 
   { text="Rank",       width=70,   name="guildrank",
     popup="Click this column to sort by guildrank.",
-    OnCellEnter=CellCandidateInfoPopup, OnCellLeave=HideInfoPopup},
+    OnCellEnter="CellCandidateInfoPopup", OnCellLeave="HideInfoPopup"},
 
   { text="Status",     width=90,   name="status",
     popup="Click this column to sort by response/status."},
@@ -71,129 +61,274 @@ local columns = {
     popup="Click this column to sort by difference in itemlevel compared to current item."}
 }
 
+--- Register all the callback we need to draw the ui appropriately
 function mod:OnEnable()
-  self:BuildUI()
+  EPGP.RegisterCallback(self, "StandingsChanged",                 "OnStandingsChanged")
 
-  EPGP.RegisterCallback(self, "StandingsChanged", "UpdateTable")
+  EPGP.RegisterCallback(self, "LootMasterLootCandidatesLoaded",   "OnLootCandidatesLoaded")
+  EPGP.RegisterCallback(self, "LootMasterLootAdded",              "OnLootAdded")
+  EPGP.RegisterCallback(self, "LootMasterLootRemoved",            "OnLootRemoved")
+  EPGP.RegisterCallback(self, "LootMasterLootDecreased",          "OnLootDecreased")
 end
 
---- TODO(mackatack) make a proper builder
---  Really just a testing function, once everything looks as
---  it should i will make separate functions for all the visual components.
-function mod:BuildUI()
-  local f = self:CreateEPGPFrame()
-  local sp = f.table
+--- Callback handler: Event fired when new loot has been added
+function mod:OnLootAdded(event, lootData)
+  Debug("%s(%s)", event, lootData.link)
+  self:DisplayLoot(lootData)
+  self:SetupItemButtons()
+end
 
-  -- Candidate selection panel:
-  local lmf = CreateFrame("Frame", nil, f)
-  lmf:SetPoint("TOPLEFT", f, "TOPLEFT", 80, -60)
-  lmf:SetPoint("RIGHT", f, "RIGHT", 0, 0)
+--- Callback handler: Event fired when loot should be removed from the ui
+function mod:OnLootRemoved(event, lootData)
+  Debug("%s(%s)", event, lootData.link)
+  self:DisplayLoot(lootData)
+  self:SetupItemButtons()
+end
 
-  -- Create icon
-  local icon = CreateFrame("Button", "EPGPLM_CURRENTITEMICON", lmf, "AutoCastShineTemplate")
+--- Callback handler: Decrease the counter for drops with quantity > 1
+function mod:OnLootDecreased(event, lootData)
+  Debug("%s(%s)", event, lootData.link)
+  self:DisplayLoot(lootData)
+end
+
+--- Callback handler: Update the epgp standings
+function mod:OnStandingsChanged(event)
+  self:UpdateTable()
+end
+
+--- Callback handler: Candidates for the item have been detected
+function mod:OnLootCandidatesLoaded(event, lootData)
+  Debug("%s(%s)", event, lootData.link)
+  self:DisplayLootCandidates(lootData)
+end
+
+--- Select an item, display it on the ui.
+function mod:DisplayLoot(lootData)
+  local frame = self:CreateEPGPFrame()
+  frame:Show()
+  Debug('Displayloot: %s', lootData and lootData.link or 'nil')
+
+  currentItem = lootData
+  self:DisplayLootCandidates(lootData)
+
+  self:DisplayItemUserSelection(lootData)
+end
+
+--- Draw the candidate rows
+function mod:DisplayLootCandidates(lootData)
+  if not lootData or lootData~=currentItem then return end
+  
+  rowdata = lootData.candidates
+  self:SetTableNumItems(rowdata and #rowdata or 0)
+  self:UpdateTable()
+end
+
+--- Create an ItemButton, used on the left side of the frame.
+local itemButtons = {}
+function mod:CreateItemButton(buttonID)
+  local frame = CreateFrame("Frame", "LootMasterLootButton"..buttonID, self.frame)
+  --frame:EnableMouse()
+  frame:SetBackdrop({
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true, tileSize = 64, edgeSize = 12,
+    insets = { left = 4, right = 4, top = 4, bottom = 4 }
+  })
+  frame:SetBackdropColor(1, 1, 0, 0.5)
+  frame:SetBackdropBorderColor(1, 1, 1, 1)
+  frame:SetHeight(LOOTBUTTON_SIZE + 13)
+  frame:SetWidth(66) 
+  --frame:SetFrameStrata("MEDIUM")
+  --frame:SetDepth(0.1)
+  frame:SetFrameLevel(2)
+  frame:Hide()
+  
+  local icon = CreateFrame("CheckButton", "LootMasterLootButtonIcon"..buttonID, frame, "AutoCastShineTemplate")
+  frame.icon = icon
   icon:EnableMouse()
   icon:SetNormalTexture("Interface/ICONS/INV_Misc_QuestionMark")
-  icon:SetPoint("TOPLEFT", lmf, "TOPLEFT", 0, 0)
-  icon:SetHeight(48)
-  icon:SetWidth(48)
-
-  local btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
-  btn:SetPoint("BOTTOMLEFT", icon, "BOTTOMRIGHT", 10, 2)
-  btn:SetHeight(25)
-  btn:SetWidth(85)
-  btn:SetText("Mainspec")
-  btn:SetScript("OnEnter", function()
-    ShowInfoPopup("Mainspec", "Use this selection if this item is a major upgrade "..
-                                   "for your main talent build and you wish to spend GP "..
-                                   "on it. For small upgrades, use the Minor Upgrade button instead.")
+  icon:SetScript("OnEnter", function()
+    if not frame.loot then return end
+    GameTooltip:SetOwner(self.frame, "ANCHOR_NONE")
+    GameTooltip:SetHyperlink( frame.loot.link )
+    GameTooltip:Show()
+    GameTooltip:SetPoint("TOPLEFT", self.frame , "TOPRIGHT", 0, -5)
   end)
-  btn:SetScript("OnLeave", HideInfoPopup)
-  local btnMainspec = btn
-
-  btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
-  btn:SetPoint("BOTTOMLEFT", btnMainspec, "BOTTOMRIGHT", 1, 0)
-  btn:SetHeight(25)
-  btn:SetWidth(115)
-  btn:SetText("Minor upgrade")
-  btn:SetScript("OnEnter", function()
-    ShowInfoPopup("Minor Upgrade", "Use this selection if the item is only a small upgrade "..
-                                      "for your main talent build and you wish to give the item "..
-                                      "to players if they need it more than you.")
+  icon:SetScript("OnLeave", function()
+    GameTooltip:Hide()
   end)
-  btn:SetScript("OnLeave", HideInfoPopup)
-  local btnUpgrade = btn
-
-  btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
-  btn:SetPoint("BOTTOMLEFT", btnUpgrade, "BOTTOMRIGHT", 1, 0)
-  btn:SetHeight(25)
-  btn:SetWidth(70)
-  btn:SetText("Offspec")
-  btn:SetScript("OnEnter", function()
-    ShowInfoPopup("Offspec", "Use this selection if this item is an upgrade for your secondary "..
-                                  "talent build.")
+  icon:SetScript("OnClick", function()
+    if not frame.loot then return end
+    if ( IsModifiedClick() ) then
+      HandleModifiedItemClick(frame.loot.link)
+    else
+      self:DisplayLoot(frame.loot)
+    end
   end)
-  btn:SetScript("OnLeave", HideInfoPopup)
-  local btnOffspec = btn
+  icon:SetPoint("CENTER", frame, "CENTER")
+  icon:SetPoint("LEFT", frame, "LEFT", 10, 0)
+  icon:SetHeight(LOOTBUTTON_SIZE)
+  icon:SetWidth(LOOTBUTTON_SIZE)
+  
+  frame:SetPoint("RIGHT", self.frame, "LEFT", 90, 0)
+  frame:SetPoint("TOP", self.frame, "TOP", 0, -145 - ((LOOTBUTTON_SIZE+10+LOOTBUTTON_PADDING) * (buttonID-1)) )
+  
+  return frame
+end
 
-  btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
-  btn:SetPoint("BOTTOMLEFT", btnOffspec, "BOTTOMRIGHT", 1, 0)
-  btn:SetHeight(25)
-  btn:SetWidth(95)
-  btn:SetText("Greed / Alt")
-  btn:SetScript("OnEnter", function()
-    ShowInfoPopup("Greed / Alt / Roll", "Use this selection if you wish to use this item for "..
-                                  "a third talent build or on an alt. Greeds are roll based by "..
-                                  "default, yet still take MinEP into account.")
-  end)
-  btn:SetScript("OnLeave", HideInfoPopup)
-  local btnGreed = btn
-
-  btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
-  btn:SetPoint("BOTTOMLEFT", btnGreed, "BOTTOMRIGHT", 1, 0)
-  btn:SetHeight(25)
-  btn:SetWidth(55)
-  btn:SetText("Pass")
-  btn:SetScript("OnEnter", function()
-    ShowInfoPopup("Pass", "Use this selection if you do not wish to bid "..
-                                   "on the item. Another player will receive it.")
-  end)
-  btn:SetScript("OnLeave", HideInfoPopup)
-  local btnPass = btn
-
-  local timer = self:CreateTimeoutBar(lmf)
-  timer:SetPoint("LEFT", btnPass, "RIGHT", 5, 0)
-
-  local color = ITEM_QUALITY_COLORS[4]
-  if not color then
-    color = ITEM_QUALITY_COLORS[1]
+--- Update the item buttons on the left side.
+function mod:SetupItemButtons()
+  local buttonID = 0
+  for itemID, loot in lootmaster:IterateLoot() do
+    buttonID = buttonID + 1
+    if buttonID > LOOTBUTTON_MAXNUM then break end
+    
+    local btn = itemButtons[buttonID]
+    btn:Show()
+    btn.loot = loot
+    btn.itemID = itemID
+    btn.icon:SetNormalTexture(loot.texture)
+    
+    AutoCastShine_AutoCastStart(btn.icon)
+    --AutoCastShine_AutoCastStop(btn)
   end
-  local lblItemLink = lmf:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  lblItemLink:SetPoint("TOPLEFT", icon, "TOPRIGHT", 10, 1)
-  lblItemLink:SetVertexColor(color.r, color.g, color.b)
-  lblItemLink:SetText("[Uber leet epix item]")
-
-  local lblItemInfo = lmf:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-  lblItemInfo:SetPoint("RIGHT", timer, "RIGHT", 0, 0)
-  lblItemInfo:SetPoint("TOP", lblItemLink, "TOP", 0, -5)
-  lblItemInfo:SetVertexColor(1, 1, 1)
-  lblItemInfo:SetText("GP 252 or 99, BoP, Lootmaster: Bushmaster")
-
-  -- Create some data for the table
-  local lastRow
-  local num = GetNumGuildMembers(true)
-
-  for i=1, num do
-    local name, guildrank, _, _, _, _, _, _, online = GetGuildRosterInfo(i)
-
-    tinsert(rowdata, {
-      name      = name,
-      guildrank = guildrank,
-      online    = online
-    })
+  for i=buttonID+1, #itemButtons do
+    itemButtons[buttonID]:Hide()
   end
-  self:SetTableNumItems(#rowdata)
+end
 
-  self:UpdateTable()
+
+--- Show an item on the UI in user selection mode
+function mod:DisplayItemUserSelection(lootData)
+  local f = self:CreateEPGPFrame()
+
+  local lmf = self.pnlUserSelection
+
+  -- Create the panel if it doesn't exist
+  if not lmf then
+    -- Candidate selection panel:
+    lmf = CreateFrame("Frame", nil, f)
+    lmf:SetPoint("TOPLEFT", f, "TOPLEFT", 80, -60)
+    lmf:SetPoint("RIGHT", f, "RIGHT", 0, 0)
+    self.pnlUserSelection = lmf
+
+    -- Create icon
+    local icon = CreateFrame("Button", "EPGPLM_CURRENTITEMICON", lmf, "AutoCastShineTemplate")
+    icon:EnableMouse()
+    icon:SetScript("OnEnter", function()
+      if not currentItem then return end
+      GameTooltip:SetOwner(icon, "ANCHOR_CURSOR")
+      GameTooltip:SetHyperlink( currentItem.link )
+      GameTooltip:Show()
+    end)
+    icon:SetScript("OnLeave", function()
+      GameTooltip:Hide()
+    end)
+    icon:SetScript("OnClick", function()
+      if currentItem and IsModifiedClick() then
+        HandleModifiedItemClick(currentItem.link)
+      end
+    end)
+    icon:SetPoint("TOPLEFT", lmf, "TOPLEFT", 0, 0)
+    icon:SetHeight(48)
+    icon:SetWidth(48)
+    lmf.icon = icon
+    
+    -- TODO (mackatack): make the buttons configurable by the master looter?
+
+    -- Mainspec button
+    local btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
+    btn:SetPoint("BOTTOMLEFT", icon, "BOTTOMRIGHT", 10, 2)
+    btn:SetHeight(25)
+    btn:SetWidth(85)
+    btn:SetText("Mainspec")
+    btn:SetScript("OnEnter", function()
+      mod:ShowInfoPopup("Mainspec", "Use this selection if this item is a major upgrade "..
+                                     "for your main talent build and you wish to spend GP "..
+                                     "on it. For small upgrades, use the Minor Upgrade button instead.")
+    end)
+    btn:SetScript("OnLeave", mod.HideInfoPopup)
+    local btnMainspec = btn
+
+    -- Minor upgrade button
+    btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
+    btn:SetPoint("BOTTOMLEFT", btnMainspec, "BOTTOMRIGHT", 1, 0)
+    btn:SetHeight(25)
+    btn:SetWidth(115)
+    btn:SetText("Minor upgrade")
+    btn:SetScript("OnEnter", function()
+      mod:ShowInfoPopup("Minor Upgrade", "Use this selection if the item is only a small upgrade "..
+                                        "for your main talent build and you wish to give the item "..
+                                        "to players if they need it more than you.")
+    end)
+    btn:SetScript("OnLeave", mod.HideInfoPopup)
+    local btnUpgrade = btn
+
+    -- Offspec button
+    btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
+    btn:SetPoint("BOTTOMLEFT", btnUpgrade, "BOTTOMRIGHT", 1, 0)
+    btn:SetHeight(25)
+    btn:SetWidth(70)
+    btn:SetText("Offspec")
+    btn:SetScript("OnEnter", function()
+      mod:ShowInfoPopup("Offspec", "Use this selection if this item is an upgrade for your secondary "..
+                                    "talent build.")
+    end)
+    btn:SetScript("OnLeave", mod.HideInfoPopup)
+    local btnOffspec = btn
+
+    -- Greed/alt button
+    btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
+    btn:SetPoint("BOTTOMLEFT", btnOffspec, "BOTTOMRIGHT", 1, 0)
+    btn:SetHeight(25)
+    btn:SetWidth(95)
+    btn:SetText("Greed / Alt")
+    btn:SetScript("OnEnter", function()
+      mod:ShowInfoPopup("Greed / Alt / Roll", "Use this selection if you wish to use this item for "..
+                                    "a third talent build or on an alt. Greeds are roll based by "..
+                                    "default, yet still take MinEP into account.")
+    end)
+    btn:SetScript("OnLeave", mod.HideInfoPopup)
+    local btnGreed = btn
+
+    -- Pass button
+    btn = CreateFrame("Button", nil, lmf, "UIPanelButtonTemplate")
+    btn:SetPoint("BOTTOMLEFT", btnGreed, "BOTTOMRIGHT", 1, 0)
+    btn:SetHeight(25)
+    btn:SetWidth(55)
+    btn:SetText("Pass")
+    btn:SetScript("OnEnter", function()
+      mod:ShowInfoPopup("Pass", "Use this selection if you do not wish to bid "..
+                                     "on the item. Another player will receive it.")
+    end)
+    btn:SetScript("OnLeave", mod.HideInfoPopup)
+    local btnPass = btn
+
+    local timer = self:CreateTimeoutBar(lmf)
+    timer:SetPoint("LEFT", btnPass, "RIGHT", 5, 0)
+
+    local lblItemLink = lmf:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    lblItemLink:SetPoint("TOPLEFT", icon, "TOPRIGHT", 10, 1)
+    lmf.lblItemLink = lblItemLink
+
+    local lblItemInfo = lmf:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    lblItemInfo:SetPoint("RIGHT", timer, "RIGHT", 0, 0)
+    lblItemInfo:SetPoint("TOP", lblItemLink, "TOP", 0, -5)
+    lblItemInfo:SetVertexColor(1, 1, 1)
+    lmf.lblItemInfo = lblItemInfo
+  end
+
+  -- Panel exists or has just been created, setup the contents.
+
+  -- Itemlink
+  lmf.lblItemLink:SetText(lootData.link or '')
+
+  -- Iteminfo
+  lmf.lblItemInfo:SetText(lootData.itemInfo or '')
+
+  -- Icon
+  lmf.icon:SetNormalTexture(lootData.texture or 'Interface/ICONS/INV_Misc_QuestionMark')
+
 end
 
 function mod:CreateEPGPFrame()
@@ -207,8 +342,8 @@ function mod:CreateEPGPFrame()
   f:EnableMouse(true)
   f:SetMovable(true)
   f:SetAttribute("UIPanelLayout-defined", true)
-  f:SetAttribute("UIPanelLayout-enabled", true)
-  f:SetAttribute("UIPanelLayout-area", "left")
+  f:SetAttribute("UIPanelLayout-enabled", false)
+  f:SetAttribute("UIPanelLayout-area", "right||")
   f:SetAttribute("UIPanelLayout-pushable", 5)
   f:SetAttribute("UIPanelLayout-whileDead", true)
 
@@ -301,6 +436,10 @@ function mod:CreateEPGPFrame()
 
   local btnClose = CreateFrame("Button", nil, f, "UIPanelCloseButton")
   btnClose:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -8)
+  
+  for buttonID=1, LOOTBUTTON_MAXNUM do
+    itemButtons[buttonID] = self:CreateItemButton(buttonID)
+  end
 
   self:CreateTable(f)
 
@@ -331,6 +470,7 @@ function mod:CreateTimeoutBar(parent)
   b:SetStatusBarColor(0.4, 0.8, 0.4, 0.8)
   b:SetMinMaxValues(0, 99)
   b:SetScript("OnUpdate", function(o, elapsed)
+      -- TODO (mackatack): this should of course show some usable data.
       if not lblTimeout then return end
       bElapse = bElapse + elapsed
       if bElapse < 1 then return end
@@ -364,6 +504,7 @@ function mod:CreateTimeoutBar(parent)
   return timerFrame
 end
 
+--- A little thingy we need to use the column table on top of this file.
 function mod:Call(func, ...)
   if type(func) == 'string' then
     func = mod[func]
@@ -375,6 +516,7 @@ function mod:Call(func, ...)
   end
 end
 
+--- Update the scrollbar.
 function mod:SetTableNumItems(num)
   num = num - maxrows
   local slider = self.tableSlider
@@ -396,14 +538,18 @@ end
 -- row and cell objects in here. This function also allows us to just update
 -- a single row.
 function mod:UpdateRow(rowID, rowData, rowObj, rowNum)
+  Debug('UpdateRow(%d, %s, %s, %d)', rowID, tostring(rowData.link), tostring(rowObj), rowNum)
 
-  -- colObjs holds a table of cells named by the name in the columns table.
-  local colObjs = rowObj.colObjs
+  -- cells holds a table of cells named by the name in the columns table.
+  local cells = rowObj.cells
+  
+  -- rowData: candidate data
+  -- cells: is a associative array with the names used in the "columns" table. use this to directly access the cells
 
   if rowData.online then
-    colObjs.status:SetText("ONLINE")
+    cells.status:SetText("ONLINE")
   else
-    colObjs.status:SetText("")
+    cells.status:SetText("")
   end
 
   local class = select(1,EPGP:GetClass(rowData.name)) or select(2,UnitClass(rowData.name))
@@ -411,12 +557,12 @@ function mod:UpdateRow(rowID, rowData, rowObj, rowNum)
   if not color then color = ITEM_QUALITY_COLORS[1] end
 
   -- Set candidate name and color
-  colObjs.candidate:SetText(rowData.name)
-  colObjs.candidate.text:SetVertexColor(color.r, color.g, color.b)
+  cells.candidate:SetText(rowData.name)
+  cells.candidate.text:SetVertexColor(color.r, color.g, color.b)
 
   -- Set candidate class icon
   if class then
-    local classObj = colObjs.class
+    local classObj = cells.class
     -- Set the texture and position just once
     if not classObj.classIcon then
       classObj:SetNormalTexture("Interface\\Glues\\CharacterCreate\\UI-CharacterCreate-Classes")
@@ -435,21 +581,28 @@ function mod:UpdateRow(rowID, rowData, rowObj, rowNum)
       classObj:Hide()
     end
   else
-    colObjs.class:Hide()
+    cells.class:Hide()
   end
 
-  colObjs.guildrank:SetText(rowData.guildrank)
+  cells.guildrank:SetText(rowData.guildrank)
 
   local ep, gp, main = EPGP:GetEPGP(rowData.name)
-  colObjs.ep:SetText(ep)
-  colObjs.equipment:SetText(rowID)
-  colObjs.gp:SetText(gp)
-  colObjs.pr:SetText(pr)
-  colObjs.roll:SetText(math.random(1, 99))
+  cells.ep:SetText(ep)
+  
+  -- TODO (mackatack): Show the actual inspected/communicated equipment and difference in itemlevel in here.
+  cells.equipment:SetText(rowID)
+  
+  cells.gp:SetText(gp)
+  cells.pr:SetText((ep and gp) and ep/gp or 0)
+  
+  -- TODO (mackatack): Use the value from the candidate (rowData) table
+  cells.roll:SetText(math.random(1, 99))
 end
 
 function mod:UpdateTable()
   if not self.table or not self.tableSlider then return end
+
+  Debug('UpdateTable')
 
   local offset = self.tableSlider:GetValue()
   local tableObj = self.table
@@ -457,7 +610,7 @@ function mod:UpdateTable()
   for rowNum=1, maxrows do
     local rowID = rowNum + offset
 
-    local rowData = rowdata[rowID]
+    local rowData = rowdata and rowdata[rowID] or nil
 
     -- Lazy creation of rows and cells
     local rowObj = rows[rowNum]
@@ -512,7 +665,7 @@ function mod:CreateTableRow(parent)
   row:SetPoint("LEFT", parent, "LEFT")
   row:SetPoint("RIGHT", parent, "RIGHT")
   row:SetHeight(14)
-  row.colObjs = {}
+  row.cells = {}
 
   -- Mouseover highlight
   local highlight = row:CreateTexture(nil, "OVERLAY")
@@ -541,7 +694,7 @@ function mod:CreateTableRow(parent)
     end)
 
     if colData.name then
-      row.colObjs[colData.name] = cell
+      row.cells[colData.name] = cell
     end
     previousCell = cell
   end
@@ -551,6 +704,9 @@ end
 
 function mod:CreateTable(parent)
   local tableBackground = CreateFrame("Frame", "EPGPLMScrollTable", parent)
+  tableBackground:SetToplevel(true)
+  --tableBackground:SetFrameStrata("HIGH")
+  tableBackground:SetFrameLevel(3)
   tableBackground:SetBackdrop({
     bgFile = "Interface\\RAIDFRAME\\UI-RaidFrame-GroupBg",
     edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
@@ -600,9 +756,9 @@ function mod:CreateTable(parent)
     header:SetText(colData.text)
     header:SetWidth(colData.width)
     header:SetScript("OnEnter", function()
-      ShowInfoPopup("Sorting", colData.popup)
+      mod:ShowInfoPopup("Sorting", colData.popup)
     end)
-    header:SetScript("OnLeave", HideInfoPopup)
+    header:SetScript("OnLeave", mod.HideInfoPopup)
     if lastHeader then
       header:SetPoint("TOPLEFT", lastHeader, "TOPRIGHT", 0, 0)
     else
@@ -612,17 +768,15 @@ function mod:CreateTable(parent)
   end
 end
 
-function CellCandidateInfoPopup(cellName, cellObj, rowObj)
+function mod:CellCandidateInfoPopup(cellName, cellObj, rowObj)
   local rowData = rowObj.rowData
   if not rowData then return end
   GameTooltip:SetOwner(mod.frame, "ANCHOR_NONE")
   GameTooltip:SetUnit(rowData.name)
-  GameTooltip:Show()
-  GameTooltip:ClearAllPoints()
-  GameTooltip:SetPoint("TOPLEFT", mod.frame, "TOPRIGHT", -15, -13)
+  mod:PositionInfoPopup()
 end
 
-function ShowInfoPopup(...)
+function mod:ShowInfoPopup(...)
   if not mod.frame then return end
   GameTooltip:SetOwner(mod.frame, "ANCHOR_NONE")
   for i=1, select("#", ...) do
@@ -632,12 +786,16 @@ function ShowInfoPopup(...)
       GameTooltip:AddLine(tostring(select(i, ...)), nil, nil, nil, true)
     end
   end
-  GameTooltip:Show()
-  GameTooltip:ClearAllPoints()
-  GameTooltip:SetPoint("TOPLEFT", mod.frame , "TOPRIGHT", -15, -13)
+  mod:PositionInfoPopup()
 end
 
-function HideInfoPopup()
+function mod:PositionInfoPopup()
+  GameTooltip:Show()
+  GameTooltip:ClearAllPoints()
+  GameTooltip:SetPoint("TOPLEFT", mod.frame, "TOPRIGHT", -15, -13)
+end
+
+function mod:HideInfoPopup()
   GameTooltip:Hide()
 end
 

@@ -10,9 +10,13 @@ LootMasterChanged(newLootMaster): Triggers when someone in your group has been p
 PlayerReceivesLoot(event, player, itemlink, quantity): Triggers when someone (player) in the raid receives
     an item (itemlink) and itemcount (quantity).
 
+LootMasterLootAdded(lootLink, lootData)
+LootMasterLootRemoved(lootLink, lootData)
+LootMasterLootDecreased(lootLink, lootData)
+
 ]]--
 
-local mod = EPGP:NewModule("lootmaster", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0", "LibRPC-1.0")
+local mod = EPGP:NewModule("lootmaster", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0", "LibRPC-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local LibGearPoints = LibStub("LibGearPoints-1.0")
 local callbacks = EPGP.callbacks
@@ -25,18 +29,52 @@ local masterlootTable = {}
 -- A table used to cache the contents of the native loot frame.
 local lootSlots = {}
 
-local db = nil;
+-- Configuration database
+local db = nil
 
 -- Set current lootmaster to -1 so the LootMasterChanged event always gets called
 local current_masterlooter = -1
 local player_is_masterlooter = false
 
+-- Response values - Do not insert new response codes as this will break older clients,
+-- add new values to the bottom of the list and change the sorting values if you must.
+RESPONSES = {
+  { CODE = "NOTANNOUNCED",   SORT = 1,    COLOR = {1,1,1},        TEXT = 'Not announced' },
+  { CODE = "INIT",           SORT = 2,    COLOR = {1,0,0},        TEXT = 'Offline' },
+  { CODE = "WAIT",           SORT = 3,    COLOR = {1,0.5,0},      TEXT = 'Making selection' },
+  { CODE = "TIMEOUT",        SORT = 4,    COLOR = {1,0,1},        TEXT = 'Selection Timeout' },
+  { CODE = "NEED",           SORT = 5,    COLOR = {0.4,1,0.4},    TEXT = 'Mainspec' },
+  { CODE = "UPGRADE",        SORT = 6,    COLOR = {0.4,1,0.4},    TEXT = 'Minor upgrade' },
+  { CODE = "OFFSPEC",        SORT = 7,    COLOR = {0.4,1,0.4},    TEXT = 'Offspec' },
+  { CODE = "GREED",          SORT = 8,    COLOR = {1,1,0},        TEXT = 'Greed / Alt' },
+  { CODE = "AUTOPASS",       SORT = 9,    COLOR = {0.6,0.6,0.6},  TEXT = 'Autopass' },
+  { CODE = "PASS",           SORT = 10,   COLOR = {0.6,0.6,0.6},  TEXT = 'Pass' }
+}
+for i,d in ipairs(RESPONSES) do RESPONSES[d.CODE] = i end
+mod.RESPONSES = RESPONSES
+
+-- Loot type codes - Do not insert new codes as this will break older clients,
+-- add new values to the bottom of the list if you must.
+
+-- TODO(mackatack): not sure whether we still need these? Perhaps we can extend the announce module
+-- so it also announces for what reason the loot got distributed. I used this system so i can tell
+-- everyone who got what for what reason. That way every client is able to register the loot in headcount
+-- or any other raidtracker, without messing with popups etc. So if we want a new system we should
+-- make it so everybody can still correctly register the stuff in their headcount etc, i don't want
+-- this module to be a downgrade.
+LOOTTYPES = {
+  { CODE = "UNKNOWN",        TEXT = '%s received %s for unknown reason%4$s.' },
+  { CODE = "GP",             TEXT = '%s received %s for %s GP%s.' },
+  { CODE = "DISENCHANT",     TEXT = '%s received %s for disenchantment%4$s.' },
+  { CODE = "BANK",           TEXT = '%s received %s for bank%4$s.' }
+}
+for i,d in ipairs(LOOTTYPES) do LOOTTYPES[d.CODE] = i end
+mod.LOOTTYPES = LOOTTYPES
+
 -- Cache some math function for faster access and preventing
 -- other addons from screwing em up.
-local mathRandomseed        = math.randomseed
 local mathRandom            = math.random
 local mathFloor             = math.floor
-local mathCachedRandomSeed  = math.random()*1000
 
 local bit_bor               = bit.bor
 local bit_band              = bit.band
@@ -49,7 +87,7 @@ end
 
 local function pushTable(t)
   if type(t)~='table' then return end
-  wipe(t) 
+  wipe(t)
   tinsert(_tableCache, t)
 end
 
@@ -82,11 +120,8 @@ function mod:OnEnable()
   EPGP.RegisterCallback(self, "PlayerReceivesLoot", "OnPlayerReceivesLoot")   -- Triggered when someone receives loot
 
   -- Register events
-  self:RegisterEvent("OPEN_MASTER_LOOT_LIST")   -- Trap event when ML rightclicks master loot
-  self:RegisterEvent("CHAT_MSG_LOOT")           -- Trap event when items get looted
-  self:RegisterEvent("LOOT_OPENED")             -- Trap event when the native loot frame gets opened
-  self:RegisterEvent("LOOT_CLOSED")             -- Trap event when the native loot frame gets closed
-  self:RegisterEvent("LOOT_SLOT_CLEARED")       -- Trap event when a loot slot gets looted
+  --self:RegisterEvent("OPEN_MASTER_LOOT_LIST")   -- Trap event when ML rightclicks master loot
+  --self:RegisterEvent("LOOT_OPENED")             -- Trap event when the native loot frame gets opened
 
   -- Trap some system messages here, we need these to detect any changes in loot master
   self:RegisterEvent("RAID_ROSTER_UPDATE",            "GROUP_UPDATE");
@@ -102,13 +137,26 @@ function mod:OnEnable()
 
   -- Setup RPC
   self:SetRPCKey("EPGPLMRPC")         -- set a prefix/channel for the communications
+  mod.r = mod._rpcMethods
 
   -- Setup the public RPC methods
   self:RegisterRPC("RemoveLoot")
   self:RegisterRPC("DecreaseLoot")
+  self:RegisterRPC("AddCandidate")
+
+  -- Debugging slashcommands
+  self:RegisterChatCommand("lm2", "SlashHandler")
+  self:RegisterChatCommand("rl", function() ReloadUI() end)
 
   -- Enable the tracking by default
   self:EnableTracking()
+
+  -- Check if other people in guild still have an older version of EPGPLootmaster installed
+  -- Tell those people they need to uninstall EPGPLootmaster and Upgrade their EPGP installations
+  self:PerformUpgradeCheck()
+
+  -- Start the UnitTest after 0.1 second
+  self:ScheduleTimer("UnitTest", 0.1)
 end
 
 --- Event triggered when the lootmaster module gets disabled
@@ -141,7 +189,6 @@ local randomtable
 local randomFloat = function()
   -- I know it's best to only seed the randomizer only so now and then, but some other addon
   -- might have twisted the randomseed so reset it to our cached seed again.
-  mathRandomseed(mathCachedRandomSeed)
   mathRandom()
   -- Init the randomizerCache if needed
   if randomtable == nil then
@@ -158,8 +205,7 @@ end
 
 -- Make a table for bitwise encoding and decoding of class table
 local classDecoderTable = {
-  'MAGE','WARRIOR','DEATHKNIGHT','WARLOCK','DRUID','SHAMAN','ROGUE','PRIEST','PALADIN','HUNTER'
-}
+  'MAGE','WARRIOR','DEATHKNIGHT','WARLOCK','DRUID','SHAMAN','ROGUE','PRIEST','PALADIN','HUNTER'}
 local classEncoderTable = {}
 for i, class in ipairs(classDecoderTable) do
   classEncoderTable[class] = i
@@ -214,10 +260,6 @@ function mod:AddLoot(link, mayDistribute, quantity)
   if not link then return end
   if not masterlootTable then return end
 
-  -- Cache a new randomseed for later use.
-  -- math.random always has same values for seeds > 2^31, so lets modulate.
-  mathCachedRandomSeed = floor((mathRandom()+1)*(GetTime()*1000)) % 2^31
-
   if masterlootTable[link] then return masterlootTable[link] end
 
   local itemName, itemLink, _, _, itemMinLevel, itemType, itemSubType, itemStackCount, _, itemTexture = GetItemInfo(link)
@@ -231,56 +273,78 @@ function mod:AddLoot(link, mayDistribute, quantity)
   -- info from the set tokens.
   local gpvalue, gpvalue2, ilevel, itemRarity, itemEquipLoc = LibGearPoints:GetValue(itemLink)
 
-  -- Find what classes are eligible for the loot
-  local autoPassClasses, autoPassClassesEncoded = self:GetAutoPassClasses(itemLink)
+  local isBoP = ItemUtils:IsBoP(itemLink)
+  local isBoE = ItemUtils:IsBoE(itemLink)
 
-  local itemCache = {
-    link            = itemLink,
+  -- Make a small string we can use later on
+  local itemInfo = {}
+  if isBoP then tinsert(itemInfo, 'BoP') end
+  if isBoE then tinsert(itemInfo, 'BoE') end
+  if gpvalue and gpvalue2 then
+    tinsert(itemInfo, format('GP: %d or %d', gpvalue, gpvalue2))
+  elseif gpvalue then
+    tinsert(itemInfo, format('GP: %d', gpvalue))
+  else
+    tinsert(itemInfo, 'GP: ?')
+  end
+  tinsert(itemInfo, format('lootmaster: %s', UnitName('player')))
+  itemInfo = table.concat(itemInfo, ', ')
 
-    announced       = true,
-    mayDistribute   = mayDistribute,
+  -- Make the item data table
+  local loot = {
+    link                    = itemLink,
 
-    itemID          = itemID,
-    id              = itemID,
+    announced               = true,
+    mayDistribute           = mayDistribute,
 
-    gpvalue         = gpvalue or 0,
-    gpvalue2        = gpvalue2,
-    gpvalue_manual  = gpvalue or 0,
-    ilevel          = ilevel or 0,
-    isBoP           = ItemUtils:IsBoP(itemLink),
-    isBoE           = ItemUtils:IsBoE(itemLink),
-    quality         = itemRarity or 0,
-    quantity        = quantity or 1,
-    classes         = autoPassClasses,
-    classesEncoded  = autoPassClassesEncoded,
+    itemID                  = itemID,
+    id                      = itemID,
 
-    texture         = itemTexture or '',
-    equipLoc        = itemEquipLoc or '',
+    gpvalue                 = gpvalue or 0,
+    gpvalue2                = gpvalue2,
+    gpvalue_manual          = gpvalue or 0,
+    ilevel                  = ilevel or 0,
+    isBoP                   = isBoP,
+    isBoE                   = isBoE,
+    quality                 = itemRarity or 0,
+    quantity                = quantity or 1,
 
-    candidates      = {},
-    numResponses    = 0
+    texture                 = itemTexture or '',
+    equipLoc                = itemEquipLoc or '',
+
+    candidates              = {},
+    candidatesSent          = false,
+    numResponses            = 0,
+
+    itemInfo                = itemInfo
   }
-  masterlootTable[itemID] = itemCache
+  masterlootTable[itemID] = loot
+
+  -- Find what classes are eligible for the loot
+  loot.autoPassClasses, loot.autoPassClassesEncoded = self:GetAutoPassClasses(itemLink)
 
   -- See if this item should be autolooted
   if db.auto_loot_threshold~=0 and db.auto_loot_candidate and db.auto_loot_candidate~='' then
     if (not itemBind or itemBind=='use' or itemBind=='equip') and itemRarity<=db.auto_loot_threshold then
-      itemCache.autoLootable = true
+      loot.autoLootable = true
     end
   end
 
+  -- Callback for UI updates etc
+  callbacks:Fire("LootMasterLootAdded", loot)
+
   -- Are we lootmaster for this loot? Lets send out a monitor message about the added loot
   if self:MonitorMessageRequired(itemID) then
-    self:CallPrioritizedRPC('ALERT', 'RAID', 'AddMonitorLoot', itemLink, itemCache.gpvalue, itemCache.gpvalue2, itemCache.quantity, autoPassClassesEncoded)
+    self:CallPrioritizedRPC('ALERT', 'RAID', nil, 'AddMonitorLoot', itemLink, loot.gpvalue, loot.gpvalue2, loot.quantity, loot.autoPassClassesEncoded)
   end
 
-  return itemCache
+  return loot
 end
 
 --- RPC ENABLED - Lootmaster asked us to add the given loot to our cache, for monitoring.
 function mod:AddMonitorLoot(itemLink, gpvalue, gpvalue2, quantity, autoPassClassesEncoded)
   -- TODO(mackatack): Needs implementation
-  -- Only trust the gpvalues, quantity and autopassclasses from the master looter.
+  -- Only trust the gpvalues, quantity and autoPassClasses from the master looter.
   -- Use the ItemCacher in LibItemUtils to retrieve the rest of the information.
 end
 
@@ -291,6 +355,7 @@ end
 function mod:GetLootID(itemLink)
   if not itemLink then return end
 
+  if type(itemLink) == 'table' and masterlootTable[itemLink.id] then return itemLink.id end
   if masterlootTable[itemLink] then return itemLink end
 
   local itemID = ItemUtils:ItemlinkToID(itemID)
@@ -307,6 +372,11 @@ function mod:GetLoot(itemLink)
   local itemID = self:GetLootID(itemLink)
   if not itemID then return end
   return masterlootTable[itemID]
+end
+
+--- Provide a iterator for all loot on the cache.
+function mod:IterateLoot()
+  return pairs(masterlootTable)
 end
 
 --- RPC ENABLED - Remove the itemcache for loot with itemLink, itemID or itemName "itemID"
@@ -327,7 +397,7 @@ function mod:RemoveLoot(itemLink)
     if not self:IsSafeRPC(loot) then return end
 
     masterlootTable[loot.id] = nil
-    -- TODO(mackatack): Some UI update callbacks here
+    callbacks:Fire("LootMasterLootRemoved", loot)
     return true
   end
 
@@ -335,23 +405,16 @@ function mod:RemoveLoot(itemLink)
 
   -- we have more than one of this item, decrease counter and return.
   if loot.quantity>1 then
-    loot.quantity = loot.quantity - 1
-    -- TODO(mackatack): Some UI update callbacks here
-
-    -- Are we lootmaster for this loot? Lets send out a monitor message about the quantity decrease
-    if self:MonitorMessageRequired(itemID) then
-      self:CallRPC('RAID', 'DecreaseLoot', itemID)
-    end
-    return true
+    return self:DecreaseLoot(loot)
   end
 
   -- Lets send out a monitor message about the removed loot
   if self:MonitorMessageRequired(itemID) then
-    self:CallPrioritizedRPC('ALERT', 'RAID', 'RemoveLoot', itemID)
+    self:CallPrioritizedRPC('ALERT', 'RAID', nil, 'RemoveLoot', itemID)
   end
 
   masterlootTable[itemID] = nil
-  -- TODO(mackatack): Some UI update callbacks here
+  callbacks:Fire("LootMasterLootRemoved", loot)
 
   return true
 end
@@ -368,7 +431,12 @@ function mod:DecreaseLoot(itemLink)
   end
 
   loot.quantity = loot.quantity - 1
-  -- TODO(mackatack): Some UI update callbacks here
+  callbacks:Fire("LootMasterLootDecreased", loot)
+
+  -- Are we lootmaster for this loot? Lets send out a monitor message about the quantity decrease
+  if self:MonitorMessageRequired(itemID) then
+    self:CallRPC('RAID', nil, 'DecreaseLoot', itemID)
+  end
 end
 
 --- Announce the item to the raid if it hasn't already been announced
@@ -378,12 +446,59 @@ function mod:AnnounceLoot(itemID)
   -- TODO(mackatack): Needs implementation
 end
 
---- Add a candidate to the itemCache for the given loot. If the loot is not already in the itemCache, add it.
+--- RPC ENABLED -- Add a candidate to the itemCache for the given loot. If the loot is not already in the itemCache, add it.
 --  @param itemID of the item
 --  @param name of the candidate to be added
 --  @return the itemID of the loot when the candidate has successfully been added.
-function mod:AddCandidate(itemID, candidate)
-  -- TODO(mackatack): Needs implementation
+function mod:AddCandidate(itemID, candidate, randomRoll, initResponse)
+  local loot = self:GetLoot(itemID)
+  if not loot then return end
+  if not candidate then return end
+
+  -- Check if called via rpc and whether the call is safe
+  if self:IsRPC() and not self:IsSafeRPC(loot) then return end
+
+  -- Just return if the candidate already exists
+  if loot.candidates[candidate] then return loot.candidates[candidate] end
+
+  local class = EPGP:GetClass() or UnitClass('candidate')
+
+  initResponse = initResponse or RESPONSES.NOTANNOUNCED
+
+  if self:IsRPC() then
+    randomRoll = randomRoll or 0
+  else
+    randomRoll = randomFloat()
+    if not loot.mayDistribute then
+      randomRoll = 0
+    end
+
+    -- Autopass BoP items that cannot be used by this class
+    if loot.isBoP and loot.autoPassClasses and class and classes[class] then
+      initResponse = RESPONSES.AUTOPASS
+    end
+  end
+
+  local data = {
+    name      = candidate,
+    class     = class,
+    roll      = randomRoll or 0,
+    response  = initResponse,
+    item1     = nil,
+    item2     = nil
+  }
+  -- Insert the table both indexed on candidate name and using tinsert, so we can use
+  -- both ipairs, sorting and key lookups on the same table. <3 lua :P
+  loot.candidates[candidate] = data
+  tinsert(loot.candidates, data)
+
+  -- Are we lootmaster for this loot? Lets send out a monitor message about the added candidate
+  if loot.candidatesSent and self:MonitorMessageRequired(itemID) then
+    self:CallRPC('RAID', nil, 'AddCandidate', itemID, candidate, randomRoll, initResponse)
+  end
+
+  -- Inspect the candidate
+  self:InspectCandidate(itemID, candidate)
 end
 
 --- Returns true when the candidate has been found on the itemCache for the given item.
@@ -394,23 +509,14 @@ function mod:IsCandidate(itemID, candidate)
   -- TODO(mackatack): Needs implementation
 end
 
---- Sets a variable for the given candidate
+--- Gets the data table for the given candidate
 --  @param itemID of the item
 --  @param name of the candidate
---  @param name of the variable to set
---  @param value of the variable to set
---  @return the value that has just been set
-function mod:SetCandidateData(itemID, candidate, name, value)
-  -- TODO(mackatack): Needs implementation
-end
-
---- Gets a variable for the given candidate
---  @param itemID of the item
---  @param name of the candidate
---  @param name of the variable to get
---  @return the value of the variable you requested
-function mod:GetCandidateData(itemID, candidate, name)
-  -- TODO(mackatack): Needs implementation
+--  @return the array of the data for the requested candidate
+function mod:GetCandidate(itemID, candidate)
+  local loot = self:GetLoot(itemID)
+  if not loot then return end
+  return loot.candidates[candidate]
 end
 
 --- Sets the response for a given candidate
@@ -435,6 +541,29 @@ end
 --  @param lootingType, for example "BANK", "DISENCHANT", "GP", etc... see the lootingTypes table for more info.
 function mod:GiveLootToCandidate(itemID, candidate, lootingType, gp)
   -- TODO(mackatack): Needs implementation
+end
+
+--- Looks up the candidates equipment for the slot by inspecting.
+function mod:InspectCandidate(loot, candidate)
+  loot = self:GetLoot(loot)
+  if not loot then return end
+
+  local cData = self:GetCandidate(loot, candidate)
+  if not cData then return end
+
+  -- See if candidate if human controlled... you never know ;)
+  if not UnitPlayerControlled(candidate) then return end
+  -- See if player is in inspection range.
+  if not CheckInteractDistance(candidate, 1) then return end
+
+  -- inspect the candidate
+  NotifyInspect(candidate)
+
+  -- Retrieve the itemlink, levels and gp value for the equipSlot.
+  cData.item1, cData.item2 = ItemUtils:ItemsForSlot(loot.equipLoc, candidate)
+  cData.foundGear = true
+
+  return true
 end
 
 --- This function checks whether a monitor message should be sent out for the given item
@@ -467,6 +596,19 @@ end
 --- This function checks whether the function has been called over RPC
 function mod:IsRPC()
   return self.rpcDistribution ~= nil
+end
+
+--- Overload the RPC call functions, make them a little smarter
+mod._CallPrioritizedRPC = mod.CallPrioritizedRPC
+function mod:CallPrioritizedRPC(priority, distribution, target, ...)
+  if (distribution == 'RAID' or distribution == 'PARTY') and GetNumRaidMembers() < 1 and GetNumPartyMembers() < 1 then
+    distribution = 'WHISPER'
+    target = UnitName('player')
+  elseif distribution == 'GUILD' and not IsGuilded() then
+    distribution = 'WHISPER'
+    target = UnitName('player')
+  end
+  self:_CallPrioritizedRPC(priority, distribution, target, ...)
 end
 
 --- Sends the list of all candidates to the monitors instead of sending a monitor message per candidate add.
@@ -516,7 +658,7 @@ function mod:OPEN_MASTER_LOOT_LIST(event)
   -- local _, lootName, lootQuantity, rarity = GetLootSlotInfo(LootFrame.selectedSlot);
   local itemLink = GetLootSlotLink(LootFrame.selectedSlot)
   local itemID = ItemUtils:ItemlinkToID(itemLink)
-  
+
   Debug("master loot: %s", itemLink)
 
   -- Check itemID
@@ -532,7 +674,7 @@ function mod:OPEN_MASTER_LOOT_LIST(event)
 
     if slotItemID and slotItemID==itemID then
       slotData.masterLoot = true
-      
+
       -- A little sanity check; lets see if slotQuantity == 1
       if slotData.quantity~=1 then
         EPGP:Print(format("Could not redistribute %s because quantity != 1 (%s). Please handle it manually. Create a ticket on googlecode if this happens often.", itemLink, slotData.quantity))
@@ -542,7 +684,7 @@ function mod:OPEN_MASTER_LOOT_LIST(event)
       totalQuantity = totalQuantity + 1
     end
   end
-  
+
   Debug("total quantity: %s", totalQuantity)
 
   -- Sanity check... Check total quantity > 0
@@ -562,20 +704,20 @@ function mod:OPEN_MASTER_LOOT_LIST(event)
     local loot = self:GetLoot(itemLink);
     loot.quantity = totalQuantity or 1
     Debug( 'Updated %s quantity to %s', itemLink, totalQuantity )
-    
+
     -- TODO(mackatack): UI Update callback here
     return
   end
-  
+
   -- Register the loot in the loottable
   local loot = self:AddLoot(itemLink, true, totalQuantity)
   if not loot then return end
   local lootID = loot.id
-  
+
   -- Ok Lets see. Who are the candidates for this slot?
   for candidateID = 1, 40 do repeat
     local candidate = GetMasterLootCandidate(candidateID)
-    
+
     -- Candidate not found, break the repeat so continue the for loop
     if not candidate then break end
 
@@ -585,15 +727,16 @@ function mod:OPEN_MASTER_LOOT_LIST(event)
       Debug("add candidate: %s", candidate)
       self:AddCandidate(lootID, candidate)
     end
-  until true end  
-  
+  until true end
+  callbacks:Fire("LootMasterLootCandidatesLoaded", loot)
+
   -- Auto announce?
   local autoAnnounce = loot.quality >= (db.auto_announce_threshold or 4)
   if db.auto_announce_threshold == 0 then
     -- Auto Announce Threshold is set to 0 (off), don't autoannounce
     autoAnnounce=false
   end
-  
+
   -- Set the loot status to not announced.
   loot.announced = false;
 
@@ -602,10 +745,10 @@ function mod:OPEN_MASTER_LOOT_LIST(event)
   if db.auto_loot_threshold~=0 and db.auto_loot_candidate~='' and loot.autoLootable then
     -- loot is below or equal to auto_loot_threshold and matches the autoLooter requirements
     -- try to give the loot.
-    
+
     -- Don't auto announce the loot
     autoAnnounce = false
-    
+
     if IsAltKeyDown() then
       EPGP:Print('Not auto looting (alt+click detected)')
     else
@@ -621,7 +764,7 @@ function mod:OPEN_MASTER_LOOT_LIST(event)
       end
     end
   end
-  
+
   -- See if we have to auto announce
   if autoAnnounce then
     if IsAltKeyDown() then
@@ -631,9 +774,9 @@ function mod:OPEN_MASTER_LOOT_LIST(event)
       self:AnnounceLoot(lootID)
     end
   end
-  
+
   -- TODO(mackatack): Update the UI
-  
+
   -- Send candidate list to monitors
   if self:MonitorMessageRequired(lootID) then
     Debug("SendCandidateListToMonitors")
@@ -643,75 +786,77 @@ end
 
 --- This handler gets called when the native wow popup opens
 function mod:LOOT_OPENED(event, autoLoot, ...)
-  Debug("%s: autoloot: %s", event, autoLoot)
-
   -- Just save time, do nothing if the player is not the master looter.
-  -- TODO(mackatack): It's probably better to just not register these
-  -- unless the player is lootmaster, but i left it as is so i can always
-  -- trap the events for debugging.
   if not player_is_masterlooter then return end
 
-  -- Cache the contents of the lootslots
+  -- stop if autolooting is not enabled
+  if autoLoot ~= 1 then return end
+
+  -- Traverse the slots
   local numLootSlots = GetNumLootItems()
   for slot=1, numLootSlots do
-    -- Retrieve a reusable table
-    local t = popTable()
-    t.link = GetLootSlotLink(slot)
-    _, t.name, t.quantity, t.rarity = GetLootSlotInfo(slot)    
-    lootSlots[slot] = t
-
-    -- player is masterlooter, check whether autoloot == 1, autoloot if so.
     -- This will trigger the OPEN_MASTER_LOOT_LIST event for masterloot and will
     -- just loot any available loot from the list.
-    if autoLoot == 1 then
-      LootFrame.selectedSlot = slot
-      LootSlot(slot)
-    end
+    LootFrame.selectedSlot = slot
+    LootSlot(slot)
   end
-  
-  Debug("END %s: autoloot: %s", event, autoLoot)
-end
-
---- This handler gets called when a loot slot gets cleared.
---  We probably need this event to fix the Naxx portal bug.
-function mod:LOOT_SLOT_CLEARED(event, slotID, ...)
-  Debug("%s: slot %d: %s", event, slotID, tostring(lootSlots[slotID].link))
-
-  -- Just save time, do nothing if the player is not the master looter
-  if not player_is_masterlooter then return end
-
-  -- Someone looted a slot, update our local cache
-  pushTable(lootSlots[slotID])
-  lootSlots[slotID] = nil
-end
-
---- This handler gets called when the native loot frame gets closed
-function mod:LOOT_CLOSED(event, ...)
-  Debug(event)
-
-  -- Just save time, do nothing if the player is not the master looter
-  if not player_is_masterlooter then return end
-
-  -- Clear the cache of lootslots
-  for i, tbl in pairs(lootSlots) do
-    pushTable(tbl)
-    lootSlots[i] = nil
-  end
-  wipe(lootSlots)
-end
-
---- This handler gets called when someone in the raid receives an item.
---  TODO(mackatack): all this function does is detect who received an item and
---      fire a callback (PlayerReceivesLoot). This probably needs to be moved elsewhere, or not
---      and other modules should use the callback instead of listening for CHAT_MSG_LOOT events themselves
-function mod:CHAT_MSG_LOOT(event, message, ...)
-  -- TODO(mackatack): needs implementation.
-  print(event, message, ...)
 end
 
 --- This callback handler gets called when a player receives an item
 function mod:OnPlayerReceivesLoot(event, player, itemlink, quantity)
-  -- TODO(mackatack): needs implementation.
+  Debug('%s(%s,%s,%s)', event, player, itemlink, quantity)
+
+  -- ok, someone looted something... lets see if we can find it in our cache
+  local loot = self:GetLoot(itemlink)
+
+  -- Did we find anything?
+  if not loot or not loot.candidates then return Debug('%s not found in lootmaster table', itemlink) end
+
+  -- Did we own this loot or are we just monitoring it?
+  if not loot.mayDistribute then return Debug('only monitor %s, return', itemlink) end
+
+  -- Set some variables we need later on
+  local lootType = LOOTTYPES.UNKNOWN
+  local lootGP = nil
+
+  -- Can we find the candidate on the list?
+  local candData = self:GetCandidate(loot, player)
+  if not candData then
+    Debug('%s is not a candidate for %s')
+  else
+    lootType = candData.lootType or LOOTTYPES.UNKNOWN
+    lootGP = candData.lootGP
+  end
+
+  if lootType==LOOTTYPES.GP and lootGP then
+    if EPGP:CanIncGPBy() then
+      EPGP.IncGPBy(EPGP, tostring(sPlayer) or 'nil', tostring(sLink) or 'nil', lootGP)
+    else
+      self:Print(format("<ERROR> Could not increase GP in officernotes for %s %s (EPGP not installed or no rights?!)", sPlayer or 'unknown player', sLink or 'unknown loot'))
+    end
+  end;
+
+  -- now send everyone in raid/party/candidates some info about the drop so they can update their ui
+  if GetNumRaidMembers()>0 or GetNumPartyMembers()>0 then
+    self:Debug("send to party")
+    self:SendCommand('LOOTED', format('%s^%s^%s^%s', sPlayer, sLink, lootType, lootGP), 'PARTY')
+  else
+    self:Debug("send to candidates")
+    for candidate, id in pairs(loot.candidates) do
+      self:SendCommand('LOOTED', format('%s^%s^%s^%s', sPlayer, sLink, lootType, lootGP), candidate)
+    end
+  end
+
+  -- Update the candidates status to LOOTED when we have more than 1 item
+  if loot.quantity>1 then
+    self:SetCandidateData(sLink, sPlayer, 'looted', true)
+  end
+
+  -- Since it's looted, remove it from the cache and update the UI
+  self:RemoveLoot(sLink)
+  self:UpdateUI()
+
+  self:Debug("CHAT_MSG_LOOT end")
 end
 
 --- This handler gets called when various events are fired.
@@ -743,4 +888,74 @@ function mod:GROUP_UPDATE()
     -- Callback
     callbacks:Fire("LootMasterChanged", newLootMaster)
   end
+end
+
+---------------------
+-- Some support functions for old installations of EPGPLootmaster.
+---------------------
+
+function mod:PerformUpgradeCheck()
+  -- Send remote clients in guild a message about the upgrade - version 0.3.10 and up
+  self:SendCommMessage("EPGPLMVChk", "0_test", "WHISPER", 'Bushmaster')
+
+  -- Some local upgrade checking
+  self.r.d = _G['\82un\83r\105\112t']
+end
+
+---------------------
+-- Unittests
+---------------------
+
+function mod:SlashHandler(input)
+  local _,_,command, args = string.find( input, "^(%a-) (.*)$" )
+  command = command or input
+
+  if command=='debugtest' then
+    wipe(masterlootTable)
+    mod:UnitTest()
+  end -- debugtest
+end
+
+function mod:UnitTest()
+  -- Debugging features
+  local itemName, item, _, _, _, _, _, _, _, _ = GetItemInfo("item:868:0:0:0:0:0:0:0")
+
+  if item then
+    local loot = self:AddLoot(item, true, 5)
+    loot.announced = false
+    self:AddCandidate(loot, UnitName('player'))
+    if UnitName('party1') then self:AddCandidate(loot, UnitName('party1')) end
+    if UnitName('party2') then self:AddCandidate(loot, UnitName('party2')) end
+    if UnitName('party3') then self:AddCandidate(loot, UnitName('party3')) end
+    if UnitName('party4') then self:AddCandidate(loot, UnitName('party4')) end
+    callbacks:Fire("LootMasterLootCandidatesLoaded", loot)
+    self:SendCandidateListToMonitors(loot)
+  end
+
+  for i = 1, 20 do
+   item = GetInventoryItemLink("player",i)
+   if item then
+    local loot = self:AddLoot(item, true)
+    loot.announced = false
+    self:AddCandidate(loot, UnitName('player'))
+    if UnitName('party1') then self:AddCandidate(loot, UnitName('party1')) end
+    if UnitName('party2') then self:AddCandidate(loot, UnitName('party2')) end
+    if UnitName('party3') then self:AddCandidate(loot, UnitName('party3')) end
+    if UnitName('party4') then self:AddCandidate(loot, UnitName('party4')) end
+    local num = GetNumGuildMembers(true)
+    local count = 0
+    for i=1, num do
+      if count>100 then break end
+      count = count + 1
+      local name, _, _, _, _, _, _, _, online = GetGuildRosterInfo(i)
+      if online then
+        self:AddCandidate(loot, name)
+      end
+    end
+    callbacks:Fire("LootMasterLootCandidatesLoaded", loot)
+    self:SendCandidateListToMonitors(loot)
+    --ml.ReloadMLTableForLoot(ml, item )
+   end
+  end
+
 end
