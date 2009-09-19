@@ -82,15 +82,6 @@ local in_combat = false
 local award_queue = {}
 local timer
 
-local function IsRLorML()
-  if UnitInRaid("player") then
-    local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
-    if loot_method == "master" and ml_party_id == 0 then return true end
-    if loot_method ~= "master" and IsRaidLeader() then return true end
-  end
-  return false
-end
-
 function mod:PopAwardQueue(event_name)
   if in_combat then return end
 
@@ -168,19 +159,17 @@ mod.optionsArgs = {
   },
 }
 
+local function dbmCallback(event, mod)
+   return BossAttempt(event, mod.combatInfo.name)
+end
+
 function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
   if DBM then
     EPGP:Print(L["Using DBM for boss kill tracking"])
-    DBM:RegisterCallback("kill",
-                         function (mod)
-                           BossAttempt("kill", mod.combatInfo.name)
-                         end)
-    DBM:RegisterCallback("wipe",
-                         function (mod)
-                           BossAttempt("wipe", mod.combatInfo.name)
-                         end)
+    DBM:RegisterCallback("kill", dbmCallback)
+    DBM:RegisterCallback("wipe", dbmCallback)
   else
     self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     self:RegisterMessage("BossKilled", BossAttempt)
