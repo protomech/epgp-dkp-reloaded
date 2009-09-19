@@ -429,8 +429,9 @@ local function ParseGuildNote(callback, name, note)
     ep_data[name] = ep
     gp_data[name] = gp
   else
-    if not GS:GetNote(note) then
-      -- This is a junk note, ignore it
+    local main_ep = DecodeNote(GS:GetNote(note))
+    if not main_ep then
+      -- This member does not point to a valid main, ignore it.
       ignored[name] = note
     else
       -- Otherwise setup the alts state
