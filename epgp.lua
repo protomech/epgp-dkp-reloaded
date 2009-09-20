@@ -779,10 +779,11 @@ function EPGP:IncMassEPBy(reason, amount)
       -- so we can't use it to validate that this actually is a character who
       -- can recieve EP.
       --
-      -- EPGP:GetEPGP() returns nil if it can't find a valid member based on
-      -- the name however.
-      local _, _, main = EPGP:GetEPGP(name)
-      if main and not awarded[main] and not extras_awarded[main] then
+      -- EPGP:GetEPGP() returns nil for ep and gp, if it can't find a
+      -- valid member based on the name however.
+      local ep, gp, main = EPGP:GetEPGP(name)
+      local main = main or name
+      if ep and not awarded[main] and not extras_awarded[main] then
         if EPGP:IsMemberInExtrasList(name) then
           extras_awarded[EPGP:IncEPBy(name, extras_reason,
                                       extras_amount, true)] = true
