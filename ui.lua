@@ -329,7 +329,7 @@ local function CreateEPGPLogFrame()
 
   f:SetResizable(true)
   f:SetMinResize(435, 435)
-  f:SetMaxResize(800, 435)
+  f:SetMaxResize(1200, 435)
 
   f:Hide()
   f:SetWidth(435)
