@@ -55,6 +55,7 @@ L["GP: %d or %d"] = true
 L["GP: %d"] = true
 L["Guild or Raid are awarded EP"] = true
 L["Hint: You can open these options by typing /epgp config"] = true
+L["Idle"] = true
 L["If you want to be on the award list but you are not in the raid, you need to whisper me: 'epgp standby' or 'epgp standby <name>' where <name> is the toon that should receive awards"] = true
 L["Ignoring EP change for unknown member %s"] = true
 L["Ignoring GP change for unknown member %s"] = true

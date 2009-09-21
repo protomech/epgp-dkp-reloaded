@@ -25,6 +25,7 @@ libs\Deformat-3.0\embeds.xml
 libs\Deformat-3.0\Deformat-2.0\Deformat-2.0.lua
 libs\LibBabble-Class-3.0\lib.xml
 libs\LibBabble-Inventory-3.0\lib.xml
+libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
 LibDebug-1.0.lua
 LibGearPoints-1.0.lua
@@ -43,6 +44,7 @@ announce.lua
 
 boss.lua
 gptooltip.lua
+ldb.lua
 log.lua
 loot.lua
 officernotewarning.lua
