@@ -328,7 +328,7 @@ local function CreateEPGPLogFrame()
   table.insert(SIDEFRAMES, f)
 
   f:SetResizable(true)
-  f:SetMinResize(435, 435)
+  f:SetMinResize(600, 435)
   f:SetMaxResize(1200, 435)
 
   f:Hide()
