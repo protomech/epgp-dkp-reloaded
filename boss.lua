@@ -1,55 +1,9 @@
 local mod = EPGP:NewModule("boss", "AceEvent-3.0", "AceTimer-3.0")
 local Debug = LibStub("LibDebug-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-
-local BOSSES = {
-  -- The Obsidian Sanctum
-  [28860] = "Sartharion",
-
-  -- Eye of Eternity
-  [28859] = "Malygos",
-
-  -- Naxxramas
-  [15956] = "Anub'Rekhan",
-  [15953] = "Grand Widow Faerlina",
-  [15952] = "Maexxna",
-
-  [16028] = "Patchwerk",
-  [15931] = "Grobbulus",
-  [15932] = "Gluth",
-  [15928] = "Thaddius",
-
-  [16061] = "Instructor Razuvious",
-  [16060] = "Gothik the Harvester",
-  -- TODO(alkis): Add Four Horsemen
-
-  [15954] = "Noth the Plaguebringer",
-  [15936] = "Heigan the Unclean",
-  [16011] = "Loatheb",
-
-  [15989] = "Sapphiron",
-  [15990] = "Kel'Thuzad",
-
-  -- Vault of Archavon
-  [31125] = "Archavon the Stone Watcher",
-  [33993] = "Emalon the Storm Watcher",
-
-  -- Ulduar
-  [33113] = "Flame Leviathan",
-  [33118] = "Ignis the Furnace Master",
-  [33186] = "Razorscale",
-  [33293] = "XT-002 Deconstructor",
-  -- TODO(alkis): Add Assembly of Iron
-  [32930] = "Kologarn",
-  [33515] = "Auriaya",
-  [33412] = "Mimiron",
-  [32845] = "Hodir",
-  [32865] = "Thorim",
-  [32906] = "Freya",
-  [33271] = "General Vezax",
-  [33288] = "Yogg-Saron",
-  -- TODO(alkis): Add Algalon the Observer
-}
+local timer
+local in_combat = false
+local award_queue = {}
 
 local function IsRLorML()
   if UnitInRaid("player") then
@@ -60,30 +14,9 @@ local function IsRLorML()
   return false
 end
 
-function mod:COMBAT_LOG_EVENT_UNFILTERED(event_name,
-                                         timestamp, event,
-                                         source, source_name, source_flags,
-                                         dest, dest_name, dest_flags,
-                                         ...)
-  -- bitlib does not support 64 bit integers so we are going to do some
-  -- string hacking to get what we want. For an NPC:
-  --   guid & 0x00F0000000000000 == 3
-  -- and the NPC id is:
-  --   (guid & 0x0000FFFFFF000000) >> 24
-  if event == "UNIT_DIED" and dest:sub(5, 5) == "3" then
-    local npc_id = tonumber(string.sub(dest, -12, -7), 16)
-    if BOSSES[npc_id] then
-      self:SendMessage("BossKilled", dest_name, "kill")
-    end
-  end
-end
-
-local in_combat = false
-local award_queue = {}
-local timer
-
 function mod:PopAwardQueue(event_name)
   if in_combat then return end
+  Debug("PopAwardQueue stage 1: %s", event_name)
 
   if #award_queue == 0 then
     if timer then
@@ -92,14 +25,20 @@ function mod:PopAwardQueue(event_name)
     end
     return
   end
+  Debug("PopAwardQueue stage 2: %s", event_name)
 
-  if StaticPopup_Visible("EPGP_BOSS_DEAD") or StaticPopup_Visible("EPGP_BOSS_ATTEMPT") then
+  if StaticPopup_Visible("EPGP_BOSS_DEAD") or
+     StaticPopup_Visible("EPGP_BOSS_ATTEMPT") then
     return
   end
 
+  Debug("PopAwardQueue stage 3: %s", event_name)
+
   local boss_name = table.remove(award_queue, 1)
+    Debug("PopAwardQueue stage 4: %s %s", event_name, boss_name)
   local dialog
-  if event_name == "kill" then
+  if event_name == "kill" or event_name == "BossKilled" then
+    Debug("PopAwardQueue: display Popup for %s %s", event_name, boss_name)
     dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
   elseif event_name == "wipe" and mod.db.profile.wipedetection then
     dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
@@ -111,13 +50,14 @@ function mod:PopAwardQueue(event_name)
 end
 
 local function BossAttempt(event_name, boss_name)
-  Debug("Boss attempt: %s (%s)", boss_name, event_name)
+  Debug("Boss attempt: %s %s", event_name, boss_name)
   -- Temporary fix since we cannot unregister DBM callbacks
   if not mod:IsEnabled() then return end
 
   if CanEditOfficerNote() and IsRLorML() then
     tinsert(award_queue, boss_name)
     if not timer then
+      Debug("Calling PopAwardQueue: %s %s", event_name, boss_name)
       timer = mod:ScheduleRepeatingTimer("PopAwardQueue", 0.1, event_name)
     end
   end
@@ -153,25 +93,36 @@ mod.optionsArgs = {
   wipedetection = {
     type = "toggle",
     name = L["Wipe awards"],
-    desc = L["Awards for wipes on bosses. Requires Deadly Boss Mods"],
+    desc = L["Awards for wipes on bosses. Requires Deadly Boss Mods or BigWigs"],
     order = 2,
     disabled = function(v) return not DBM end,
   },
 }
 
 local function dbmCallback(event, mod)
-   return BossAttempt(event, mod.combatInfo.name)
+  return BossAttempt(event, mod.combatInfo.name)
+end
+
+function chatMsgAddon(event, prefix, message, type, sender)
+  if prefix ~= "BigWigs" then return end
+
+  local sync, rest = select(3, message:find("(%S+)%s*(.*)$"))
+
+  if sync ~= "Death" then return end
+
+  Debug("chatMsgAddon: %s %s %s", prefix, sync, rest)
+  BossAttemp("kill", rest)
 end
 
 function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
   if DBM then
-    EPGP:Print(L["Using DBM for boss kill tracking"])
+    EPGP:Print(L["Using %s for boss kill tracking"], "DBM")
     DBM:RegisterCallback("kill", dbmCallback)
     DBM:RegisterCallback("wipe", dbmCallback)
-  else
-    self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    self:RegisterMessage("BossKilled", BossAttempt)
+  elseif BigWigs then
+    EPGP:Print(L["Using %s for boss kill tracking"], "BigWigs")
+    self:RegisterEvent("CHAT_MSG_ADDON", chatMsgAddon)
   end
 end
