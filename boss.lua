@@ -111,7 +111,7 @@ function chatMsgAddon(event, prefix, message, type, sender)
   if sync ~= "Death" then return end
 
   Debug("chatMsgAddon: %s %s %s", prefix, sync, rest)
-  BossAttemp("kill", rest)
+  BossAttempt("kill", rest)
 end
 
 function mod:OnEnable()
