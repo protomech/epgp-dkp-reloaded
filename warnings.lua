@@ -22,6 +22,7 @@ StaticPopupDialogs["EPGP_MULTIPLE_MASTERS_WARNING"] = {
   button1 = OKAY,
   showAlert = 1,
   enterClicksFirstButton = 1,
+  timeout = 15,
 }
 
 mod.dbDefaults = {
