@@ -17,7 +17,7 @@ L["Automatic handling of the standby list through whispers when in raid. When th
 L["Automatic loot tracking"] = "Automatische Beuteverfolgung"
 L["Automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."] = "Automatisches Loot-Tracking bedeutet, es erscheint ein Popup zur Vergabe von GP an den, der den Loot erhalten hat. Diese Option ist nur in einem Raid aktiv, und nur, wenn du Raidleader oder Pl\195\188ndermeister bist."
 L["Award EP"] = "Vergib EP"
-L["Awards for wipes on bosses. Requires Deadly Boss Mods or BigWigs"] = "Auszeichnungen f\195\188r das wipen an Bossen. Ben\195\182tigt Deadly Boss Mods oder BigWigs" -- Needs review
+L["Awards for wipes on bosses. Requires Deadly Boss Mods or BigWigs"] = "Belohnungen f\195\188r das wipen an Bossen. Ben\195\182tigt Deadly Boss Mods oder BigWigs."
 L["Base GP should be a positive number"] = "Die Basis GP sollten eine positive Nummer sein"
 L["Boss"] = "Boss"
 L["Credit GP"] = "Vergib GP"
@@ -57,7 +57,7 @@ L["List errors"] = "Fehler anzeigen"
 L["Lists errors during officer note parsing to the default chat frame. Examples are members with an invalid officer note."] = "Zeige Fehler beim verarbeiten der Offiziersnotizen im Standard Chatfenster. Zum Beispiel Mitglieder mit ung\195\188ltigen Offiziersnotizen."
 L["Loot"] = "Beute"
 L["Loot tracking threshold"] = "Loot-Tracking Grenzwert"
-L["Make sure you are the only person changing EP and GP. If you have multiple people changing EP and GP at the same time, for example one awarding EP and another crediting GP, you *are* going to have data loss."] = "Stell bitte sicher, dass du der einzigste Person bist, die gerade EP und GP ver\195\164ndert. Wenn mehrere Personen EP und GP zur gleichen Zeit ver\195\164ndern, zum Beispiel jemmand vergibt gerade EP und jemmand anderes schreibt gerade GP gut, wirst du einen Datenverlust haben." -- Needs review
+L["Make sure you are the only person changing EP and GP. If you have multiple people changing EP and GP at the same time, for example one awarding EP and another crediting GP, you *are* going to have data loss."] = "Stelle bitte sicher, dass Du der einzige bist, der gerade EP und GP ver\195\164ndert. Wenn mehrere Personen EP und GP zur gleichen Zeit ver\195\164ndern, zum Beispiel jemand vergibt gerade EP und jemand anderes schreibt gerade GP gut, wird es zu Datenverlust kommen."
 L["Mass EP Award"] = "Massenvergabe von EP"
 L["Min EP should be a positive number"] = "Min EP sollte eine positive Nummer sein"
 L["Next award in "] = "N\195\164chste Belohnung in"
