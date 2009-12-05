@@ -89,6 +89,7 @@ function EPGP:SetupOptions()
 end
 
 function EPGP:ProcessCommand(str)
+  str = str:gsub("%%t", UnitName("target") or "notarget")
   local command, nextpos = self:GetArgs(str, 1)
   if command == "config" then
     InterfaceOptionsFrame_OpenToCategory("EPGP")
