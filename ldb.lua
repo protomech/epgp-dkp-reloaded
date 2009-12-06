@@ -24,11 +24,10 @@ function mod:OnEnable()
       label = "EPGP",
       OnClick =
         function(self, button)
-          local slash_cmd = SlashCmdList["EPGP"]
           if button == "LeftButton" then
-            slash_cmd()
+            EPGP:ToggleUI()
           else
-            slash_cmd("config")
+            InterfaceOptionsFrame_OpenToCategory("EPGP")
           end
         end,
       OnTooltipShow =

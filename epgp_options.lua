@@ -140,12 +140,16 @@ function EPGP:ProcessCommand(str)
     }
     EPGP:Print(table.concat(help, "\n"))
   else
-    if EPGPFrame and IsInGuild() then
-      if EPGPFrame:IsShown() then
-        HideUIPanel(EPGPFrame)
-      else
-        ShowUIPanel(EPGPFrame)
-      end
+    EPGP:ToggleUI()
+  end
+end
+
+function EPGP:ToggleUI()
+  if EPGPFrame and IsInGuild() then
+    if EPGPFrame:IsShown() then
+      HideUIPanel(EPGPFrame)
+    else
+      ShowUIPanel(EPGPFrame)
     end
   end
 end
