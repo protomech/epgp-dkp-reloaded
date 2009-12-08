@@ -515,13 +515,13 @@ local function CreateEPGPLogFrame()
   local record = scrollParent:CreateFontString("EPGPLogRecordFrame1", "OVERLAY", font)
   record:SetHeight(recordHeight)
   record:SetWidth(recordWidth)
-  record:SetMultilineIndent(false)
+  record:SetNonSpaceWrap(false)
   record:SetPoint("TOPLEFT", scrollParent, "TOPLEFT", 5, -3)
   for i=2,numLogRecordFrames do
     record = scrollParent:CreateFontString("EPGPLogRecordFrame"..i, "OVERLAY", font)
     record:SetHeight(recordHeight)
     record:SetWidth(recordWidth)
-    record:SetMultilineIndent(false)
+    record:SetNonSpaceWrap(false)
     record:SetPoint("TOPLEFT", "EPGPLogRecordFrame"..(i-1), "BOTTOMLEFT")
   end
 
