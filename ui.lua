@@ -674,10 +674,10 @@ end
 local function EPGPSideFrameEPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
   local dungeons = {CalendarEventGetTextures(1)}
-  for i=1,#dungeons,3 do
+  for i=1,#dungeons,4 do
     if dungeons[i+2] == 2 then
       local info = UIDropDownMenu_CreateInfo()
-      info.text = dungeons[i]
+      info.text = dungeons[i] .. " - " .. dungeons[i+3]
       info.func = function(self)
                     UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
                     parent.otherLabel:SetAlpha(0.25)
