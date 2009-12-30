@@ -785,10 +785,11 @@ function EPGP:IncMassEPBy(reason, amount)
       local main = main or name
       if ep and not awarded[main] and not extras_awarded[main] then
         if EPGP:IsMemberInExtrasList(name) then
-          extras_awarded[EPGP:IncEPBy(name, extras_reason,
-                                      extras_amount, true)] = true
+          EPGP:IncEPBy(name, extras_reason, extras_amount, true)
+          extras_awarded[name] = true
         else
-          awarded[EPGP:IncEPBy(name, reason, amount, true)] = true
+          EPGP:IncEPBy(name, reason, amount, true)
+          awarded[name] = true
         end
       end
     end
