@@ -12,6 +12,7 @@ local ignored_items = {
   [40753] = true, -- Emblem of Valor
   [45624] = true, -- Emblem of Conquest
   [47241] = true, -- Emblem of Triumph
+  [49426] = true, -- Emblem of Frost
   [30311] = true, -- Warp Slicer
   [30312] = true, -- Infinity Blade
   [30313] = true, -- Staff of Disintegration
