@@ -52,12 +52,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
                            self.itemFrame, self.editBox, self.button1)
              end
 
-             self.itemFrame:SetPoint("TOPLEFT", 85, -35)
-             self.editBox:SetPoint(
-               "TOPLEFT", self.itemFrame, "TOPRIGHT", 150, -10)
-             self.editBox:SetPoint("RIGHT", -85, 0)
-             self.button1:SetPoint(
-               "TOPRIGHT", self.itemFrame, "BOTTOMRIGHT", 35, -6)
+             self.editBox:SetPoint("RIGHT", -55, 0)
 
              local gp1, gp2 = GP:GetValue(self.itemFrame.link)
              if not gp1 then
