@@ -73,8 +73,8 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 
              RestoreAnchors(blizzardPopupAnchors[self])
 
-             if ChatFrameEditBox:IsShown() then
-               ChatFrameEditBox:SetFocus()
+             if ChatEdit_GetActiveWindow() then
+               ChatEdit_FocusActiveWindow()
              end
              self.editBox:SetText("")
            end,
@@ -151,8 +151,8 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
              end,
 
   OnHide = function(self)
-             if ChatFrameEditBox:IsShown() then
-               ChatFrameEditBox:SetFocus()
+             if ChatEdit_GetActiveWindow() then
+               ChatEdit_FocusActiveWindow()
              end
              self.editBox:SetText("")
              self.reason = nil
@@ -189,8 +189,8 @@ StaticPopupDialogs["EPGP_BOSS_ATTEMPT"] = {
              end,
 
   OnHide = function(self)
-             if ChatFrameEditBox:IsShown() then
-               ChatFrameEditBox:SetFocus()
+             if ChatEdit_GetActiveWindow() then
+               ChatEdit_FocusActiveWindow()
              end
              self.editBox:SetText("")
              self.reason = nil
