@@ -110,7 +110,7 @@ StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
              end,
 
   OnUpdate = function(self, elapsed)
-               if GS:IsCurrentState() then
+               if EPGP:CanDecayEPGP() then
                  self.button1:Enable()
                else
                  self.button1:Disable()
@@ -130,7 +130,7 @@ StaticPopupDialogs["EPGP_RESET_EPGP"] = {
              end,
 
   OnUpdate = function(self, elapsed)
-               if GS:IsCurrentState() then
+               if EPGP:CanResetEPGP() then
                  self.button1:Enable()
                else
                  self.button1:Disable()

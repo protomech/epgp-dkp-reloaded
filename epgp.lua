@@ -595,7 +595,13 @@ function EPGP:IsAnyMemberInExtrasList()
   return selected._count ~= 0
 end
 
+function EPGP:CanResetEPGP()
+  return CanEditOfficerNote() and GS:IsCurrentState()
+end
+
 function EPGP:ResetEPGP()
+  assert(EPGP:CanResetEPGP())
+
   local zero_note = EncodeNote(0, 0)
   for name,_ in pairs(ep_data) do
     GS:SetNote(name, zero_note)
@@ -619,6 +625,8 @@ function EPGP:CanDecayEPGP()
 end
 
 function EPGP:DecayEPGP()
+  assert(EPGP:CanDecayEPGP())
+
   local decay = global_config.decay_p  * 0.01
   local reason = string.format("Decay %d%%", global_config.decay_p)
   for name,_ in pairs(ep_data) do
