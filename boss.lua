@@ -1,9 +1,9 @@
-local mod = EPGP:NewModule("boss", "AceEvent-3.0", "AceTimer-3.0")
+local mod = EPGP:NewModule("boss", "AceEvent-3.0")
 local Debug = LibStub("LibDebug-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local timer
+local Coroutine = LibStub("LibCoroutine-1.0")
+
 local in_combat = false
-local award_queue = {}
 
 local function IsRLorML()
   if UnitInRaid("player") then
@@ -14,31 +14,14 @@ local function IsRLorML()
   return false
 end
 
-function mod:PopAwardQueue(event_name)
-  if in_combat then return end
-  Debug("PopAwardQueue stage 1: %s", event_name)
-
-  if #award_queue == 0 then
-    if timer then
-      self:CancelTimer(timer, true)
-      timer = nil
-    end
-    return
-  end
-  Debug("PopAwardQueue stage 2: %s", event_name)
-
-  if StaticPopup_Visible("EPGP_BOSS_DEAD") or
-     StaticPopup_Visible("EPGP_BOSS_ATTEMPT") then
-    return
+local function ShowPopup(event_name, boss_name)
+  while (in_combat or StaticPopup_Visible("EPGP_BOSS_DEAD") or
+         StaticPopup_Visible("EPGP_BOSS_ATTEMPT")) do
+    Coroutine.Sleep(0.1)
   end
 
-  Debug("PopAwardQueue stage 3: %s", event_name)
-
-  local boss_name = table.remove(award_queue, 1)
-    Debug("PopAwardQueue stage 4: %s %s", event_name, boss_name)
   local dialog
   if event_name == "kill" or event_name == "BossKilled" then
-    Debug("PopAwardQueue: display Popup for %s %s", event_name, boss_name)
     dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
   elseif event_name == "wipe" and mod.db.profile.wipedetection then
     dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
@@ -55,11 +38,7 @@ local function BossAttempt(event_name, boss_name)
   if not mod:IsEnabled() then return end
 
   if CanEditOfficerNote() and IsRLorML() then
-    tinsert(award_queue, boss_name)
-    if not timer then
-      Debug("Calling PopAwardQueue: %s %s", event_name, boss_name)
-      timer = mod:ScheduleRepeatingTimer("PopAwardQueue", 0.1, event_name)
-    end
+    Coroutine.RunAsync(ShowPopup, event_name, boss_name)
   end
 end
 
@@ -72,7 +51,9 @@ function mod:PLAYER_REGEN_ENABLED()
 end
 
 function mod:DebugTest()
-  BossKilled("BossKilled", "Sapphiron")
+  BossAttempt("BossKilled", "Sapphiron")
+  BossAttempt("kill", "Bob")
+  BossAttempt("wipe", "Spongebob")
 end
 
 mod.dbDefaults = {
