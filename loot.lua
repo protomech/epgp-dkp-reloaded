@@ -2,6 +2,7 @@ local mod = EPGP:NewModule("loot", "AceEvent-3.0", "AceTimer-3.0")
 
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local LLN = LibStub("LibLootNotify-1.0")
+local Coroutine = LibStub("LibCoroutine-1.0")
 
 local ignored_items = {
   [20725] = true, -- Nexus Crystal
@@ -26,7 +27,6 @@ local ignored_items = {
 
 local in_combat = false
 local loot_queue = {}
-local timer
 
 local function IsRLorML()
   if UnitInRaid("player") then
@@ -37,31 +37,10 @@ local function IsRLorML()
   return false
 end
 
-function mod:PopLootQueue()
-  if in_combat then return end
-
-  if #loot_queue == 0 then
-    if timer then
-      self:CancelTimer(timer, true)
-      timer = nil
-    end
-    return
+local function ShowPopup(player, item, quantity)
+  while mod.foo or in_combat or StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") do
+    Coroutine.Sleep(0.1)
   end
-
-  local player, item = unpack(loot_queue[1])
-
-  -- In theory this should never happen.
-  if not player or not item then
-    tremove(loot_queue, 1)
-    return
-  end
-
-  -- User is busy with other popup.
-  if StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") then
-    return
-  end
-
-  tremove(loot_queue, 1)
 
   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(item)
   local r, g, b = GetItemQualityColor(itemRarity)
@@ -89,10 +68,7 @@ local function LootReceived(event_name, player, itemLink, quantity)
 
     if ignored_items[itemID] then return end
 
-    tinsert(loot_queue, {player, itemLink, quantity})
-    if not timer then
-      timer = mod:ScheduleRepeatingTimer("PopLootQueue", 0.1)
-    end
+    Coroutine.RunAsync(ShowPopup, player, itemLink, quantity)
   end
 end
 
