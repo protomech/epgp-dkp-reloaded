@@ -38,7 +38,7 @@ local function IsRLorML()
 end
 
 local function ShowPopup(player, item, quantity)
-  while mod.foo or in_combat or StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") do
+  while in_combat or StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") do
     Coroutine.Sleep(0.1)
   end
 
