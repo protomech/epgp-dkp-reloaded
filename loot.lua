@@ -26,7 +26,6 @@ local ignored_items = {
 }
 
 local in_combat = false
-local loot_queue = {}
 
 local function IsRLorML()
   if UnitInRaid("player") then
