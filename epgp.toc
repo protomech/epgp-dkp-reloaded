@@ -28,6 +28,7 @@ libs\LibBabble-Inventory-3.0\lib.xml
 libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 
 LibDebug-1.0.lua
+LibCoroutine-1.0.lua
 LibGearPoints-1.0.lua
 LibGuildStorage-1.0.lua
 LibItemUtils-1.0.lua
