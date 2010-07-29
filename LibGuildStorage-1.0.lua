@@ -15,12 +15,9 @@
 --
 -- IsCurrentState(): Return true if the state of the library is current.
 --
--- Snapshot(table): Write out snapshot in the table
+-- Snapshot(table) -- DEPRECATED: Write out snapshot in the table
 -- provided. table.guild_info will contain the epgp clause in guild
 -- info and table.notes a table of {name, class, note}.
---
--- Rollback(table): Given the table filled in by Snapshot, rollback
--- the state of the officer notes and guild info to that.
 --
 -- The library also fires the following messages, which you can
 -- register for through RegisterCallback and unregister through
