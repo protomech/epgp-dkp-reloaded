@@ -116,3 +116,9 @@ function mod:OnEnable()
     DXE.RegisterCallback(mod, "TriggerDefeat", dxeCallback)
   end
 end
+
+function mod:OnDisable()
+  if DXE then
+    DXE.UnregisterCallback(mod, "TriggerDefeat")
+  end
+end
