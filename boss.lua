@@ -74,17 +74,18 @@ mod.optionsArgs = {
   wipedetection = {
     type = "toggle",
     name = L["Wipe awards"],
-    desc = L["Awards for wipes on bosses. Requires Deadly Boss Mods or BigWigs"],
+    desc = L["Awards for wipes on bosses. Requires DBM, DXE, or BigWigs"],
     order = 2,
     disabled = function(v) return not DBM end,
   },
 }
 
 local function dbmCallback(event, mod)
-  return BossAttempt(event, mod.combatInfo.name)
+  Debug("dbmCallback: %s %s", event, mod.combatInfo.name)
+  BossAttempt(event, mod.combatInfo.name)
 end
 
-function chatMsgAddon(event, prefix, message, type, sender)
+local function chatMsgAddon(event, prefix, message, type, sender)
   if prefix ~= "BigWigs" then return end
 
   local sync, rest = select(3, message:find("(%S+)%s*(.*)$"))
@@ -93,6 +94,11 @@ function chatMsgAddon(event, prefix, message, type, sender)
 
   Debug("chatMsgAddon: %s %s %s", prefix, sync, rest)
   BossAttempt("kill", rest)
+end
+
+local function dxeCallback(event, encounter)
+  Debug("dxeCallback: %s %s", event, encounter.name)
+  BossAttempt("kill", encounter.name)
 end
 
 function mod:OnEnable()
@@ -105,5 +111,8 @@ function mod:OnEnable()
   elseif BigWigs then
     EPGP:Print(L["Using %s for boss kill tracking"], "BigWigs")
     self:RegisterEvent("CHAT_MSG_ADDON", chatMsgAddon)
+  elseif DXE then
+    EPGP:Print(L["Using %s for boss kill tracking"], "DXE")
+    DXE:RegisterCallback("TriggerDefeat", dxeCallback)
   end
 end

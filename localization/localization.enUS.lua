@@ -29,7 +29,7 @@ L["Automatic handling of the standby list through whispers when in raid. When th
 L["Automatic loot tracking by means of a popup to assign GP to the toon that received loot. This option only has effect if you are in a raid and you are either the Raid Leader or the Master Looter."] = true
 L["Automatic loot tracking"] = true
 L["Award EP"] = true
-L["Awards for wipes on bosses. Requires Deadly Boss Mods or BigWigs"] = true
+L["Awards for wipes on bosses. Requires DBM, DXE, or BigWigs"] = true
 L["Base GP should be a positive number"] = true
 L["Boss"] = true
 L["Credit GP to %s"] = true

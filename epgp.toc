@@ -3,7 +3,7 @@
 ## Notes: Effort Points/Gear Points Loot System
 ## Author: Alkis Evlogimenos
 ## Version:
-## OptionalDeps: DBM-Core BigWigs_Core
+## OptionalDeps: DBM-Core BigWigs_Core DXE
 ## SavedVariables: EPGP_DB
 ## X-Category: Guild
 ## X-Website: http://code.google.com/p/epgp/
