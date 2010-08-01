@@ -18,7 +18,7 @@ local LBIR = LibStub("LibBabble-Inventory-3.0"):GetReverseLookupTable()
 -- Class restrictions are localized on each client. For this we need
 -- LibBabble-Class to unlocalize the strings.
 local LBCR = LibStub("LibBabble-Class-3.0"):GetReverseLookupTable()
-local deformat = AceLibrary("Deformat-2.0")
+local deformat = LibStub("LibDeformat-3.0")
 
 -- Make a frame for our repeating calls to GetItemInfo.
 lib.frame = lib.frame or CreateFrame("Frame", MAJOR_VERSION .. "_Frame")

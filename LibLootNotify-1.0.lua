@@ -13,7 +13,7 @@ local AceTimer = LibStub("AceTimer-3.0")
 local AceHook = LibStub("AceHook-3.0")
 AceHook:Embed(lib)
 
-local deformat = AceLibrary("Deformat-2.0")
+local deformat = LibStub("LibDeformat-3.0")
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 
 lib.callbacks = lib.callbacks or CallbackHandler:New(lib)
