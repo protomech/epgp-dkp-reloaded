@@ -62,11 +62,12 @@ frame:SetScript("OnEvent",
                   lib[event](lib, ...)
                 end)
 
-local SendChatMessage = _G.SendChatMessage
+local SendAddonMessage = _G.SendAddonMessage
 if ChatThrottleLib then
-  SendChatMessage = function(...)
-                      ChatThrottleLib:SendChatMessage("ALERT", "LGS", ...)
-                    end
+  SendAddonMessage = function(...)
+                       ChatThrottleLib:SendAddonMessage(
+                         "ALERT", MAJOR_VERSION, ...)
+                     end
 end
 
 local SetState
@@ -149,12 +150,12 @@ frame:RegisterEvent("CHAT_MSG_ADDON")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 function lib:CHAT_MSG_ADDON(prefix, msg, type, sender)
-  if prefix == "EPGP" and sender ~= UnitName("player") then
-    if msg == "CHANGES_PENDING" then
-      SetState("REMOTE_FLUSHING")
-    elseif msg == "CHANGES_FLUSHED" then
-      SetState("STALE_WAITING_FOR_ROSTER_UPDATE")
-    end
+  Debug("CHAT_MSG_ADDON: %s, %s, %s, %s", prefix, msg, type, sender)
+  if prefix ~= MAJOR_VERSION or sender == UnitName("player") then return end
+  if msg == "CHANGES_PENDING" then
+    SetState("REMOTE_FLUSHING")
+  elseif msg == "CHANGES_FLUSHED" then
+    SetState("STALE_WAITING_FOR_ROSTER_UPDATE")
   end
 end
 
@@ -223,7 +224,7 @@ function SetState(new_state)
     Debug("StateChanged: %s -> %s", state, new_state)
     state = new_state
     if new_state == FLUSHING then
-      SendAddonMessage("EPGP", "CHANGES_PENDING", "GUILD")
+      SendAddonMessage("CHANGES_PENDING", "GUILD")
     end
     callbacks:Fire("StateChanged")
   end
@@ -323,7 +324,7 @@ local function Frame_OnUpdate(self, elapsed)
     elseif state == "FLUSHING" then
       if not next(pending_note) then
         SetState("STALE_WAITING_FOR_ROSTER_UPDATE")
-        SendAddonMessage("EPGP", "CHANGES_FLUSHED", "GUILD")
+        SendAddonMessage("CHANGES_FLUSHED", "GUILD")
       end
     end
   end
