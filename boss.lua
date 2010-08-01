@@ -105,14 +105,14 @@ function mod:OnEnable()
   self:RegisterEvent("PLAYER_REGEN_DISABLED")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
   if DBM then
-    EPGP:Print(L["Using %s for boss kill tracking"], "DBM")
+    EPGP:Print(L["Using %s for boss kill tracking"]:format("DBM"))
     DBM:RegisterCallback("kill", dbmCallback)
     DBM:RegisterCallback("wipe", dbmCallback)
   elseif BigWigs then
-    EPGP:Print(L["Using %s for boss kill tracking"], "BigWigs")
+    EPGP:Print(L["Using %s for boss kill tracking"]:format("BigWigs"))
     self:RegisterEvent("CHAT_MSG_ADDON", chatMsgAddon)
   elseif DXE then
-    EPGP:Print(L["Using %s for boss kill tracking"], "DXE")
+    EPGP:Print(L["Using %s for boss kill tracking"]:format("DXE"))
     DXE.RegisterCallback(mod, "TriggerDefeat", dxeCallback)
   end
 end
