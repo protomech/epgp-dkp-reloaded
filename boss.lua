@@ -113,6 +113,6 @@ function mod:OnEnable()
     self:RegisterEvent("CHAT_MSG_ADDON", chatMsgAddon)
   elseif DXE then
     EPGP:Print(L["Using %s for boss kill tracking"], "DXE")
-    DXE:RegisterCallback("TriggerDefeat", dxeCallback)
+    DXE.RegisterCallback(mod, "TriggerDefeat", dxeCallback)
   end
 end
