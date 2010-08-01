@@ -17,7 +17,7 @@ end
 local function ShowPopup(event_name, boss_name)
   while (in_combat or StaticPopup_Visible("EPGP_BOSS_DEAD") or
          StaticPopup_Visible("EPGP_BOSS_ATTEMPT")) do
-    Coroutine.Sleep(0.1)
+    Coroutine:Sleep(0.1)
   end
 
   local dialog
@@ -38,7 +38,7 @@ local function BossAttempt(event_name, boss_name)
   if not mod:IsEnabled() then return end
 
   if CanEditOfficerNote() and IsRLorML() then
-    Coroutine.RunAsync(ShowPopup, event_name, boss_name)
+    Coroutine:RunAsync(ShowPopup, event_name, boss_name)
   end
 end
 

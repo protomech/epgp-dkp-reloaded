@@ -38,7 +38,7 @@ end
 
 local function ShowPopup(player, item, quantity)
   while in_combat or StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") do
-    Coroutine.Sleep(0.1)
+    Coroutine:Sleep(0.1)
   end
 
   local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(item)
@@ -67,7 +67,7 @@ local function LootReceived(event_name, player, itemLink, quantity)
 
     if ignored_items[itemID] then return end
 
-    Coroutine.RunAsync(ShowPopup, player, itemLink, quantity)
+    Coroutine:RunAsync(ShowPopup, player, itemLink, quantity)
   end
 end
 
