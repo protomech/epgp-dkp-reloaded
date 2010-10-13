@@ -241,11 +241,13 @@ local function Frame_OnUpdate(self, elapsed)
     return
   end
 
+  local num_guild_members = GetNumGuildMembers()
+
   -- Sometimes GetNumGuildMembers returns 0. In this case return now,
   -- so that we call it again and get a proper value.
-  if GetNumGuildMembers(true) == 0 then return end
+  if num_guild_members == 0 then return end
 
-  if not index or index >= GetNumGuildMembers(true) then
+  if not index or index >= num_guild_members then
     index = 1
   end
 
@@ -259,7 +261,7 @@ local function Frame_OnUpdate(self, elapsed)
   end
 
   -- Read up to 100 members at a time.
-  local last_index = math.min(index + 100, GetNumGuildMembers(true))
+  local last_index = math.min(index + 100, num_guild_members)
   Debug("Processing from %d to %d members", index, last_index)
 
   for i = index, last_index do
@@ -298,7 +300,7 @@ local function Frame_OnUpdate(self, elapsed)
     end
   end
   index = last_index
-  if index >= GetNumGuildMembers(true) then
+  if index >= num_guild_members then
     -- We are done, we need to clear the seen marks and delete the
     -- unmarked entries. We also fire events for removed members now.
     for name, t in pairs(cache) do
