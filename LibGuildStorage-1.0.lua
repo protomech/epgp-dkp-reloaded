@@ -230,8 +230,20 @@ function SetState(new_state)
   end
 end
 
+local function ForceShowOffline()
+  -- We need to always show offline members in the roster otherwise this
+  -- lib won't work.
+  SetGuildRosterShowOffline(true)
+  if GuildRosterShowOfflineButton then
+    GuildRosterShowOfflineButton:SetChecked(true)
+    GuildRosterShowOfflineButton:Disable()
+  end
+end
+
 local function Frame_OnUpdate(self, elapsed)
   debugprofilestart()
+  ForceShowOffline()
+
   if state == "CURRENT" then
     return
   end
@@ -333,5 +345,6 @@ local function Frame_OnUpdate(self, elapsed)
   Debug(tostring(debugprofilestop()).."ms for LibGuildStorage:OnUpdate")
 end
 
+ForceShowOffline()
 frame:SetScript("OnUpdate", Frame_OnUpdate)
 GuildRoster()
