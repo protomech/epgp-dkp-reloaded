@@ -40,16 +40,15 @@ epgp.lua
 epgp_options.lua
 epgp_recurring.lua
 
-announce.lua
-
-boss.lua
-gptooltip.lua
-ldb.lua
-log.lua
-loot.lua
-popups.lua
-ui.lua
-warnings.lua
-whisper.lua
+modules\announce.lua
+modules\boss.lua
+modules\gptooltip.lua
+modules\ldb.lua
+modules\log.lua
+modules\loot.lua
+modules\popups.lua
+modules\ui.lua
+modules\warnings.lua
+modules\whisper.lua
 
 debug.xml
