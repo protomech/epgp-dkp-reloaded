@@ -178,7 +178,6 @@ local gp_data = {}
 local main_data = {}
 local alt_data = {}
 local ignored = {}
-local db
 local standings = {}
 local selected = {}
 selected._count = 0  -- This is safe since _ is not allowed in names
@@ -484,27 +483,27 @@ end
 
 function EPGP:StandingsSort(order)
   if not order then
-    return db.profile.sort_order
+    return self.db.profile.sort_order
   end
 
   assert(comparators[order], "Unknown sort order")
 
-  db.profile.sort_order = order
+  self.db.profile.sort_order = order
   DestroyStandings()
 end
 
 function EPGP:StandingsShowEveryone(val)
   if val == nil then
-    return db.profile.show_everyone
+    return self.db.profile.show_everyone
   end
 
-  db.profile.show_everyone = not not val
+  self.db.profile.show_everyone = not not val
   DestroyStandings()
 end
 
 function EPGP:GetNumMembers()
   if #standings == 0 then
-    RefreshStandings(db.profile.sort_order, db.profile.show_everyone)
+    RefreshStandings(self.db.profile.sort_order, self.db.profile.show_everyone)
   end
 
   return #standings
@@ -512,7 +511,7 @@ end
 
 function EPGP:GetMember(i)
   if #standings == 0 then
-    RefreshStandings(db.profile.sort_order, db.profile.show_everyone)
+    RefreshStandings(self.db.profile.sort_order, self.db.profile.show_everyone)
   end
 
   return standings[i]
@@ -690,7 +689,7 @@ function EPGP:IncEPBy(name, reason, amount, mass, undo)
   if amount then
     callbacks:Fire("EPAward", name, reason, amount, mass, undo)
   end
-  db.profile.last_awards[reason] = amount
+  self.db.profile.last_awards[reason] = amount
   return main or name
 end
 
@@ -819,6 +818,7 @@ function EPGP:ReportErrors(outputFunc)
   end
 end
 
+local db
 function EPGP:OnInitialize()
   -- Setup the DB. The DB will NOT be ready until after OnEnable is
   -- called on EPGP. We do not call OnEnable on modules until after
