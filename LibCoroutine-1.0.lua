@@ -1,5 +1,6 @@
 -- A library to make usage of coroutines in wow easier.
-
+--
+-- Check LibMapData for how to put this on wowace.
 local MAJOR_VERSION = "LibCoroutine-1.0"
 local MINOR_VERSION = tonumber(("$Revision: 1023 $"):match("%d+")) or 0
 
