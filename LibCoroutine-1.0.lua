@@ -22,10 +22,6 @@ local function runner(co, ...)
   end
 end
 
-function lib:Create(fn)
-  return coroutine.create(fn)
-end
-
 function lib:Yield()
   return self:Sleep(0)
 end
@@ -59,7 +55,7 @@ function lib:WaitForMessage(message)
 end
 
 function lib:RunAsync(fn, ...)
-  local co = self:Create(fn)
+  local co = coroutine.create(fn)
   AT:ScheduleTimer(function(args) runner(args[1], unpack(args, 2)) end,
                    0, {co, ...})
 end
