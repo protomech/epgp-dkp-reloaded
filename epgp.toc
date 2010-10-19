@@ -50,5 +50,3 @@ modules\popups.lua
 modules\ui.lua
 modules\warnings.lua
 modules\whisper.lua
-
-debug.xml
