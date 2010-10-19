@@ -37,6 +37,7 @@ LibLootNotify-1.0.lua
 localization\localization.xml
 
 epgp.lua
+guild_info.lua
 epgp_options.lua
 epgp_recurring.lua
 
