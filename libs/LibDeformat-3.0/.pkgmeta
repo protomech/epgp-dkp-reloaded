@@ -1,0 +1,4 @@
+package-as: LibDeformat-3.0
+
+ignore:
+    - Tests

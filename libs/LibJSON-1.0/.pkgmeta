@@ -1,0 +1,4 @@
+package-as: LibJSON-1.0
+
+ignore:
+    - Tests
