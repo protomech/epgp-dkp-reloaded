@@ -36,7 +36,7 @@ import util
 _VERSION_RE = re.compile(r'^\d+\.\d+(\.\d+)?(-beta\d+)?$')
 
 def CopyAddonDirectory(addon_root, dst):
-  ignored_dirs = ('scripts', '.svn')
+  ignored_dirs = ('scripts', '.svn', '.hg')
   ignored_files = ('.pkgmeta', 'WowMatrix.dat', 'debug.xml')
   for root, dirs, files in os.walk(addon_root):
     if not os.path.exists(os.path.join(dst, root)):
@@ -58,16 +58,69 @@ def ListFiles(r):
       result.append(os.path.join(root, file))
   return result
 
-def UpdateToc(toc, version):
+def UpdateToc(toc, new_version):
+  unchanged = False
   assert(os.path.exists(toc))
+  lines = list()
   file = open(toc, 'r')
-  text = file.read()
+  for line in file:
+    if line.startswith('## Version:'):
+      new_line = '## Version: %s\n' % new_version
+      lines.append(new_line)
+      if new_line == line:
+        unchanged = True
+    else:
+      lines.append(line)
   file.close()
 
   file = open(toc, 'w')
-  text = text.replace('## Version:', '## Version: %s' % version)
-  file.write(text)
+  file.write("".join(lines))
   file.close()
+
+  return unchanged
+
+def RunAndReadOutput(*command):
+  lines = list()
+  result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  for line in result.stdout:
+    lines.append(line)
+  result.wait()
+  if result.returncode != 0:
+    logging.info("Command failed: %s" % ' '.join(command))
+    return None
+
+  return lines
+
+def CheckRepositoryStatus(version):
+  # Have we tagged this version before?
+  lines = RunAndReadOutput('hg', 'tags')
+  if lines is None:
+    return False
+
+  for line in lines:
+    tag, root = line.split()
+    if tag == 'v%s' % version:
+      logging.info("Version %s already appears to be in the repository; aborting" % version)
+      return False
+
+  # Check our current repo status; if we get something besides 'C'
+  # (clean) or 'I' (ignored), fail.
+  lines = RunAndReadOutput('hg', 'status', '-A')
+  if lines is None:
+    return False
+  bad_files = list()
+  for line in lines:
+    status, filename = line.strip().split(" ", 1)
+    if status not in ('C', 'I'):
+      bad_files.append(filename)
+
+  if bad_files:
+    logging.info("Cannot commit a new version with locally modified files: ")
+    for file in bad_files:
+      logging.info("  %s" % file)
+    return False
+
+  return True
 
 def main(argv=None):
   if argv is None:
@@ -81,6 +134,15 @@ def main(argv=None):
     print >> sys.stderr, 'Invalid version string: %s' % version
     return 2
 
+  if not CheckRepositoryStatus(version):
+    return 2
+
+  epgp_root = util.FindAddonRootDir('epgp')
+  epgp_toc = os.path.join(epgp_root, 'epgp.toc')
+  logging.info('Updating %s with version info' % epgp_toc)
+  if not UpdateToc(epgp_toc, version):
+    logging.info('Version did not change, cannot commit')
+
   tmp_dir = tempfile.mkdtemp()
   logging.info('Temporary directory: %s' % tmp_dir)
   stage_dir = os.path.join(tmp_dir, 'epgp')
@@ -88,13 +150,8 @@ def main(argv=None):
   zip_name = os.path.join(tmp_dir, 'epgp-%s.zip' % version)
   logging.info('Release zip location: %s' % zip_name)
 
-  epgp_root = util.FindAddonRootDir('epgp')
   logging.info('Copying %s to %s', epgp_root, stage_dir)
   CopyAddonDirectory(epgp_root, stage_dir)
-
-  epgp_toc = os.path.join(stage_dir, 'epgp.toc')
-  logging.info('Updating %s with version info' % epgp_toc)
-  UpdateToc(epgp_toc, version)
 
   logging.info('Making the release zip: %s' % zip_name)
   zip_file = zipfile.ZipFile(zip_name, 'w')
@@ -103,11 +160,11 @@ def main(argv=None):
     zip_file.write(file, arc_name, compress_type=zipfile.ZIP_DEFLATED)
   zip_file.close()
 
-  r = raw_input('Do you want to import this release to the repository [y/N]? ')
+  r = raw_input('Do you want to commit this release to the repository [y/N]? ')
   if r in ('y', 'Y'):
-    epgp_svn_tag_path = 'https://epgp.googlecode.com/svn/tags/epgp-%s' % version
-    subprocess.Popen(['svn', 'import', '-m', 'Tag the %s release.' % version,
-                      stage_dir, epgp_svn_tag_path],
+    subprocess.Popen(['hg', 'tag', "v%s" % version],
+                     stdout=sys.stdout, stderr=sys.stderr).communicate()
+    subprocess.Popen(['hg', 'commit', '-m', 'Tag the %s release.' % version],
                      stdout=sys.stdout, stderr=sys.stderr).communicate()
 
   r = raw_input('Do you want to upload the zip [y/N]? ')
