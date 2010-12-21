@@ -675,7 +675,7 @@ local function EPGPSideFrameEPDropDown_Initialize(dropDown)
   local parent = dropDown:GetParent()
   local dungeons = {CalendarEventGetTextures(1)}
   for i=1,#dungeons,4 do
-    if dungeons[i+2] == 2 then
+    if dungeons[i+2] == 3 then
       local info = UIDropDownMenu_CreateInfo()
       info.text = dungeons[i] .. " - " .. dungeons[i+3]
       info.func = function(self)
