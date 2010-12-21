@@ -2,7 +2,7 @@
 -- http://code.google.com/p/epgp/wiki/GearPoints
 
 local MAJOR_VERSION = "LibGearPoints-1.0"
-local MINOR_VERSION = tonumber(("$Revision: 1023 $"):match("%d+")) or 0
+local MINOR_VERSION = 10000
 
 local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
