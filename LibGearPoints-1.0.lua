@@ -312,7 +312,7 @@ function lib:GetValue(item)
     return nil, nil, level, rarity, equipLoc
   end
   -- 0.06973 is our coefficient so that ilvl 359 chests cost exactly 1000gp
-  local gp_base = 0.06973 * 2 ^ (level/26 + (rarity - 4))
+  local gp_base = 0.06974 * 2 ^ (level/26)
   local high = math.floor(gp_base * slot_multiplier1)
   local low = slot_multiplier2 and math.floor(gp_base * slot_multiplier2) or nil
   return high, low, level, rarity, equipLoc
