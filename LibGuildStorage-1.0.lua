@@ -36,6 +36,8 @@
 --
 local MAJOR_VERSION = "LibGuildStorage-1.0"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) or 0
+local ADDON_MESSAGE_PREFIX = "GuildStorage10"
+RegisterAddonMessagePrefix(ADDON_MESSAGE_PREFIX)
 
 local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
@@ -66,7 +68,7 @@ local SendAddonMessage = _G.SendAddonMessage
 if ChatThrottleLib then
   SendAddonMessage = function(...)
                        ChatThrottleLib:SendAddonMessage(
-                         "ALERT", MAJOR_VERSION, ...)
+                         "ALERT", ADDON_MESSAGE_PREFIX, ...)
                      end
 end
 
