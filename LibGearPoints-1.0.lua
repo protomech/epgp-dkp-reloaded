@@ -230,6 +230,31 @@ local CUSTOM_ITEM_DATA = {
   [52028] = { 4, 279, "INVTYPE_CUSTOM_MULTISLOT_TIER" },
   [52029] = { 4, 279, "INVTYPE_CUSTOM_MULTISLOT_TIER" },
   [52030] = { 4, 279, "INVTYPE_CUSTOM_MULTISLOT_TIER" },
+
+ -- T11
+  [63683] = { 4, 359, "INVTYPE_HEAD" },
+  [63684] = { 4, 359, "INVTYPE_HEAD" },
+  [63682] = { 4, 359, "INVTYPE_HEAD" },
+  [64315] = { 4, 359, "INVTYPE_SHOULDER" },
+  [64316] = { 4, 359, "INVTYPE_SHOULDER" },
+  [64314] = { 4, 359, "INVTYPE_SHOULDER" },
+
+ -- T11 Heroic
+  [65001] = { 4, 372, "INVTYPE_HEAD" },
+  [65000] = { 4, 372, "INVTYPE_HEAD" },
+  [65002] = { 4, 372, "INVTYPE_HEAD" },
+  [65088] = { 4, 372, "INVTYPE_SHOULDER" },
+  [65087] = { 4, 372, "INVTYPE_SHOULDER" },
+  [65089] = { 4, 372, "INVTYPE_SHOULDER" },
+  [67424] = { 4, 372, "INVTYPE_CHEST" },
+  [67425] = { 4, 372, "INVTYPE_CHEST" },
+  [67423] = { 4, 372, "INVTYPE_CHEST" },
+  [67426] = { 4, 372, "INVTYPE_LEGS" },
+  [67427] = { 4, 372, "INVTYPE_LEGS" },
+  [67428] = { 4, 372, "INVTYPE_LEGS" },
+  [67431] = { 4, 372, "INVTYPE_HAND" },
+  [67430] = { 4, 372, "INVTYPE_HAND" },
+  [67429] = { 4, 372, "INVTYPE_HAND" },
 }
 
 -- The default quality threshold:
