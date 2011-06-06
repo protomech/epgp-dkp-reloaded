@@ -244,16 +244,3 @@ StaticPopupDialogs["EPGP_NEW_VERSION"] = {
   timeout = 0,
   whileDead = 1,
 }
-
-StaticPopupDialogs["EPGP_TRIM_LOG"] = {
-  text = L["Are you sure you want to delete log entries older than one month?"],
-  button1 = ACCEPT,
-  button2 = CANCEL,
-  timeout = 0,
-  hideOnEscape = 1,
-  whileDead = 1,
-
-  OnAccept = function()
-    EPGP:GetModule("log"):TrimToOneMonth()
-  end,
-}

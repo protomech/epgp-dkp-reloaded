@@ -329,6 +329,7 @@ function mod:OnEnable()
   EPGP.RegisterCallback(mod, "GPAward", AppendToLog, "GP")
   EPGP.RegisterCallback(mod, "BankedItem", AppendToLog, "BI")
   mod:RegisterComm("EPGP", "LogSync")
+  mod:RegisterEvent("PLAYER_ENTERING_WORLD")
 
   -- Upgrade the logs from older dbs
   if EPGP.db.profile.log then
@@ -343,4 +344,8 @@ function mod:OnEnable()
   -- This is kept for historical reasons. See:
   -- http://code.google.com/p/epgp/issues/detail?id=350.
   EPGP.db.RegisterCallback(self, "OnDatabaseShutdown", "Snapshot")
+end
+
+function lib:PLAYER_ENTERING_WORLD()
+    EPGP:GetModule("log"):TrimToOneMonth()
 end
