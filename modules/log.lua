@@ -15,7 +15,7 @@
 -- the log.
 --
 
-local mod = EPGP:NewModule("log", "AceComm-3.0")
+local mod = EPGP:NewModule("log", "AceComm-3.0", "AceEvent-3.0")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.0")
@@ -329,7 +329,7 @@ function mod:OnEnable()
   EPGP.RegisterCallback(mod, "GPAward", AppendToLog, "GP")
   EPGP.RegisterCallback(mod, "BankedItem", AppendToLog, "BI")
   mod:RegisterComm("EPGP", "LogSync")
-  mod:RegisterEvent("PLAYER_ENTERING_WORLD")
+  self:RegisterEvent("PLAYER_ENTERING_WORLD")
 
   -- Upgrade the logs from older dbs
   if EPGP.db.profile.log then
@@ -346,6 +346,6 @@ function mod:OnEnable()
   EPGP.db.RegisterCallback(self, "OnDatabaseShutdown", "Snapshot")
 end
 
-function lib:PLAYER_ENTERING_WORLD()
+function mod:PLAYER_ENTERING_WORLD()
     EPGP:GetModule("log"):TrimToOneMonth()
 end
