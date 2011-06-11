@@ -36,6 +36,20 @@ function EPGP:SetupOptions()
         desc = L["Resets EP and GP of all members of the guild. This will set all main toons' EP and GP to 0. Use with care!"],
         func = function() StaticPopup_Show("EPGP_RESET_EPGP") end,
       },
+      reset_gp = {
+        order = 1002,
+        type = "execute",
+        name = L["Reset only GP"],
+        desc = L["Resets GP (not EP!) of all members of the guild. This will set all main toons' GP to 0. Use with care!"],
+        func = function() StaticPopup_Show("EPGP_RESET_GP") end,
+      },
+      rescale = {
+        order = 1003,
+        type = "execute",
+        name = L["Rescale GP"],
+        desc = L["Rescale GP of all members of the guild. This will reduce all main toons' GP by a tier worth of value. Use with care!"],
+        func = function() StaticPopup_Show("EPGP_RESCALE_GP") end,
+      },
     },
   }
 

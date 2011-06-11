@@ -102,6 +102,14 @@ function mod:EPGPReset(event_name)
   mod:Announce(L["EP/GP are reset"])
 end
 
+function mod:GPReset(event_name)
+  mod:Announce(L["GP (not EP) is reset"])
+end
+
+function mod:GPRescale(event_name)
+  mod:Announce(L["GP is rescaled for the new tier"])
+end
+
 mod.dbDefaults = {
   profile = {
     enabled = true,
@@ -154,6 +162,8 @@ mod.optionsArgs = {
       StopRecurringAward = L["Recurring awards stop"],
       ResumeRecurringAward = L["Recurring awards resume"],
       EPGPReset = L["EPGP reset"],
+      GPReset = L["GP (not ep) reset"],
+      GPRescale = L["GP rescale for new tier"],
     },
     width = "full",
     get = "GetEvent",

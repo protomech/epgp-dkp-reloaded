@@ -165,6 +165,7 @@ if not version or #version == 0 then
   version = "(development)"
 end
 EPGP.version = version
+EPGP.current_tier = math.floor(select(4, GetBuildInfo()) / 100)
 
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not EPGP.callbacks then
@@ -530,6 +531,42 @@ function EPGP:ResetEPGP()
   callbacks:Fire("EPGPReset")
 end
 
+function EPGP:ResetGP()
+  assert(EPGP:CanResetEPGP())
+
+  for i = 1, EPGP:GetNumMembers() do 
+    m = EPGP:GetMember(i)
+    local ep, gp, main = EPGP:GetEPGP(m)
+    actual_gp = gp - EPGP:GetBaseGP()
+    if main == nil and actual_gp > 0 then
+      local delta = -actual_gp
+      EPGP:IncGPBy(m, "GP Reset", delta, true, false)
+      if delta > 0 then
+	callbacks:Fire("GPAward", name, "GP Reset", delta, true)
+      end
+    end
+  end
+  callbacks:Fire("GPReset")
+end
+
+function EPGP:RescaleGP()
+  assert(EPGP:CanResetEPGP())
+
+  for i = 1, EPGP:GetNumMembers() do 
+    m = EPGP:GetMember(i)
+    local ep, gp, main = EPGP:GetEPGP(m)
+    actual_gp = gp - EPGP:GetBaseGP()
+    if main == nil and actual_gp > 0 then
+      local delta = -(actual_gp - actual_gp / math.sqrt(2))
+      EPGP:IncGPBy(m, "GP Rescale", delta, true, false)
+      if delta > 0 then
+	callbacks:Fire("GPAward", name, "GP Decay", delta, true)
+      end
+    end
+  end
+  callbacks:Fire("GPRescale")
+end
+
 function EPGP:CanDecayEPGP()
   if not CanEditOfficerNote() or EPGP.db.profile.decay_p == 0 or not GS:IsCurrentState() then
     return false
@@ -751,6 +788,7 @@ function EPGP:OnInitialize()
       base_gp = 1,
     }
   }
+
   db:RegisterDefaults(defaults)
   for name, module in self:IterateModules() do
     -- Each module gets its own namespace. If a module needs to set
@@ -784,6 +822,13 @@ function EPGP:OnInitialize()
   if db.global.last_version ~= EPGP.version then
     db.global.last_version = EPGP.version
     StaticPopup_Show("EPGP_NEW_VERSION")
+  end
+
+  if db.global.last_tier ~= EPGP.current_tier then
+    db.global.last_tier = EPGP.current_tier
+    if EPGP:CanResetEPGP() then
+      StaticPopup_Show("EPGP_NEW_TIER")
+    end
   end
 end
 

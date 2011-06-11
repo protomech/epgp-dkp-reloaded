@@ -138,6 +138,46 @@ StaticPopupDialogs["EPGP_RESET_EPGP"] = {
              end,
 }
 
+StaticPopupDialogs["EPGP_RESET_GP"] = {
+  text = L["Reset all main toons' GP to 0?"],
+  button1 = ACCEPT,
+  button2 = CANCEL,
+  timeout = 0,
+  hideOnEscape = 1,
+  whileDead = 1,
+  OnAccept = function()
+               EPGP:ResetGP()
+             end,
+
+  OnUpdate = function(self, elapsed)
+               if EPGP:CanResetEPGP() then
+                 self.button1:Enable()
+               else
+                 self.button1:Disable()
+               end
+             end,
+}
+
+StaticPopupDialogs["EPGP_RESCALE_GP"] = {
+  text = L["Re-scale all main toons' GP to current tier?"],
+  button1 = ACCEPT,
+  button2 = CANCEL,
+  timeout = 0,
+  hideOnEscape = 1,
+  whileDead = 1,
+  OnAccept = function()
+               EPGP:RescaleGP()
+             end,
+
+  OnUpdate = function(self, elapsed)
+               if EPGP:CanResetEPGP() then
+                 self.button1:Enable()
+               else
+                 self.button1:Disable()
+               end
+             end,
+}
+
 StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
   text = L["%s is dead. Award EP?"],
   button1 = ACCEPT,
@@ -239,6 +279,15 @@ StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
 StaticPopupDialogs["EPGP_NEW_VERSION"] = {
   text = "|cFFFFFF00EPGP " .. EPGP.version .. "|r\n" ..
     L["You can now check your epgp standings and loot on the web: http://www.epgpweb.com"], -- /script EPGP.db.profile.last_version = nil
+  button1 = OKAY,
+  hideOnEscape = 1,
+  timeout = 0,
+  whileDead = 1,
+}
+
+StaticPopupDialogs["EPGP_NEW_TIER"] = {
+  text = "|cFFFFFF00EPGP " .. EPGP.version .. "|r\n" ..
+    L["A new tier is here!  You should probably reset or rescale GP (Interface -> Options -> AddOns -> EPGP)!"], -- /script EPGP.db.profile.last_tier = nil
   button1 = OKAY,
   hideOnEscape = 1,
   timeout = 0,

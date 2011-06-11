@@ -22,13 +22,13 @@ local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_WRIST = 0.5,
   INVTYPE_HAND = 0.75,
   INVTYPE_FINGER = 0.5,
-  INVTYPE_TRINKET = 2.0,
+  INVTYPE_TRINKET = 1.5,
   INVTYPE_CLOAK = 0.5,
   INVTYPE_WEAPON = 1.5,
   INVTYPE_SHIELD = 1.5,
   INVTYPE_2HWEAPON = 2,
-  INVTYPE_WEAPONMAINHAND = 1.5,
-  INVTYPE_WEAPONOFFHAND = 0.5,
+  INVTYPE_WEAPONMAINHAND = 1.0,
+  INVTYPE_WEAPONOFFHAND = 1.0,
   INVTYPE_HOLDABLE = 0.5,
   INVTYPE_RANGED = 1.5,
   INVTYPE_RANGEDRIGHT = 1.5,
@@ -42,8 +42,8 @@ local EQUIPSLOT_MULTIPLIER_1 = {
 -- tanking shields).
 local EQUIPSLOT_MULTIPLIER_2 = {
   INVTYPE_WEAPON = 0.5,
-  INVTYPE_SHIELD = 0.5,
   INVTYPE_2HWEAPON = 1,
+  INVTYPE_SHIELD = 0.5,
   INVTYPE_RANGED = 0.5,
   INVTYPE_RANGEDRIGHT = 0.5,
 }
@@ -336,8 +336,17 @@ function lib:GetValue(item)
   if not slot_multiplier1 then
     return nil, nil, level, rarity, equipLoc
   end
-  -- 0.06973 is our coefficient so that ilvl 359 chests cost exactly 1000gp
-  local gp_base = 0.06974 * 2 ^ (level/26)
+  -- 0.06973 is our coefficient so that ilvl 359 chests cost exactly
+  -- 1000gp.  In 4.2 and higher, we renormalize to make ilvl 378
+  -- chests cost 1000.
+  local standard_ilvl
+  if (select(4, GetBuildInfo()) < 40200) then
+    standard_ilvl = 359
+  else
+    standard_ilvl = 378
+  end
+  local multiplier = 1000 * 2 ^ (-standard_ilvl / 26)
+  local gp_base = multiplier * 2 ^ (level/26)
   local high = math.floor(gp_base * slot_multiplier1)
   local low = slot_multiplier2 and math.floor(gp_base * slot_multiplier2) or nil
   return high, low, level, rarity, equipLoc
