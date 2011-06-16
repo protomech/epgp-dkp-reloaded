@@ -1,8 +1,8 @@
 -- A library to compute Gear Points for items as described in
 -- http://code.google.com/p/epgp/wiki/GearPoints
 
-local MAJOR_VERSION = "LibGearPoints-1.0"
-local MINOR_VERSION = 10000
+local MAJOR_VERSION = "LibGearPoints-1.2"
+local MINOR_VERSION = 10200
 
 local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
