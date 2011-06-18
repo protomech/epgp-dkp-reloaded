@@ -1,5 +1,5 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local GP = LibStub("LibGearPoints-1.0")
+local GP = LibStub("LibGearPoints-1.2")
 local Debug = LibStub("LibDebug-1.0")
 
 function EPGP:SetupOptions()

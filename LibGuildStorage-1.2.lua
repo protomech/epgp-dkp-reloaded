@@ -34,7 +34,7 @@
 -- StateChanged(): Fired when the state of the guild storage cache has
 -- changed.
 --
-local MAJOR_VERSION = "LibGuildStorage-1.0"
+local MAJOR_VERSION = "LibGuildStorage-1.2"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) or 0
 local ADDON_MESSAGE_PREFIX = "GuildStorage10"
 RegisterAddonMessagePrefix(ADDON_MESSAGE_PREFIX)

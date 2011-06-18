@@ -1,6 +1,6 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local GP = LibStub("LibGearPoints-1.0")
-local GS = LibStub("LibGuildStorage-1.0")
+local GP = LibStub("LibGearPoints-1.2")
+local GS = LibStub("LibGuildStorage-1.2")
 
 local function SaveAnchors(t, ...)
   for n=1,select('#', ...) do

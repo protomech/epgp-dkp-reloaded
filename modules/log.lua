@@ -18,7 +18,7 @@
 local mod = EPGP:NewModule("log", "AceComm-3.0", "AceEvent-3.0")
 
 local L = LibStub:GetLibrary("AceLocale-3.0"):GetLocale("EPGP")
-local GS = LibStub("LibGuildStorage-1.0")
+local GS = LibStub("LibGuildStorage-1.2")
 local JSON = LibStub("LibJSON-1.0")
 local deformat = LibStub("LibDeformat-3.0")
 

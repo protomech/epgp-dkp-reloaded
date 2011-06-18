@@ -2,8 +2,8 @@
 
 local mod = EPGP:NewModule("ui")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local GS = LibStub("LibGuildStorage-1.0")
-local GP = LibStub("LibGearPoints-1.0")
+local GS = LibStub("LibGuildStorage-1.2")
+local GP = LibStub("LibGearPoints-1.2")
 
 local EPGPWEB = "http://www.epgpweb.com"
 

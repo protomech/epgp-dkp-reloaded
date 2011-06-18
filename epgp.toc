@@ -36,7 +36,7 @@ libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 LibDebug-1.0.lua
 LibCoroutine-1.0.lua
 LibGearPoints-1.2.lua
-LibGuildStorage-1.0.lua
+LibGuildStorage-1.2.lua
 LibItemUtils-1.0.lua
 LibLootNotify-1.0.lua
 

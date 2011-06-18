@@ -137,7 +137,7 @@
 local Debug = LibStub("LibDebug-1.0")
 Debug:EnableDebugging()
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local GS = LibStub("LibGuildStorage-1.0")
+local GS = LibStub("LibGuildStorage-1.2")
 
 EPGP = LibStub("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0")

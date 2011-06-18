@@ -1,6 +1,6 @@
 local mod = EPGP:NewModule("gptooltip", "AceHook-3.0")
 
-local GP = LibStub("LibGearPoints-1.0")
+local GP = LibStub("LibGearPoints-1.2")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
 function OnTooltipSetItem(tooltip, ...)
