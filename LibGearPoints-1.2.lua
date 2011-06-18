@@ -255,6 +255,41 @@ local CUSTOM_ITEM_DATA = {
   [67431] = { 4, 372, "INVTYPE_HAND" },
   [67430] = { 4, 372, "INVTYPE_HAND" },
   [67429] = { 4, 372, "INVTYPE_HAND" },
+
+ -- T12
+  [71674] = { 4, 378, "INVTYPE_SHOULDER" },
+  [71688] = { 4, 378, "INVTYPE_SHOULDER" },
+  [71681] = { 4, 378, "INVTYPE_SHOULDER" },
+  [71668] = { 4, 378, "INVTYPE_HEAD" },
+  [71682] = { 4, 378, "INVTYPE_HEAD" },
+  [71675] = { 4, 378, "INVTYPE_HEAD" },
+
+ -- T12 Heroic
+  [71679] = { 4, 391, "INVTYPE_CHEST" },
+  [71686] = { 4, 391, "INVTYPE_CHEST" },
+  [71672] = { 4, 391, "INVTYPE_CHEST" },
+  [71677] = { 4, 391, "INVTYPE_HEAD" },
+  [71684] = { 4, 391, "INVTYPE_HEAD" },
+  [71670] = { 4, 391, "INVTYPE_HEAD" },
+  [71676] = { 4, 391, "INVTYPE_HAND" },
+  [71683] = { 4, 391, "INVTYPE_HAND" },
+  [71669] = { 4, 391, "INVTYPE_HAND" },
+  [71678] = { 4, 391, "INVTYPE_LEGS" },
+  [71685] = { 4, 391, "INVTYPE_LEGS" },
+  [71671] = { 4, 391, "INVTYPE_LEGS" },
+  [71680] = { 4, 391, "INVTYPE_SHOULDER" },
+  [71687] = { 4, 391, "INVTYPE_SHOULDER" },
+  [71673] = { 4, 391, "INVTYPE_SHOULDER" },
+
+ -- T12 misc
+  [71617] = { 4, 391, "INVTYPE_TRINKET" }, -- crystallized firestone
+
+-- Other junk that drops; hard to really set a price for, so guilds
+-- will just have to decide on their own.
+-- 69815 -- seething cinder
+-- 71141 -- eternal ember
+-- 69237 -- living ember
+
 }
 
 -- The default quality threshold:
