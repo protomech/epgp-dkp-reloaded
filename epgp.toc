@@ -1,8 +1,8 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: EPGP
 ## Notes: Effort Points/Gear Points Loot System
 ## Author: Alkis Evlogimenos
-## Version: 5.5.28
+## Version: 5.6.0
 ## OptionalDeps: DBM-Core BigWigs_Core DXE
 ## SavedVariables: EPGP_DB
 ## X-Category: Guild
