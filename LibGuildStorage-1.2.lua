@@ -43,12 +43,16 @@ local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
 local Debug = LibStub("LibDebug-1.0")
+local GUILDFRAMEVISIBLE = false
 
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not lib.callbacks then
   lib.callbacks = CallbackHandler:New(lib)
 end
 local callbacks = lib.callbacks
+
+local AceHook = LibStub("AceHook-3.0")
+AceHook:Embed(lib)
 
 if lib.frame then
   lib.frame:UnregisterAllEvents()
@@ -235,16 +239,21 @@ end
 local function ForceShowOffline()
   -- We need to always show offline members in the roster otherwise this
   -- lib won't work.
-  SetGuildRosterShowOffline(true)
-  if GuildRosterShowOfflineButton then
-    GuildRosterShowOfflineButton:SetChecked(true)
-    GuildRosterShowOfflineButton:Disable()
+
+  if GUILDFRAMEVISIBLE then
+    return true
   end
+
+  SetGuildRosterShowOffline(true)
+
+  return false
 end
 
 local function Frame_OnUpdate(self, elapsed)
   debugprofilestart()
-  ForceShowOffline()
+  if ForceShowOffline() then
+    return
+  end
 
   if state == "CURRENT" then
     return
@@ -346,6 +355,30 @@ local function Frame_OnUpdate(self, elapsed)
   end
   Debug(tostring(debugprofilestop()).."ms for LibGuildStorage:OnUpdate")
 end
+
+ lib:RawHook("GuildFrame_LoadUI", function(...)
+	SetGuildRosterShowOffline(LootMaster.db.profile.blizzard_show_offline)
+	lib.hooks.GuildFrame_LoadUI(...)
+	lib:RawHookScript(GuildRosterFrame, "OnShow", function(frame, ...)
+		GUILDFRAMEVISIBLE = true
+		if GuildRosterShowOfflineButton then
+			GuildRosterShowOfflineButton:SetChecked(LootMaster.db.profile.blizzard_show_offline)
+			GuildRosterShowOfflineButton:Enable()
+		end
+		SetGuildRosterShowOffline(LootMaster.db.profile.blizzard_show_offline)
+		lib.hooks[frame].OnShow(frame, ...)
+	end)
+	lib:RawHookScript(GuildRosterFrame, "OnHide", function(frame, ...)
+		GUILDFRAMEVISIBLE = false
+		LootMaster.db.profile.blizzard_show_offline = GetGuildRosterShowOffline()
+		lib.hooks[frame].OnHide(frame, ...)
+		SetGuildRosterShowOffline(true)
+	end)
+	lib:Unhook("GuildFrame_LoadUI")
+
+	SetGuildRosterShowOffline(true)
+end, true)
+
 
 ForceShowOffline()
 frame:SetScript("OnUpdate", Frame_OnUpdate)
