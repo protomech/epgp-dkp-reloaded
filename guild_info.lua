@@ -92,7 +92,7 @@ local function ParseGuildInfo(loc)
     local old_value = EPGP.db.profile[var]
     EPGP.db.profile[var] = new_config[var] or def.default
     if old_value ~= EPGP.db.profile[var] then
-      Debug("%s changed from %s to %s", var, old_value, EPGP.db.profile[var])
+      Debug("%s changed from %s to %s", var, old_value or 0, EPGP.db.profile[var] or 0)
       EPGP.callbacks:Fire(def.change_message, EPGP.db.profile[var])
     end
   end
