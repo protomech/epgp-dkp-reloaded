@@ -279,6 +279,11 @@ local function DestroyStandings()
   callbacks:Fire("StandingsChanged")
 end
 
+local function OutsidersChanged()
+  Debug("outsider changed")
+  GS:SetOutsidersEnabled(EPGP.db.profile.outsiders == 1)
+end
+
 local function RefreshStandings(order, showEveryone)
   Debug("Resorting standings")
   if UnitInRaid("player") then
@@ -699,14 +704,15 @@ function EPGP:GetMinEP()
   return EPGP.db.profile.min_ep
 end
 
-function EPGP:SetGlobalConfiguration(decay_p, extras_p, base_gp, min_ep)
+function EPGP:SetGlobalConfiguration(decay_p, extras_p, base_gp, min_ep, outsiders)
   local guild_info = GS:GetGuildInfo()
   epgp_stanza = string.format(
-    "-EPGP-\n@DECAY_P:%d\n@EXTRAS_P:%s\n@MIN_EP:%d\n@BASE_GP:%d\n-EPGP-",
+    "-EPGP-\n@DECAY_P:%d\n@EXTRAS_P:%s\n@MIN_EP:%d\n@BASE_GP:%d\n@OUTSIDERS:%d\n-EPGP-",
     decay_p or DEFAULT_DECAY_P,
     extras_p or DEFAULT_EXTRAS_P,
     min_ep or DEFAULT_MIN_EP,
-    base_gp or DEFAULT_BASE_GP)
+    base_gp or DEFAULT_BASE_GP,
+    outsiders or DEFAULT_OUTSIDERS)
 
   -- If we have a global configuration stanza we need to replace it
   Debug("epgp_stanza:\n%s", epgp_stanza)
@@ -897,6 +903,7 @@ function EPGP:OnEnable()
   GS.RegisterCallback(self, "GuildNoteDeleted", HandleDeletedGuildNote)
 
   EPGP.RegisterCallback(self, "BaseGPChanged", DestroyStandings)
+  EPGP.RegisterCallback(self, "OutsidersChanged", OutsidersChanged)
 
   self:RegisterEvent("RAID_ROSTER_UPDATE")
   self:RegisterEvent("GUILD_ROSTER_UPDATE")

@@ -79,6 +79,7 @@ L["Only display GP values for items at or above this quality."] = true
 L["Open the configuration options"] = true
 L["Open the debug window"] = true
 L["Other"] = true
+L["Outsiders should be 0 or 1"] = true
 L["Paste import data here"] = true
 L["Personal Action Log"] = true
 L["Provide a proposed GP value of armor on tooltips. Quest items or tokens that can be traded for armor will also have a proposed GP value."] = true

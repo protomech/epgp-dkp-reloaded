@@ -9,6 +9,7 @@ local AE = LibStub("AceEvent-3.0")
 -- @EXTRAS_P:<number>
 -- @MIN_EP:<number>
 -- @BASE_GP:<number>
+-- @OUTSIDERS:[0 or 1]
 local global_config_defs = {
   decay_p = {
     pattern = "@DECAY_P:(%d+)",
@@ -41,6 +42,14 @@ local global_config_defs = {
     error = L["Base GP should be a positive number"],
     default = 1,
     change_message = "BaseGPChanged",
+  },
+  outsiders = {
+    pattern = "@OUTSIDERS:(%d+)",
+    parser = tonumber,
+    validator = function(v) return v == 0 or v == 1  end,
+    error = L["Outsiders should be 0 or 1"],
+    default = 0,
+    change_message = "OutsidersChanged",
   },
 }
 

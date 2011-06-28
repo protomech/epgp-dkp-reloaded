@@ -37,6 +37,7 @@
 -- SetOutsidersEnabled(isOutsidersEnabled): Allows developers to enable/
 -- disable the outsiders patch, which allows raidleaders to store EPGP
 -- data of non-guildies in a lvl 1 character which is in guild.
+
 local MAJOR_VERSION = "LibGuildStorage-1.2"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) or 0
 local ADDON_MESSAGE_PREFIX = "GuildStorage10"
@@ -161,6 +162,7 @@ function lib:SetOutsidersEnabled(isOutsidersEnabled)
 
   OUTSIDERSENABLED = isOutsidersEnabled
 
+  Debug("outsider changed, now is ", OUTSIDERSENABLED)
   -- Force reloading of guildnotes
   index = nil
   SetState("STALE")
