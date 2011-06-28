@@ -34,6 +34,9 @@
 -- StateChanged(): Fired when the state of the guild storage cache has
 -- changed.
 --
+-- SetOutsidersEnabled(isOutsidersEnabled): Allows developers to enable/
+-- disable the outsiders patch, which allows raidleaders to store EPGP
+-- data of non-guildies in a lvl 1 character which is in guild.
 local MAJOR_VERSION = "LibGuildStorage-1.2"
 local MINOR_VERSION = tonumber(("$Revision$"):match("%d+")) or 0
 local ADDON_MESSAGE_PREFIX = "GuildStorage10"
@@ -44,6 +47,7 @@ if not lib then return end
 
 local Debug = LibStub("LibDebug-1.0")
 local GUILDFRAMEVISIBLE = false
+local OUTSIDERSENABLED = false
 
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 if not lib.callbacks then
@@ -53,6 +57,7 @@ local callbacks = lib.callbacks
 
 local AceHook = LibStub("AceHook-3.0")
 AceHook:Embed(lib)
+lib:UnhookAll()
 
 if lib.frame then
   lib.frame:UnregisterAllEvents()
@@ -145,6 +150,20 @@ function lib:Snapshot(t)
   for name,info in pairs(cache) do
     table.insert(t.roster_info, {name, info.class, info.note})
   end
+end
+
+-- This function allows users to enable or disable the outsiders patch
+function lib:SetOutsidersEnabled(isOutsidersEnabled)
+  -- Dont do anything if the boolean is the same
+  if (OUTSIDERSENABLED == isOutsidersEnabled) then
+    return
+  end
+
+  OUTSIDERSENABLED = isOutsidersEnabled
+
+  -- Force reloading of guildnotes
+  index = nil
+  SetState("STALE")
 end
 
 --
@@ -288,7 +307,52 @@ local function Frame_OnUpdate(self, elapsed)
   Debug("Processing from %d to %d members", index, last_index)
 
   for i = index, last_index do
-    local name, rank, _, _, _, _, _, note, _, _, class = GetGuildRosterInfo(i)
+
+    local name, rank, _, _, _, _, pubNote, note, _, _, class = GetGuildRosterInfo(i)
+    -- Start of outsiders patch
+    if OUTSIDERSENABLED then
+      local extName = strmatch(pubNote, 'ext:%s-(%S+)%s-')
+      local holder
+      if extName then
+        -- the name is now the note and the external name is the new name.
+        local entry = cache[extName]
+        if not entry then
+          entry = {}
+          cache[extName] = entry
+        end
+
+        local ep_test = DecodeNote(note)
+        if not ep_test then --current character does not contain epgp info in its note, map to the character who contains
+          holder = note
+        else
+          holder = name
+        end
+
+        -- Mark this note as seen
+        entry.seen = true
+        if entry.note ~= holder then
+          entry.note = holder
+          local _, unitClass = UnitClass(extName)
+          entry.rank = "Outsider("..name..")"
+          -- instead of using '' when there's no "unitClass", using the "class" of the placeholderalt
+          -- (don't know if this is needed with resetting "seen"-flag.  This was my first good try to avoid
+          -- a bug : \epgp\ui.lua line 1203: attempt to index local 'c' (a nil value) -- local c = RAID_CLASS_COLORS[EPGP:GetClass(row.name)])
+          entry.class = unitClass or class
+          if initialized then
+            callbacks:Fire("GuildNoteChanged", extName, holder)
+          end
+          if entry.pending_note then
+            callbacks:Fire("InconsistentNote", extName, holder, entry.note, entry.pending_note)
+          end
+        end
+
+        if entry.pending_note then
+          GuildRosterSetOfficerNote(i, entry.pending_note)
+          entry.pending_note = nil
+        end
+      end
+    end -- if OUTSIDERSENABLED
+
     if name then
       local entry = cache[name]
       local pending = pending_note[name]
@@ -356,27 +420,29 @@ local function Frame_OnUpdate(self, elapsed)
   Debug(tostring(debugprofilestop()).."ms for LibGuildStorage:OnUpdate")
 end
 
- lib:RawHook("GuildFrame_LoadUI", function(...)
-	SetGuildRosterShowOffline(LootMaster.db.profile.blizzard_show_offline)
-	lib.hooks.GuildFrame_LoadUI(...)
-	lib:RawHookScript(GuildRosterFrame, "OnShow", function(frame, ...)
-		GUILDFRAMEVISIBLE = true
-		if GuildRosterShowOfflineButton then
-			GuildRosterShowOfflineButton:SetChecked(LootMaster.db.profile.blizzard_show_offline)
-			GuildRosterShowOfflineButton:Enable()
-		end
-		SetGuildRosterShowOffline(LootMaster.db.profile.blizzard_show_offline)
-		lib.hooks[frame].OnShow(frame, ...)
-	end)
-	lib:RawHookScript(GuildRosterFrame, "OnHide", function(frame, ...)
-		GUILDFRAMEVISIBLE = false
-		LootMaster.db.profile.blizzard_show_offline = GetGuildRosterShowOffline()
-		lib.hooks[frame].OnHide(frame, ...)
-		SetGuildRosterShowOffline(true)
-	end)
-	lib:Unhook("GuildFrame_LoadUI")
+-- Disable updates when the guild roster is open.
+-- This is a temporary hack until we get a better location for data storage
+lib:RawHook("GuildFrame_LoadUI", function(...)
+  SetGuildRosterShowOffline(EPGP.db.profile.blizzard_show_offline)
+  lib.hooks.GuildFrame_LoadUI(...)
+  lib:RawHookScript(GuildRosterFrame, "OnShow", function(frame, ...)
+    GUILDFRAMEVISIBLE = true
+    if GuildRosterShowOfflineButton then
+      GuildRosterShowOfflineButton:SetChecked(EPGP.db.profile.blizzard_show_offline)
+      GuildRosterShowOfflineButton:Enable()
+    end
+    SetGuildRosterShowOffline(EPGP.db.profile.blizzard_show_offline)
+    lib.hooks[frame].OnShow(frame, ...)
+  end)
+  lib:RawHookScript(GuildRosterFrame, "OnHide", function(frame, ...)
+    GUILDFRAMEVISIBLE = false
+    EPGP.db.profile.blizzard_show_offline = GetGuildRosterShowOffline()
+    lib.hooks[frame].OnHide(frame, ...)
+    SetGuildRosterShowOffline(true)
+  end)
+  lib:Unhook("GuildFrame_LoadUI")
 
-	SetGuildRosterShowOffline(true)
+  SetGuildRosterShowOffline(true)
 end, true)
 
 
