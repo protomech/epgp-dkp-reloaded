@@ -382,7 +382,7 @@ function lib:GetValue(item)
   end
   local multiplier = 1000 * 2 ^ (-standard_ilvl / 26)
   local gp_base = multiplier * 2 ^ (level/26)
-  local high = math.floor(gp_base * slot_multiplier1)
-  local low = slot_multiplier2 and math.floor(gp_base * slot_multiplier2) or nil
+  local high = math.floor(0.5 + gp_base * slot_multiplier1)
+  local low = slot_multiplier2 and math.floor(0.5 + gp_base * slot_multiplier2) or nil
   return high, low, level, rarity, equipLoc
 end
