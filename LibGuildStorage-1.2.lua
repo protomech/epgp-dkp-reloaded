@@ -323,13 +323,14 @@ local function Frame_OnUpdate(self, elapsed)
           cache[extName] = entry
         end
 
-        local ep_test = DecodeNote(note)
+        local ep_test = EPGP:DecodeNote(note)
         if not ep_test then --current character does not contain epgp info in its note, map to the character who contains
           holder = note
         else
           holder = name
         end
 
+	Debug("Entry " .. holder .. " is " .. extName)
         -- Mark this note as seen
         entry.seen = true
         if entry.note ~= holder then

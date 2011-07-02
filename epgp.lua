@@ -182,7 +182,7 @@ local standings = {}
 local selected = {}
 selected._count = 0  -- This is safe since _ is not allowed in names
 
-local function DecodeNote(note)
+function EPGP:DecodeNote(note)
   if note then
     if note == "" then
       return 0, 0
@@ -343,12 +343,12 @@ local function ParseGuildNote(callback, name, note)
   -- Delete current state about this toon.
   DeleteState(name)
 
-  local ep, gp = DecodeNote(note)
+  local ep, gp = EPGP:DecodeNote(note)
   if ep then
     ep_data[name] = ep
     gp_data[name] = gp
   else
-    local main_ep = DecodeNote(GS:GetNote(note))
+    local main_ep = EPGP:DecodeNote(GS:GetNote(note))
     if not main_ep then
       -- This member does not point to a valid main, ignore it.
       ignored[name] = note
@@ -364,6 +364,7 @@ local function ParseGuildNote(callback, name, note)
     end
   end
   DestroyStandings()
+  GS:SetOutsidersEnabled(EPGP.db.profile.outsiders == 1)
 end
 
 function EPGP:ExportRoster()
