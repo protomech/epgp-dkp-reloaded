@@ -27,6 +27,10 @@ mod.dbDefaults = {
   }
 }
 
+function mod:OnInitialize()
+  self.db = EPGP.db:RegisterNamespace("gptooltip", mod.dbDefaults)
+end
+
 mod.optionsName = L["Tooltip"]
 mod.optionsDesc = L["GP on tooltips"]
 mod.optionsArgs = {

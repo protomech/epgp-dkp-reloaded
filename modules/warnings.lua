@@ -31,6 +31,10 @@ mod.dbDefaults = {
   }
 }
 
+function mod:OnInitialize()
+  self.db = EPGP.db:RegisterNamespace("warnings", mod.dbDefaults)
+end
+
 function mod:OnEnable()
   local function officer_note_warning()
     StaticPopup_Show("EPGP_OFFICER_NOTE_WARNING")

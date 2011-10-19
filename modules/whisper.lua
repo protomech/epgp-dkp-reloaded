@@ -76,10 +76,14 @@ end
 
 mod.dbDefaults = {
   profile = {
-    enable = false,
+    enabled = false,
     medium = "GUILD",
   }
 }
+
+function mod:OnInitialize()
+  self.db = EPGP.db:RegisterNamespace("whisper", mod.dbDefaults)
+end
 
 mod.optionsName = L["Whisper"]
 mod.optionsDesc = L["Standby whispers in raid"]

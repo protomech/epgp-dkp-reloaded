@@ -63,6 +63,10 @@ mod.dbDefaults = {
   },
 }
 
+function mod:OnInitialize()
+  self.db = EPGP.db:RegisterNamespace("boss", mod.dbDefaults)
+end
+
 mod.optionsName = L["Boss"]
 mod.optionsDesc = L["Automatic boss tracking"]
 mod.optionsArgs = {

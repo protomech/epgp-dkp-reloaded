@@ -325,6 +325,10 @@ mod.dbDefaults = {
   }
 }
 
+function mod:OnInitialize()
+  self.db = EPGP.db:RegisterNamespace("log", mod.dbDefaults)
+end
+
 function mod:OnEnable()
   EPGP.RegisterCallback(mod, "EPAward", AppendToLog, "EP")
   EPGP.RegisterCallback(mod, "GPAward", AppendToLog, "GP")

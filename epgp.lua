@@ -368,7 +368,7 @@ local function ParseGuildNote(callback, name, note)
 end
 
 function EPGP:ExportRoster()
-  local base_gp = EPGP.db.profile.base_gp
+  local base_gp = self.db.profile.base_gp
   local t = {}
   for name,_ in pairs(ep_data) do
     local ep, gp, main = self:GetEPGP(name)
@@ -384,8 +384,8 @@ function EPGP:ImportRoster(t, new_base_gp)
   -- GP properly. So we reset it to what we get passed, and then we
   -- restore it so that the BaseGPChanged event is fired properly when
   -- we parse the guild info text after this function returns.
-  local old_base_gp = EPGP.db.profile.base_gp
-  EPGP.db.profile.base_gp = new_base_gp
+  local old_base_gp = self.db.profile.base_gp
+  self.db.profile.base_gp = new_base_gp
 
   local notes = {}
   for _, entry in pairs(t) do
@@ -399,7 +399,7 @@ function EPGP:ImportRoster(t, new_base_gp)
     GS:SetNote(name, note)
   end
 
-  EPGP.db.profile.base_gp = old_base_gp
+  self.db.profile.base_gp = old_base_gp
 end
 
 function EPGP:StandingsSort(order)
@@ -574,7 +574,7 @@ function EPGP:RescaleGP()
 end
 
 function EPGP:CanDecayEPGP()
-  if not CanEditOfficerNote() or EPGP.db.profile.decay_p == 0 or not GS:IsCurrentState() then
+  if not CanEditOfficerNote() or self.db.profile.decay_p == 0 or not GS:IsCurrentState() then
     return false
   end
   return true
@@ -583,8 +583,8 @@ end
 function EPGP:DecayEPGP()
   assert(EPGP:CanDecayEPGP())
 
-  local decay = EPGP.db.profile.decay_p  * 0.01
-  local reason = string.format("Decay %d%%", EPGP.db.profile.decay_p)
+  local decay = self.db.profile.decay_p  * 0.01
+  local reason = string.format("Decay %d%%", self.db.profile.decay_p)
   for name,_ in pairs(ep_data) do
     local ep, gp, main = self:GetEPGP(name)
     assert(main == nil, "Corrupt alt data!")
@@ -598,7 +598,7 @@ function EPGP:DecayEPGP()
       callbacks:Fire("GPAward", name, reason, decay_gp, true)
     end
   end
-  callbacks:Fire("Decay", EPGP.db.profile.decay_p)
+  callbacks:Fire("Decay", self.db.profile.decay_p)
 end
 
 function EPGP:GetEPGP(name)
@@ -607,7 +607,7 @@ function EPGP:GetEPGP(name)
     name = main
   end
   if ep_data[name] then
-    return ep_data[name], gp_data[name] + EPGP.db.profile.base_gp, main
+    return ep_data[name], gp_data[name] + self.db.profile.base_gp, main
   end
 end
 
@@ -690,19 +690,19 @@ function EPGP:BankItem(reason, undo)
 end
 
 function EPGP:GetDecayPercent()
-  return EPGP.db.profile.decay_p
+  return self.db.profile.decay_p
 end
 
 function EPGP:GetExtrasPercent()
-  return EPGP.db.profile.extras_p
+  return self.db.profile.extras_p
 end
 
 function EPGP:GetBaseGP()
-  return EPGP.db.profile.base_gp
+  return self.db.profile.base_gp
 end
 
 function EPGP:GetMinEP()
-  return EPGP.db.profile.min_ep
+  return self.db.profile.min_ep
 end
 
 function EPGP:SetGlobalConfiguration(decay_p, extras_p, base_gp, min_ep, outsiders)
@@ -734,7 +734,7 @@ end
 function EPGP:IncMassEPBy(reason, amount)
   local awarded = {}
   local extras_awarded = {}
-  local extras_amount = math.floor(EPGP.db.profile.extras_p * 0.01 * amount)
+  local extras_amount = math.floor(self.db.profile.extras_p * 0.01 * amount)
   local extras_reason = reason .. " - " .. L["Standby"]
 
   for i=1,EPGP:GetNumMembers() do
@@ -776,12 +776,13 @@ function EPGP:ReportErrors(outputFunc)
   end
 end
 
-local db
+local initialized = false
 function EPGP:OnInitialize()
   -- Setup the DB. The DB will NOT be ready until after OnEnable is
   -- called on EPGP. We do not call OnEnable on modules until after
   -- the DB is ready to use.
-  db = LibStub("AceDB-3.0"):New("EPGP_DB")
+  self.db = LibStub("AceDB-3.0"):New("EPGP_DB")
+  initialized = true
 
   local defaults = {
     profile = {
@@ -796,20 +797,8 @@ function EPGP:OnInitialize()
     }
   }
 
-  db:RegisterDefaults(defaults)
-  for name, module in self:IterateModules() do
-    -- Each module gets its own namespace. If a module needs to set
-    -- defaults, module.dbDefaults needs to be a table with
-    -- defaults. Otherwise we initialize it to be enabled by default.
-    if not module.dbDefaults then
-      module.dbDefaults = {
-        profile = {
-          enabled = true
-        }
-      }
-    end
-    module.db = db:RegisterNamespace(name, module.dbDefaults)
-  end
+  self.db:RegisterDefaults(defaults)
+
   -- After the database objects are created, we setup the
   -- options. Each module can inject its own options by defining:
   --
@@ -826,13 +815,13 @@ function EPGP:OnInitialize()
   self:SetupOptions()
 
   -- New version note.
-  if db.global.last_version ~= EPGP.version then
-    db.global.last_version = EPGP.version
+  if self.db.global.last_version ~= EPGP.version then
+    self.db.global.last_version = EPGP.version
     StaticPopup_Show("EPGP_NEW_VERSION")
   end
 
-  if db.global.last_tier ~= EPGP.current_tier then
-    db.global.last_tier = EPGP.current_tier
+  if self.db.global.last_tier ~= EPGP.current_tier then
+    self.db.global.last_tier = EPGP.current_tier
     if EPGP:CanResetEPGP() then
       StaticPopup_Show("EPGP_NEW_TIER")
     end
@@ -873,14 +862,11 @@ function EPGP:GUILD_ROSTER_UPDATE()
     if #guild == 0 then
       GuildRoster()
     else
-      if db:GetCurrentProfile() ~= guild then
+      if self.db:GetCurrentProfile() ~= guild then
         Debug("Setting DB profile to: %s", guild)
-        db:SetProfile(guild)
+        self.db:SetProfile(guild)
       end
-      -- This means we didn't initialize the db yet.
-      if not EPGP.db then
-        EPGP.db = db
-
+      if not initialized then
         -- Enable all modules that are supposed to be enabled
         for name, module in EPGP:IterateModules() do
           if module.db.profile.enabled or not module.dbDefaults then

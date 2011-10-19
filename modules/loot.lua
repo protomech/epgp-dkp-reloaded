@@ -86,6 +86,10 @@ mod.dbDefaults = {
   }
 }
 
+function mod:OnInitialize()
+  self.db = EPGP.db:RegisterNamespace("loot", mod.dbDefaults)
+end
+
 mod.optionsName = L["Loot"]
 mod.optionsDesc = L["Automatic loot tracking"]
 mod.optionsArgs = {

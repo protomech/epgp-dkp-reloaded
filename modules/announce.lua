@@ -120,6 +120,10 @@ mod.dbDefaults = {
   }
 }
 
+function mod:OnInitialize()
+  self.db = EPGP.db:RegisterNamespace("announce", mod.dbDefaults)
+end
+
 mod.optionsName = L["Announce"]
 mod.optionsDesc = L["Announcement of EPGP actions"]
 mod.optionsArgs = {
