@@ -776,13 +776,11 @@ function EPGP:ReportErrors(outputFunc)
   end
 end
 
-local initialized = false
 function EPGP:OnInitialize()
   -- Setup the DB. The DB will NOT be ready until after OnEnable is
   -- called on EPGP. We do not call OnEnable on modules until after
   -- the DB is ready to use.
   self.db = LibStub("AceDB-3.0"):New("EPGP_DB")
-  initialized = true
 
   local defaults = {
     profile = {
@@ -852,6 +850,7 @@ function EPGP:RAID_ROSTER_UPDATE()
   DestroyStandings()
 end
 
+local initialized = false
 function EPGP:GUILD_ROSTER_UPDATE()
   if not IsInGuild() then
     for name, module in EPGP:IterateModules() do
@@ -867,9 +866,10 @@ function EPGP:GUILD_ROSTER_UPDATE()
         self.db:SetProfile(guild)
       end
       if not initialized then
+	initialized = true
         -- Enable all modules that are supposed to be enabled
         for name, module in EPGP:IterateModules() do
-          if module.db.profile.enabled or not module.dbDefaults then
+          if not module.db or module.db.profile.enabled or not module.dbDefaults then
             Debug("Enabling module (startup): %s", name)
             module:Enable()
           end
