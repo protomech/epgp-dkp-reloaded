@@ -22,7 +22,7 @@ local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_WRIST = 0.5,
   INVTYPE_HAND = 0.75,
   INVTYPE_FINGER = 0.5,
-  INVTYPE_TRINKET = 1.5,
+  INVTYPE_TRINKET = 1.25,
   INVTYPE_CLOAK = 0.5,
   INVTYPE_WEAPON = 1.5,
   INVTYPE_SHIELD = 1.5,
@@ -284,11 +284,46 @@ local CUSTOM_ITEM_DATA = {
  -- T12 misc
   [71617] = { 4, 391, "INVTYPE_TRINKET" }, -- crystallized firestone
 
--- Other junk that drops; hard to really set a price for, so guilds
--- will just have to decide on their own.
--- 69815 -- seething cinder
--- 71141 -- eternal ember
--- 69237 -- living ember
+ -- Other junk that drops; hard to really set a price for, so guilds
+ -- will just have to decide on their own.
+ -- 69815 -- seething cinder
+ -- 71141 -- eternal ember
+ -- 69237 -- living ember
+ -- 71998 -- essence of destruction
+
+ -- T13 normal
+  [78184] = { 4, 397, "INVTYPE_CHEST" },
+  [78179] = { 4, 397, "INVTYPE_CHEST" },
+  [78174] = { 4, 397, "INVTYPE_CHEST" },
+  [78182] = { 4, 397, "INVTYPE_HEAD" },
+  [78177] = { 4, 397, "INVTYPE_HEAD" },
+  [78172] = { 4, 397, "INVTYPE_HEAD" },
+  [78183] = { 4, 397, "INVTYPE_HAND" },
+  [78178] = { 4, 397, "INVTYPE_HAND" },
+  [78173] = { 4, 397, "INVTYPE_HAND" },
+  [78181] = { 4, 397, "INVTYPE_LEGS" },
+  [78176] = { 4, 397, "INVTYPE_LEGS" },
+  [78171] = { 4, 397, "INVTYPE_LEGS" },
+  [78180] = { 4, 397, "INVTYPE_SHOULDER" },
+  [78175] = { 4, 397, "INVTYPE_SHOULDER" },
+  [78170] = { 4, 397, "INVTYPE_SHOULDER" },
+
+ -- T13 heroic
+  [78847] = { 4, 410, "INVTYPE_CHEST" },
+  [78848] = { 4, 410, "INVTYPE_CHEST" },
+  [78849] = { 4, 410, "INVTYPE_CHEST" },
+  [78850] = { 4, 410, "INVTYPE_HEAD" },
+  [78851] = { 4, 410, "INVTYPE_HEAD" },
+  [78852] = { 4, 410, "INVTYPE_HEAD" },
+  [78853] = { 4, 410, "INVTYPE_HAND" },
+  [78854] = { 4, 410, "INVTYPE_HAND" },
+  [78855] = { 4, 410, "INVTYPE_HAND" },
+  [78856] = { 4, 410, "INVTYPE_LEGS" },
+  [78857] = { 4, 410, "INVTYPE_LEGS" },
+  [78858] = { 4, 410, "INVTYPE_LEGS" },
+  [78859] = { 4, 410, "INVTYPE_SHOULDER" },
+  [78860] = { 4, 410, "INVTYPE_SHOULDER" },
+  [78861] = { 4, 410, "INVTYPE_SHOULDER" },
 
 }
 
@@ -373,12 +408,14 @@ function lib:GetValue(item)
   end
   -- 0.06973 is our coefficient so that ilvl 359 chests cost exactly
   -- 1000gp.  In 4.2 and higher, we renormalize to make ilvl 378
-  -- chests cost 1000.
+  -- chests cost 1000.  Repeat ad infinitum!
   local standard_ilvl
   if (select(4, GetBuildInfo()) < 40200) then
     standard_ilvl = 359
-  else
+  elseif (select(4, GetBuildInfo()) < 40300) then
     standard_ilvl = 378
+  else
+    standard_ilvl = 397
   end
   local multiplier = 1000 * 2 ^ (-standard_ilvl / 26)
   local gp_base = multiplier * 2 ^ (level/26)
