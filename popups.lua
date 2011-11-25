@@ -287,7 +287,7 @@ StaticPopupDialogs["EPGP_NEW_VERSION"] = {
 
 StaticPopupDialogs["EPGP_NEW_TIER"] = {
   text = "|cFFFFFF00EPGP " .. EPGP.version .. "|r\n" ..
-    L["A new tier is here!  You should probably reset or rescale GP (Interface -> Options -> AddOns -> EPGP)!  Check the Firelands Release Notes for details (http://code.google.com/p/epgp/wiki/FirelandsReleaseNotes)"], -- /script EPGP.db.profile.last_tier = nil
+    L["A new tier is here!  You should probably reset or rescale GP (Interface -> Options -> AddOns -> EPGP)!"], -- /script EPGP.db.profile.last_tier = nil
   button1 = OKAY,
   hideOnEscape = 1,
   timeout = 0,

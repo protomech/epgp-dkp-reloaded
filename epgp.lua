@@ -817,10 +817,14 @@ function EPGP:OnInitialize()
     self.db.global.last_version = EPGP.version
     StaticPopup_Show("EPGP_NEW_VERSION")
   end
+end
 
+function EPGP:PLAYER_ENTERING_WORLD()
+  -- We use this event because, apparently, CanEditOfficerNote can
+  -- return nil in 4.3 if you aren't fully logged in yet (!)
   if self.db.global.last_tier ~= EPGP.current_tier then
     self.db.global.last_tier = EPGP.current_tier
-    if EPGP:CanResetEPGP() then
+    if CanEditOfficerNote() then
       StaticPopup_Show("EPGP_NEW_TIER")
     end
   end
@@ -893,6 +897,7 @@ function EPGP:OnEnable()
   EPGP.RegisterCallback(self, "OutsidersChanged", OutsidersChanged)
 
   self:RegisterEvent("RAID_ROSTER_UPDATE")
+  self:RegisterEvent("PLAYER_ENTERING_WORLD")
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
 
   GuildRoster()
