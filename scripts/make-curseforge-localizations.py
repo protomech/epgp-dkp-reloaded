@@ -60,12 +60,8 @@ def GetLocalization(locale):
 
   logging.info('Fetching %s localization' % locale)
   req = urllib2.Request(
-    'http://wow.curseforge.com/addons/epgp-dkp-reloaded/localization/export.txt')
+    'http://wow.curseforge.com/addons/epgp-dkp-reloaded/localization/export.txt?format=lua_additive_table&language=' + locale)
   req.timeout = 10
-  boundary, data = _multipart_encode(params)
-  content_type = 'multipart/form-data; boundary=%s' % boundary
-  req.add_unredirected_header('Content-type', content_type)
-  req.add_data(data)
 
   http_handler = urllib2.HTTPHandler()
   localization = http_handler.http_open(req).read()
