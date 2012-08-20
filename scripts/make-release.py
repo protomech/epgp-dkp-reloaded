@@ -36,7 +36,7 @@ import util
 _VERSION_RE = re.compile(r'^\d+\.\d+(\.\d+)?(-beta\d+)?$')
 
 def CopyAddonDirectory(addon_root, dst):
-  ignored_dirs = ('scripts', '.svn', '.hg')
+  ignored_dirs = ('scripts', '.svn', '.hg', '.git')
   ignored_files = ('.pkgmeta', 'WowMatrix.dat', 'debug.xml')
   for root, dirs, files in os.walk(addon_root):
     if not os.path.exists(os.path.join(dst, root)):
@@ -93,25 +93,27 @@ def RunAndReadOutput(*command):
 
 def CheckRepositoryStatus(version):
   # Have we tagged this version before?
-  lines = RunAndReadOutput('hg', 'tags')
+  lines = RunAndReadOutput('git', 'tag')
   if lines is None:
     return False
 
   for line in lines:
-    tag, root = line.split()
+    tag = line.strip()
     if tag == 'v%s' % version:
       logging.info("Version %s already appears to be in the repository; aborting" % version)
       return False
 
   # Check our current repo status; if we get something besides 'C'
   # (clean) or 'I' (ignored), fail.
-  lines = RunAndReadOutput('hg', 'status', '-A')
+  lines = RunAndReadOutput('git', 'status', '--porcelain')
   if lines is None:
     return False
   bad_files = list()
   for line in lines:
+    status = line[:2]
+    filename = line.strip()[3:]
     status, filename = line.strip().split(" ", 1)
-    if status not in ('C', 'I'):
+    if status != '  ':
       bad_files.append(filename)
 
   if bad_files:
@@ -162,9 +164,7 @@ def main(argv=None):
 
   r = raw_input('Do you want to commit this release to the repository [y/N]? ')
   if r in ('y', 'Y'):
-    subprocess.Popen(['hg', 'tag', "v%s" % version],
-                     stdout=sys.stdout, stderr=sys.stderr).communicate()
-    subprocess.Popen(['hg', 'commit', '-m', 'Tag the %s release.' % version],
+    subprocess.Popen(['git', 'tag', "v%s" % version],
                      stdout=sys.stdout, stderr=sys.stderr).communicate()
 
   r = raw_input('Do you want to upload the zip [y/N]? ')
