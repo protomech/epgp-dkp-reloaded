@@ -20,11 +20,15 @@ def main():
   strings = []
   base_dir = util.FindAddonRootDir('epgp')
   logging.info('Extracting localization strings from files')
-  for file in chain(iglob(os.path.join(base_dir, '*.lua')),
-                    iglob(os.path.join(base_dir, '*.xml'))):
-    text = open(file).read()
-    localized_strings = _LOCALIZED_STRING_RE.findall(text)
-    strings.extend(localized_strings)
+  for dirpath, dirnames, filenames in os.walk(base_dir):
+    if dirpath.endswith("localization"):
+      continue
+    for filename in filenames:
+      if not filename.endswith(".lua") and not filename.endswith(".xml"):
+        continue
+      text = open(os.path.join(dirpath, filename)).read()
+      localized_strings = _LOCALIZED_STRING_RE.findall(text)
+      strings.extend(localized_strings)
 
   logging.info('Uniquifying strings')
   strings = list(set(strings))
