@@ -162,10 +162,8 @@ def main(argv=None):
     zip_file.write(file, arc_name, compress_type=zipfile.ZIP_DEFLATED)
   zip_file.close()
 
-  r = raw_input('Do you want to commit this release to the repository [y/N]? ')
-  if r in ('y', 'Y'):
-    subprocess.Popen(['git', 'tag', "v%s" % version],
-                     stdout=sys.stdout, stderr=sys.stderr).communicate()
+  subprocess.Popen(['git', 'tag', "v%s" % version],
+                   stdout=sys.stdout, stderr=sys.stderr).communicate()
 
   r = raw_input('Do you want to upload the zip [y/N]? ')
   if r in ('y', 'Y'):
