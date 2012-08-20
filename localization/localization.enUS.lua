@@ -86,8 +86,6 @@ L["Next award in "] = true
 L["Only display GP values for items at or above this quality."] = true
 L["Open the configuration options"] = true
 L["Open the debug window"] = true
-L["Options for |cffffff78"..info[#info].."|r (multiple possible):"] = true
-L["Options for |cffffff78"..info[#info].."|r:"] = true
 L["Other"] = true
 L["Outsiders should be 0 or 1"] = true
 L["Paste import data here"] = true
@@ -137,7 +135,6 @@ L["must be equal to or higher than %s"] = true
 L["must be equal to or lower than %s"] = true
 L["off"] = true
 L["on"] = true
-L["on"] or val == L["off"] or (tab.tristate and val == L["default"] = true
 L["string1"] = true
 L["unknown argument"] = true
 L["unknown selection"] = true

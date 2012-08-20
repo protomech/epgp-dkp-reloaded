@@ -14,7 +14,7 @@ import sys
 
 import util
 
-_LOCALIZED_STRING_RE = re.compile(r'L\[.*\]')
+_LOCALIZED_STRING_RE = re.compile(r'L\["[^"]*?"\]')
 
 def main():
   strings = []
