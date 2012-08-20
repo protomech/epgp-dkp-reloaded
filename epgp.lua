@@ -482,7 +482,7 @@ end
 
 function EPGP:GetNumMembersInAwardList()
   if UnitInRaid("player") then
-    return GetNumRaidMembers() + selected._count
+    return GetNumGroupMembers() + selected._count
   else
     if selected._count == 0 then
       return self:GetNumMembers()
