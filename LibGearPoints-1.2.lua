@@ -30,7 +30,7 @@ local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_WEAPONMAINHAND = 1.5,
   INVTYPE_WEAPONOFFHAND = 0.5,
   INVTYPE_HOLDABLE = 0.5,
-  INVTYPE_RANGED = 1.5,
+  INVTYPE_RANGED = 2.0,
   INVTYPE_RANGEDRIGHT = 1.5,
   INVTYPE_THROWN = 0.5,
   INVTYPE_RELIC = 0.5,
@@ -44,8 +44,6 @@ local EQUIPSLOT_MULTIPLIER_2 = {
   INVTYPE_WEAPON = 0.5,
   INVTYPE_2HWEAPON = 1,
   INVTYPE_SHIELD = 0.5,
-  INVTYPE_RANGED = 0.5,
-  INVTYPE_RANGEDRIGHT = 0.5,
 }
 
 --Used to display GP values directly on tier tokens
@@ -414,8 +412,10 @@ function lib:GetValue(item)
     standard_ilvl = 359
   elseif (select(4, GetBuildInfo()) < 40300) then
     standard_ilvl = 378
-  else
+  elseif (select(4, GetBuildInfo()) < 50500) then
     standard_ilvl = 397
+  else
+    standard_ilvl = 489
   end
   local multiplier = 1000 * 2 ^ (-standard_ilvl / 26)
   local gp_base = multiplier * 2 ^ (level/26)
