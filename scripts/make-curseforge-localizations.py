@@ -15,25 +15,6 @@ import urllib2
 
 import util
 
-# The multipart encoder
-def _multipart_encode(vars):
-  CRLF = '\r\n'
-
-  buf = StringIO.StringIO()
-  boundary = mimetools.choose_boundary()
-  for key, value in vars.iteritems():
-    buf.write('--%s' % boundary)
-    buf.write(CRLF)
-    buf.write('Content-Disposition: form-data; name="%s"' % key)
-    buf.write(CRLF)
-    buf.write(CRLF)
-    buf.write(value)
-    buf.write(CRLF)
-
-  buf.write('--%s--' % boundary)
-
-  return boundary, buf.getvalue()
-
 # All non enUS locales. We do not want to fetch the enUS locale as
 # that is our master locale and it might hold data that is not on
 # curseforge yet.
