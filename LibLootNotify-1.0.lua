@@ -167,7 +167,7 @@ end
 
 -- Hook the GiveMasterLoot function so we can intercept the slotID and candidate
 local function GiveMasterLootHandler(slotID, candidateID, ...)
-  local candidate = tostring(GetMasterLootCandidate(candidateID))
+  local candidate = tostring(GetMasterLootCandidate(slotID, candidateID))
   local itemLink = tostring(GetLootSlotLink(slotID))
   Debug("LibLootNotify: GiveMasterLoot(%s, %s)", itemLink, candidate)
   local slotData = {
