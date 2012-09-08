@@ -830,7 +830,7 @@ function EPGP:PLAYER_ENTERING_WORLD()
   end
 end
 
-function EPGP:RAID_ROSTER_UPDATE()
+function EPGP:GROUP_ROSTER_UPDATE()
   if UnitInRaid("player") then
     -- If we are in a raid, make sure no member of the raid is
     -- selected
@@ -896,7 +896,7 @@ function EPGP:OnEnable()
   EPGP.RegisterCallback(self, "BaseGPChanged", DestroyStandings)
   EPGP.RegisterCallback(self, "OutsidersChanged", OutsidersChanged)
 
-  self:RegisterEvent("RAID_ROSTER_UPDATE")
+  self:RegisterEvent("GROUP_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_ENTERING_WORLD")
   self:RegisterEvent("GUILD_ROSTER_UPDATE")
 
