@@ -31,7 +31,7 @@ local function IsRLorML()
   if UnitInRaid("player") then
     local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
     if loot_method == "master" and ml_party_id == 0 then return true end
-    if loot_method ~= "master" and IsRaidLeader() then return true end
+    if loot_method ~= "master" and and IsInRaid() and UnitIsGroupLeader("player") then return true end
   end
   return false
 end
