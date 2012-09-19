@@ -415,7 +415,7 @@ function lib:GetValue(item)
   elseif MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()] < 90 then
     standard_ilvl = 397
   else
-    standard_ilvl = 489
+    standard_ilvl = 496
   end
   local multiplier = 1000 * 2 ^ (-standard_ilvl / 26)
   local gp_base = multiplier * 2 ^ (level/26)
