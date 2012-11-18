@@ -857,6 +857,7 @@ end
 local initialized = false
 function EPGP:GUILD_ROSTER_UPDATE()
   if not IsInGuild() then
+    Debug("Not in guild, disabling modules")
     for name, module in EPGP:IterateModules() do
       module:Disable()
     end
@@ -889,16 +890,24 @@ function EPGP:GUILD_ROSTER_UPDATE()
   end
 end
 
+local UpdateFrame = nil
 function EPGP:OnEnable()
+  UpdateFrame = CreateFrame("Frame")
+  UpdateFrame:SetScript("OnUpdate",
+			function()
+			  Debug("Enabling roster functions, disabling Update; IsInGuild is %d", IsInGuild())
+			  EPGP:RegisterEvent("GROUP_ROSTER_UPDATE")
+			  EPGP:RegisterEvent("GUILD_ROSTER_UPDATE")
+			  UpdateFrame:SetScript("OnUpdate", nil)
+			end)
+
   GS.RegisterCallback(self, "GuildNoteChanged", ParseGuildNote)
   GS.RegisterCallback(self, "GuildNoteDeleted", HandleDeletedGuildNote)
 
   EPGP.RegisterCallback(self, "BaseGPChanged", DestroyStandings)
   EPGP.RegisterCallback(self, "OutsidersChanged", OutsidersChanged)
 
-  self:RegisterEvent("GROUP_ROSTER_UPDATE")
   self:RegisterEvent("PLAYER_ENTERING_WORLD")
-  self:RegisterEvent("GUILD_ROSTER_UPDATE")
 
   GuildRoster()
 end
