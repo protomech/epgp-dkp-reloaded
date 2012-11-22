@@ -285,7 +285,7 @@ local function OutsidersChanged()
 end
 
 local function RefreshStandings(order, showEveryone)
-  Debug("Resorting standings")
+  -- Debug("Resorting standings")
   if UnitInRaid("player") then
     -- If we are in raid:
     ---  showEveryone = true: show all in raid (including alts) and
@@ -339,7 +339,7 @@ local function HandleDeletedGuildNote(callback, name)
 end
 
 local function ParseGuildNote(callback, name, note)
-  Debug("Parsing Guild Note for %s [%s]", name, note)
+  -- Debug("Parsing Guild Note for %s [%s]", name, note)
   -- Delete current state about this toon.
   DeleteState(name)
 
@@ -895,10 +895,12 @@ function EPGP:OnEnable()
   UpdateFrame = CreateFrame("Frame")
   UpdateFrame:SetScript("OnUpdate",
 			function()
-			  Debug("Enabling roster functions, disabling Update; IsInGuild is %d", IsInGuild())
-			  EPGP:RegisterEvent("GROUP_ROSTER_UPDATE")
-			  EPGP:RegisterEvent("GUILD_ROSTER_UPDATE")
-			  UpdateFrame:SetScript("OnUpdate", nil)
+			  if IsInGuild() then
+			    Debug("Enabling roster functions, disabling OnUpdate; IsInGuild is %d", IsInGuild())
+			    EPGP:RegisterEvent("GROUP_ROSTER_UPDATE")
+			    EPGP:RegisterEvent("GUILD_ROSTER_UPDATE")
+			    UpdateFrame:SetScript("OnUpdate", nil)
+			  end
 			end)
 
   GS.RegisterCallback(self, "GuildNoteChanged", ParseGuildNote)

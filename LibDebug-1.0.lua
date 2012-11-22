@@ -110,9 +110,9 @@ frame.msg:SetScript("OnMouseWheel", ScrollingFunction)
 
 function lib:DebugStub(fmt, ...) end
 
+local start_time = GetTime()
 local function GetTimeShort()
-  local t = GetTime()
-  return t - math.floor(t / 100) * 100
+  return GetTime() - start_time
 end
 
 local function GetCaller()

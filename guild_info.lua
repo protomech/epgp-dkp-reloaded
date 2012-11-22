@@ -77,7 +77,7 @@ local function ParseGuildInfo(loc)
       for var, def in pairs(global_config_defs) do
         local v = line:match(def.pattern)
         if v then
-          Debug("Matched [%s]", line)
+          -- Debug("Matched [%s]", line)
           v = def.parser(v)
           if v == nil or not def.validator(v) then
             Debug(def.error)
