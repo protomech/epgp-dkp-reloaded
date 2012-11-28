@@ -31,7 +31,7 @@ local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_WEAPONOFFHAND = 0.5,
   INVTYPE_HOLDABLE = 0.5,
   INVTYPE_RANGED = 2.0,
-  INVTYPE_RANGEDRIGHT = 2.0,
+  INVTYPE_RANGEDRIGHT = 1.5,
   INVTYPE_THROWN = 0.5,
   INVTYPE_RELIC = 0.5,
   -- Hack for Tier 9 25M heroic tokens.
@@ -42,7 +42,7 @@ local EQUIPSLOT_MULTIPLIER_1 = {
 -- tanking shields).
 local EQUIPSLOT_MULTIPLIER_2 = {
   INVTYPE_WEAPON = 0.5,
-  INVTYPE_2HWEAPON = 1,
+  INVTYPE_2HWEAPON = 0.5,
   INVTYPE_SHIELD = 0.5,
 }
 
@@ -322,6 +322,48 @@ local CUSTOM_ITEM_DATA = {
   [78859] = { 4, 410, "INVTYPE_SHOULDER" },
   [78860] = { 4, 410, "INVTYPE_SHOULDER" },
   [78861] = { 4, 410, "INVTYPE_SHOULDER" },
+
+ -- T14 normal
+  [89248] = { 4, 496, "INVTYPE_SHOULDER" },
+  [89247] = { 4, 496, "INVTYPE_SHOULDER" },
+  [89246] = { 4, 496, "INVTYPE_SHOULDER" },
+
+  [89245] = { 4, 496, "INVTYPE_LEGS" },
+  [89244] = { 4, 496, "INVTYPE_LEGS" },
+  [89243] = { 4, 496, "INVTYPE_LEGS" },
+
+  [89234] = { 4, 496, "INVTYPE_HEAD" },
+  [89236] = { 4, 496, "INVTYPE_HEAD" },
+  [89235] = { 4, 496, "INVTYPE_HEAD" },
+
+  [89242] = { 4, 496, "INVTYPE_HAND" },
+  [89241] = { 4, 496, "INVTYPE_HAND" },
+  [89240] = { 4, 496, "INVTYPE_HAND" },
+
+  [89239] = { 4, 496, "INVTYPE_CHEST" },
+  [89238] = { 4, 496, "INVTYPE_CHEST" },
+  [89237] = { 4, 496, "INVTYPE_CHEST" },
+
+ -- T14 heroic
+  [89261] = { 4, 509, "INVTYPE_SHOULDER" },
+  [89263] = { 4, 509, "INVTYPE_SHOULDER" },
+  [89262] = { 4, 509, "INVTYPE_SHOULDER" },
+
+  [89252] = { 4, 509, "INVTYPE_LEGS" },
+  [89254] = { 4, 509, "INVTYPE_LEGS" },
+  [89253] = { 4, 509, "INVTYPE_LEGS" },
+
+  [89258] = { 4, 509, "INVTYPE_HEAD" },
+  [89260] = { 4, 509, "INVTYPE_HEAD" },
+  [89259] = { 4, 509, "INVTYPE_HEAD" },
+
+  [89255] = { 4, 509, "INVTYPE_HAND" },
+  [89257] = { 4, 509, "INVTYPE_HAND" },
+  [89256] = { 4, 509, "INVTYPE_HAND" },
+
+  [89249] = { 4, 509, "INVTYPE_CHEST" },
+  [89251] = { 4, 509, "INVTYPE_CHEST" },
+  [89250] = { 4, 509, "INVTYPE_CHEST" },
 
 }
 
