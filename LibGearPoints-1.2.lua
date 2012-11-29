@@ -8,6 +8,7 @@ local lib, oldMinor = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not lib then return end
 
 local Debug = LibStub("LibDebug-1.0")
+local ItemUtils = LibStub("LibItemUtils-1.0")
 
 -- This is the high price equipslot multiplier.
 local EQUIPSLOT_MULTIPLIER_1 = {
@@ -427,6 +428,8 @@ function lib:GetValue(item)
   local itemID = itemLink:match("item:(%d+)")
   if not itemID then return end
   itemID = tonumber(itemID)
+
+  level = ItemUtils:GetItemIlevel(item, level)
 
   -- Check to see if there is custom data for this item ID
   if CUSTOM_ITEM_DATA[itemID] then

@@ -2,6 +2,7 @@ local mod = EPGP:NewModule("gptooltip", "AceHook-3.0")
 
 local GP = LibStub("LibGearPoints-1.2")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
+local ItemUtils = LibStub("LibItemUtils-1.0")
 
 function OnTooltipSetItem(tooltip, ...)
   local _, itemlink = tooltip:GetItem()
@@ -66,7 +67,7 @@ function mod:OnEnable()
 
   local obj = EnumerateFrames()
   while obj do
-    if obj:IsObjectType("GameTooltip") then
+    if obj:IsObjectType("GameTooltip") and obj ~= ItemUtils.tooltip then
       assert(obj:HasScript("OnTooltipSetItem"))
       self:HookScript(obj, "OnTooltipSetItem", OnTooltipSetItem)
     end

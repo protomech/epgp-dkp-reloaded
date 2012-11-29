@@ -28,7 +28,8 @@ frame:SetScript('OnUpdate', nil)
 frame:UnregisterAllEvents()
 
 -- Use the GameTooltip or create a new one and initialize it
--- Used to extract Class limitations for an item and binding type.
+-- Used to extract Class limitations for an item, upgraded ilvl,
+-- and binding type.
 lib.tooltip = lib.tooltip or CreateFrame("GameTooltip",
                                          MAJOR_VERSION .. "_Tooltip",
                                          frame, "GameTooltipTemplate")
@@ -302,6 +303,28 @@ function lib:ClassCanUse(class, item)
   end
 
   return true
+end
+
+function lib:GetItemIlevel(item, fallback)
+  tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+  tooltip:SetHyperlink(item)
+  -- lets see if we can find a 'Classes: Mage, Druid' string on the itemtooltip
+  -- Only scanning line 2 is not enough, we need to scan all the lines
+  for lineID = 1, tooltip:NumLines(), 1 do
+    local line = _G[restrictedClassFrameNameFormat:format(lineID)]
+    if line then
+      local text = line:GetText()
+      if text then
+	local item_level_pattern = ITEM_LEVEL:gsub("%%d", "(%%d+)")
+	local ilvl = tonumber(text:match(item_level_pattern))
+	if ilvl then
+	  return ilvl
+	end
+      end
+    end
+  end
+
+  return fallback
 end
 
 function lib:ClassCannotUse(class, item)
