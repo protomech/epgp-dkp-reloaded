@@ -50,6 +50,7 @@ end
 
 StaticPopupDialogs["EPGP_RECURRING_RESUME"] = {
   text = "%s",
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = YES,
   button2 = NO,
   timeout = 0,

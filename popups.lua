@@ -25,6 +25,7 @@ local blizzardPopupAnchors = {}
 
 StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
   text = L["Credit GP to %s"],
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = ACCEPT,
   button2 = CANCEL,
   button3 = GUILD_BANK,
@@ -100,6 +101,7 @@ StaticPopupDialogs["EPGP_CONFIRM_GP_CREDIT"] = {
 
 StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
   text = L["Decay EP and GP by %d%%?"],
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
@@ -120,6 +122,7 @@ StaticPopupDialogs["EPGP_DECAY_EPGP"] = {
 
 StaticPopupDialogs["EPGP_RESET_EPGP"] = {
   text = L["Reset all main toons' EP and GP to 0?"],
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
@@ -140,6 +143,7 @@ StaticPopupDialogs["EPGP_RESET_EPGP"] = {
 
 StaticPopupDialogs["EPGP_RESET_GP"] = {
   text = L["Reset all main toons' GP to 0?"],
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
@@ -160,6 +164,7 @@ StaticPopupDialogs["EPGP_RESET_GP"] = {
 
 StaticPopupDialogs["EPGP_RESCALE_GP"] = {
   text = L["Re-scale all main toons' GP to current tier?"],
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
@@ -180,6 +185,7 @@ StaticPopupDialogs["EPGP_RESCALE_GP"] = {
 
 StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
   text = L["%s is dead. Award EP?"],
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
@@ -218,6 +224,7 @@ StaticPopupDialogs["EPGP_BOSS_DEAD"] = {
 
 StaticPopupDialogs["EPGP_BOSS_ATTEMPT"] = {
   text = L["Wiped on %s. Award EP?"],
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = ACCEPT,
   button2 = CANCEL,
   timeout = 0,
@@ -256,6 +263,7 @@ StaticPopupDialogs["EPGP_BOSS_ATTEMPT"] = {
 
 StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
   text = "You are the Loot Master, would you like to use EPGP Lootmaster to distribute loot?\r\n\r\n(You will be asked again next time. Use the configuration panel to change this behaviour)",
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = YES,
   button2 = NO,
   OnAccept = function()
@@ -279,6 +287,7 @@ StaticPopupDialogs["EPGP_LOOTMASTER_ASK_TRACKING"] = {
 StaticPopupDialogs["EPGP_NEW_VERSION"] = {
   text = "|cFFFFFF00EPGP " .. EPGP.version .. "|r\n" ..
     L["You can now check your epgp standings and loot on the web: http://www.epgpweb.com"], -- /script EPGP.db.profile.last_version = nil
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = OKAY,
   hideOnEscape = 1,
   timeout = 0,
@@ -288,6 +297,7 @@ StaticPopupDialogs["EPGP_NEW_VERSION"] = {
 StaticPopupDialogs["EPGP_NEW_TIER"] = {
   text = "|cFFFFFF00EPGP " .. EPGP.version .. "|r\n" ..
     L["A new tier is here!  You should probably reset or rescale GP (Interface -> Options -> AddOns -> EPGP)!"], -- /script EPGP.db.profile.last_tier = nil
+  preferredIndex = STATICPOPUP_NUMDIALOGS,
   button1 = OKAY,
   hideOnEscape = 1,
   timeout = 0,
