@@ -30,7 +30,7 @@ local distributionCache = {}
 local distributionTimers = {}
 
 -- Sets the timeout before emulating a loot message
-local EMULATE_TIMEOUT = 5
+local EMULATE_TIMEOUT = 10
 
 -- Create a handle for a emulation timer
 local function GenerateDistributionID(player, itemLink, quantity)
