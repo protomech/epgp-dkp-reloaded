@@ -4,6 +4,7 @@ local mod = EPGP:NewModule("ui")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.2")
 local GP = LibStub("LibGearPoints-1.2")
+local DLG = LibStub("LibDialog-1.0")
 
 local EPGPWEB = "http://www.epgpweb.com"
 
@@ -925,34 +926,57 @@ local function CreateEPGPSideFrame(self)
   local gpFrame = CreateFrame("Frame", nil, f)
   gpFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -30)
   gpFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -30)
-  AddGPControls(gpFrame)
-  gpFrame.button:SetScript(
-    "OnClick",
-    function(self)
-      EPGP:IncGPBy(f.name,
-                   UIDropDownMenu_GetText(gpFrame.dropDown),
-                   gpFrame.editBox:GetNumber())
-    end)
+--  AddGPControls(gpFrame)
+--  gpFrame.button:SetScript(
+--    "OnClick",
+--    function(self)
+--      EPGP:IncGPBy(f.name,
+--                   UIDropDownMenu_GetText(gpFrame.dropDown),
+--                   gpFrame.editBox:GetNumber())
+--    end)
 
   local epFrame = CreateFrame("Frame", nil, f)
   epFrame:SetPoint("TOPLEFT", gpFrame, "BOTTOMLEFT", 0, -15)
   epFrame:SetPoint("TOPRIGHT", gpFrame, "BOTTOMRIGHT", 0, -15)
-  AddEPControls(epFrame)
-  epFrame.button:SetScript(
-    "OnClick",
-    function(self)
-      local reason = UIDropDownMenu_GetText(epFrame.dropDown)
-      if reason == L["Other"] then
-        reason = epFrame.otherEditBox:GetText()
-      end
-      local amount = epFrame.editBox:GetNumber()
-      EPGP:IncEPBy(f.name, reason, amount)
-    end)
+--  AddEPControls(epFrame)
+--  epFrame.button:SetScript(
+--    "OnClick",
+--    function(self)
+--      local reason = UIDropDownMenu_GetText(epFrame.dropDown)
+--      if reason == L["Other"] then
+--        reason = epFrame.otherEditBox:GetText()
+--      end
+--      local amount = epFrame.editBox:GetNumber()
+--      EPGP:IncEPBy(f.name, reason, amount)
+--    end)
 
   f:SetScript(
     "OnShow",
     function(self)
       self.title:SetText(self.name)
+      if not epFrame.button then
+        AddGPControls(gpFrame)
+        gpFrame.button:SetScript(
+          "OnClick",
+          function(self)
+            EPGP:IncGPBy(f.name,
+                         UIDropDownMenu_GetText(gpFrame.dropDown),
+                         gpFrame.editBox:GetNumber())
+          end)
+      end
+      if not epFrame.button then
+        AddEPControls(epFrame)
+        epFrame.button:SetScript(
+          "OnClick",
+          function(self)
+            local reason = UIDropDownMenu_GetText(epFrame.dropDown)
+            if reason == L["Other"] then
+              reason = epFrame.otherEditBox:GetText()
+            end
+            local amount = epFrame.editBox:GetNumber()
+            EPGP:IncEPBy(f.name, reason, amount)
+          end)
+      end
     end)
 end
 
@@ -981,33 +1005,36 @@ local function CreateEPGPSideFrame2()
   local epFrame = CreateFrame("Frame", nil, f)
   epFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -15)
   epFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -15)
-  AddEPControls(epFrame, true)
-  epFrame.button:SetScript(
-    "OnClick",
-    function(self)
-      local reason = UIDropDownMenu_GetText(epFrame.dropDown)
-      if reason == L["Other"] then
-        reason = epFrame.otherEditBox:GetText()
-      end
-      local amount = epFrame.editBox:GetNumber()
-      EPGP:IncMassEPBy(reason, amount)
-    end)
-
-  epFrame.recurring:SetScript(
-    "OnClick",
-    function(self)
-      if not EPGP:RunningRecurringEP() then
-        local reason = UIDropDownMenu_GetText(epFrame.dropDown)
-        if reason == L["Other"] then
-          reason = epFrame.otherEditBox:GetText()
-        end
-        local amount = epFrame.editBox:GetNumber()
-        EPGP:StartRecurringEP(reason, amount)
-      else
-        EPGP:StopRecurringEP()
-      end
-      self:GetParent():UpdateTimeControls()
-    end)
+  epFrame:SetScript("OnShow", function()
+    if not epFrame.button then
+      AddEPControls(epFrame, true)
+      epFrame.button:SetScript(
+        "OnClick",
+        function(self)
+          local reason = UIDropDownMenu_GetText(epFrame.dropDown)
+          if reason == L["Other"] then
+            reason = epFrame.otherEditBox:GetText()
+          end
+          local amount = epFrame.editBox:GetNumber()
+          EPGP:IncMassEPBy(reason, amount)
+        end)
+      epFrame.recurring:SetScript(
+        "OnClick",
+        function(self)
+          if not EPGP:RunningRecurringEP() then
+            local reason = UIDropDownMenu_GetText(epFrame.dropDown)
+            if reason == L["Other"] then
+              reason = epFrame.otherEditBox:GetText()
+            end
+            local amount = epFrame.editBox:GetNumber()
+            EPGP:StartRecurringEP(reason, amount)
+          else
+            EPGP:StopRecurringEP()
+          end
+          self:GetParent():UpdateTimeControls()
+        end)
+    end
+  end)
 end
 
 local function CreateEPGPFrameStandings()
@@ -1123,7 +1150,7 @@ local function CreateEPGPFrameStandings()
   decay:SetScript(
     "OnClick",
     function(self, button, down)
-      StaticPopup_Show("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
+      DLG:Spawn("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
     end)
   decay:SetScript(
     "OnUpdate",
