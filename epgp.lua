@@ -892,17 +892,6 @@ end
 
 local UpdateFrame = nil
 function EPGP:OnEnable()
-  UpdateFrame = CreateFrame("Frame")
-  UpdateFrame:SetScript("OnUpdate",
-			function()
-			  if IsInGuild() then
-			    Debug("Enabling roster functions, disabling OnUpdate; IsInGuild is %d", IsInGuild())
-			    EPGP:RegisterEvent("GROUP_ROSTER_UPDATE")
-			    EPGP:RegisterEvent("GUILD_ROSTER_UPDATE")
-			    UpdateFrame:SetScript("OnUpdate", nil)
-			  end
-			end)
-
   GS.RegisterCallback(self, "GuildNoteChanged", ParseGuildNote)
   GS.RegisterCallback(self, "GuildNoteDeleted", HandleDeletedGuildNote)
 
@@ -910,6 +899,28 @@ function EPGP:OnEnable()
   EPGP.RegisterCallback(self, "OutsidersChanged", OutsidersChanged)
 
   self:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+  UpdateFrame = UpdateFrame or CreateFrame("Frame")
+  UpdateFrame:SetScript("OnUpdate", nil)
+
+  local function UpdateFrameOnUpdate(self, elapsed)
+    self:SetScript("OnUpdate", nil)
+    if self.GroupRosterUpdated then EPGP:GROUP_ROSTER_UPDATE() end
+    self.GroupRosterUpdated = nil
+    if self.GuildRosterUpdated then EPGP:GUILD_ROSTER_UPDATE() end
+    self.GuildRosterUpdated = nil
+  end
+
+  self:RegisterEvent("GROUP_ROSTER_UPDATE",
+    function()
+      UpdateFrame.GroupRosterUpdated = true
+      UpdateFrame:SetScript("OnUpdate", UpdateFrameOnUpdate)
+    end)
+  self:RegisterEvent("GUILD_ROSTER_UPDATE",
+    function()
+      UpdateFrame.GuildRosterUpdated = true
+      UpdateFrame:SetScript("OnUpdate", UpdateFrameOnUpdate)
+    end)
 
   GuildRoster()
 end
