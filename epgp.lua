@@ -138,6 +138,7 @@ local Debug = LibStub("LibDebug-1.0")
 Debug:EnableDebugging()
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.2")
+local DLG = LibStub("LibDialog-1.0")
 
 EPGP = LibStub("AceAddon-3.0"):NewAddon(
   "EPGP", "AceEvent-3.0", "AceConsole-3.0")
@@ -677,6 +678,7 @@ function EPGP:IncGPBy(name, reason, amount, mass, undo)
     self:Print(L["Ignoring GP change for unknown member %s"]:format(name))
     return
   end
+  local _
   _, amount = AddEPGP(main or name, 0, amount)
   if amount then
     callbacks:Fire("GPAward", name, reason, amount, mass, undo)
@@ -815,7 +817,7 @@ function EPGP:OnInitialize()
   -- New version note.
   if self.db.global.last_version ~= EPGP.version then
     self.db.global.last_version = EPGP.version
-    StaticPopup_Show("EPGP_NEW_VERSION")
+    DLG:Spawn("EPGP_NEW_VERSION")
   end
 end
 
@@ -825,7 +827,7 @@ function EPGP:PLAYER_ENTERING_WORLD()
   if self.db.global.last_tier ~= EPGP.current_tier then
     self.db.global.last_tier = EPGP.current_tier
     if CanEditOfficerNote() then
-      StaticPopup_Show("EPGP_NEW_TIER")
+      DLG:Spawn("EPGP_NEW_TIER")
     end
   end
 end
@@ -871,7 +873,7 @@ function EPGP:GUILD_ROSTER_UPDATE()
         self.db:SetProfile(guild)
       end
       if not initialized then
-	initialized = true
+        initialized = true
         -- Enable all modules that are supposed to be enabled
         for name, module in EPGP:IterateModules() do
           if not module.db or module.db.profile.enabled or not module.dbDefaults then
