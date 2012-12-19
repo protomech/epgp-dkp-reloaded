@@ -1200,7 +1200,7 @@ local function CreateEPGPFrameStandings()
     self:SetFormattedText("%s (%s)", mode,
                           "|cFFFFFFFF"..EPGP:GetNumMembersInAwardList().."|r")
   end
-  EPGP.RegisterCallback(modeText, "StandingsChanged", "TextUpdate")
+--  EPGP.RegisterCallback(modeText, "StandingsChanged", "TextUpdate") -- move into UpdateStandings
 
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)
@@ -1291,6 +1291,7 @@ local function CreateEPGPFrameStandings()
   -- Install the update function on rowFrame.
   local function UpdateStandings()
     if not rowFrame.needUpdate then return end
+    modeText:TextUpdate()
 
     local offset = FauxScrollFrame_GetOffset(EPGPScrollFrame)
     local numMembers = EPGP:GetNumMembers()
