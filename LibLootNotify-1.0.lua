@@ -30,13 +30,14 @@ local distributionCache = {}
 local distributionTimers = {}
 
 -- Sets the timeout before emulating a loot message
-local EMULATE_TIMEOUT = 10
+local EMULATE_TIMEOUT = 5
 
 -- Create a handle for a emulation timer
 local function GenerateDistributionID(player, itemLink, quantity)
+  local itemid, suffixid, uniqueid = tostring(itemLink):match("|Hitem:(%d+):%d+:%d+:%d+:%d+:%d+:(\-*%d+):(\-*%d+)")
   return format('%s:%s:%s',
                 tostring(player),
-                tostring(itemLink),
+		tostring(itemid..":"..uniqueid),
                 tostring(quantity))
 end
 
@@ -131,7 +132,6 @@ local function OnLootTimer(slotData)
                candidate,
                itemLink,
                quantity))
-
   -- Emulate the event so other addons can benefit from it aswell.
   if quantity == 1 then
     EmulateEvent('CHAT_MSG_LOOT', LOOT_ITEM:format(candidate, itemLink), '', '', '', '')
@@ -156,7 +156,6 @@ local function LOOT_SLOT_CLEARED(event, slotID, ...)
     -- Fetch the name for the timer from the slotData
     local distributionID = slotData.distributionID
     Debug("LibLootNotify: (%s) creating timer %s", event, distributionID)
-
     -- Schedule a timer for this loot
     distributionTimers[distributionID] = AceTimer:ScheduleTimer(OnLootTimer, EMULATE_TIMEOUT, slotData)
   end
