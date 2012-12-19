@@ -2,6 +2,7 @@ local mod = EPGP:NewModule("boss", "AceEvent-3.0")
 local Debug = LibStub("LibDebug-1.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local Coroutine = LibStub("LibCoroutine-1.0")
+local DLG = LibStub("LibDialog-1.0")
 
 local in_combat = false
 
@@ -15,20 +16,16 @@ local function IsRLorML()
 end
 
 local function ShowPopup(event_name, boss_name)
-  while (in_combat or StaticPopup_Visible("EPGP_BOSS_DEAD") or
-         StaticPopup_Visible("EPGP_BOSS_ATTEMPT")) do
+  while (in_combat or DLG:ActiveDialog("EPGP_BOSS_DEAD") or
+         DLG:ActiveDialog("EPGP_BOSS_ATTEMPT")) do
     Coroutine:Sleep(0.1)
   end
 
   local dialog
   if event_name == "kill" or event_name == "BossKilled" then
-    dialog = StaticPopup_Show("EPGP_BOSS_DEAD", boss_name)
+    DLG:Spawn("EPGP_BOSS_DEAD", boss_name)
   elseif event_name == "wipe" and mod.db.profile.wipedetection then
-    dialog = StaticPopup_Show("EPGP_BOSS_ATTEMPT", boss_name)
-  end
-
-  if dialog then
-    dialog.reason = boss_name
+    DLG:Spawn("EPGP_BOSS_ATTEMPT", boss_name)
   end
 end
 

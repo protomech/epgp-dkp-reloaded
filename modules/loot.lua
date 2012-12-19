@@ -3,6 +3,7 @@ local mod = EPGP:NewModule("loot", "AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local LLN = LibStub("LibLootNotify-1.0")
 local Coroutine = LibStub("LibCoroutine-1.0")
+local DLG = LibStub("LibDialog-1.0")
 
 local ignored_items = {
   [20725] = true, -- Nexus Crystal
@@ -37,23 +38,13 @@ local function IsRLorML()
 end
 
 local function ShowPopup(player, item, quantity)
-  while in_combat or StaticPopup_Visible("EPGP_CONFIRM_GP_CREDIT") do
+  while in_combat or DLG:ActiveDialog("EPGP_CONFIRM_GP_CREDIT") do
     Coroutine:Sleep(0.1)
   end
 
-  local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(item)
-  local r, g, b = GetItemQualityColor(itemRarity)
-
   if EPGP:GetEPGP(player) then
-    local dialog = StaticPopup_Show("EPGP_CONFIRM_GP_CREDIT", player, "", {
-                                      texture = itemTexture,
-                                      name = itemName,
-                                      color = {r, g, b, 1},
-                                      link = itemLink
-                                    })
-    if dialog then
-      dialog.name = player
-    end
+    local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(item)
+    DLG:Spawn("EPGP_CONFIRM_GP_CREDIT", {name = player, item = itemLink, icon = itemTexture})
   end
 end
 

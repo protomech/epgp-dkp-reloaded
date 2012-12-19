@@ -1,6 +1,7 @@
 local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GP = LibStub("LibGearPoints-1.2")
 local Debug = LibStub("LibDebug-1.0")
+local DLG = LibStub("LibDialog-1.0")
 
 function EPGP:SetupOptions()
   local options = {
@@ -34,21 +35,21 @@ function EPGP:SetupOptions()
         type = "execute",
         name = L["Reset EPGP"],
         desc = L["Resets EP and GP of all members of the guild. This will set all main toons' EP and GP to 0. Use with care!"],
-        func = function() StaticPopup_Show("EPGP_RESET_EPGP") end,
+        func = function() DLG:Spawn("EPGP_RESET_EPGP") end,
       },
       reset_gp = {
         order = 1002,
         type = "execute",
         name = L["Reset only GP"],
         desc = L["Resets GP (not EP!) of all members of the guild. This will set all main toons' GP to 0. Use with care!"],
-        func = function() StaticPopup_Show("EPGP_RESET_GP") end,
+        func = function() DLG:Spawn("EPGP_RESET_GP") end,
       },
       rescale = {
         order = 1003,
         type = "execute",
         name = L["Rescale GP"],
         desc = L["Rescale GP of all members of the guild. This will reduce all main toons' GP by a tier worth of value. Use with care!"],
-        func = function() StaticPopup_Show("EPGP_RESCALE_GP") end,
+        func = function() DLG:Spawn("EPGP_RESCALE_GP") end,
       },
     },
   }
@@ -140,7 +141,7 @@ function EPGP:ProcessCommand(str)
     end
   elseif command == "decay" then
     if EPGP:CanDecayEPGP() then
-      StaticPopup_Show("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
+      DLG:Spawn("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
     end
   elseif command == "help" then
     local help = {
