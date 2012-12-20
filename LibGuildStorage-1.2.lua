@@ -306,6 +306,7 @@ local function Frame_OnUpdate(self, elapsed)
 
   -- Read up to 100 members at a time.
   local last_index = math.min(index + 100, num_guild_members)
+  if not initialized then last_index = num_guild_members end
   Debug("Processing from %d to %d members", index, last_index)
 
   for i = index, last_index do
