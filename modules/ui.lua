@@ -5,6 +5,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GS = LibStub("LibGuildStorage-1.2")
 local GP = LibStub("LibGearPoints-1.2")
 local DLG = LibStub("LibDialog-1.0")
+local GUI = LibStub("AceGUI-3.0")
 
 local EPGPWEB = "http://www.epgpweb.com"
 
@@ -218,11 +219,8 @@ local function CreateTableHeader(parent)
   tm:SetPoint("RIGHT", tr, "LEFT")
   tm:SetTexCoord(0.07815, 0.90625, 0, 0.75)
 
-  local hl = h:CreateTexture()
   h:SetHighlightTexture(
     "Interface\\PaperDollInfoFrame\\UI-Character-Tab-Highlight", "ADD")
-  hl:SetPoint("TOPLEFT", tl, "TOPLEFT", -2, 5)
-  hl:SetPoint("BOTTOMRIGHT", tr, "BOTTOMRIGHT", 2, -7)
 
   return h
 end
@@ -542,27 +540,25 @@ local function CreateEPGPLogFrame()
   EPGP:GetModule("log"):RegisterCallback("LogChanged", LogChanged)
 end
 
-local function EPGPSideFrameGPDropDown_Initialize(dropDown)
-  local parent = dropDown:GetParent()
+local function EPGPSideFrameGPDropDown_SetList(dropDown)
+  local list = {}
   for i=1,GP:GetNumRecentItems() do
-    local info = UIDropDownMenu_CreateInfo()
-    local itemLink = GP:GetRecentItemLink(i)
-    info.text = itemLink
-    info.arg1 = itemLink
-    info.func = function(self, arg1)
-                  UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                  local gp1, gp2 = GP:GetValue(itemLink)
-                  if not gp1 then
-                    parent.editBox:SetText("")
-                  elseif not gp2 then
-                    parent.editBox:SetText(tostring(gp1))
-                  else
-                    parent.editBox:SetText(L["%d or %d"]:format(gp1, gp2))
-                  end
-                  parent.editBox:SetFocus()
-                  parent.editBox:HighlightText()
-                end
-    UIDropDownMenu_AddButton(info)
+    tinsert(list, GP:GetRecentItemLink(i))
+  end
+  local empty = #list == 0
+  if empty then list[1] = EMPTY end
+  dropDown:SetList(list)
+  dropDown:SetItemDisabled(1, empty)
+  if empty then
+    dropDown:SetValue(nil)
+  else
+    local text = dropDown.text:GetText()
+    for i=1,#list do
+      if list[i] == text then
+        dropDown:SetValue(i)
+        break
+      end
+    end
   end
 end
 
@@ -572,29 +568,57 @@ local function AddGPControls(frame)
   reasonLabel:SetText(L["GP Reason"])
   reasonLabel:SetPoint("TOPLEFT")
 
-  local dropDown = CreateFrame("Frame", "$parentGPControlDropDown",
-                               frame, "UIDropDownMenuTemplate")
-  dropDown:EnableMouse(true)
-  UIDropDownMenu_Initialize(dropDown, EPGPSideFrameGPDropDown_Initialize)
-  UIDropDownMenu_SetWidth(dropDown, 150)
-  UIDropDownMenu_JustifyText(dropDown, "LEFT")
-  dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
-  getglobal(dropDown:GetName().."Button"):SetScript(
+  local dropDown = GUI:Create("Dropdown")
+  dropDown:SetWidth(168)
+  dropDown.frame:SetParent(frame)
+  dropDown:SetPoint("TOP", reasonLabel, "BOTTOM")
+  dropDown:SetPoint("LEFT", frame, "LEFT", 15, 0)
+  dropDown.text:SetJustifyH("LEFT")
+  dropDown:SetCallback(
+    "OnValueChanged",
+    function(self, event, ...)
+      local parent = self.frame:GetParent()
+      local itemLink = self.text:GetText()
+      if itemLink and itemlink ~= "" then
+        local gp1, gp2 = GP:GetValue(itemLink)
+        if not gp1 then
+          parent.editBox:SetText("")
+        elseif not gp2 then
+          parent.editBox:SetText(tostring(gp1))
+        else
+          parent.editBox:SetText(L["%d or %d"]:format(gp1, gp2))
+        end
+        parent.editBox:SetFocus()
+        parent.editBox:HighlightText()
+      end
+    end)
+  dropDown.button:HookScript(
+    "OnMouseDown",
+    function(self)
+      if not self.obj.open then EPGPSideFrameGPDropDown_SetList(self.obj) end
+    end)
+  dropDown.button:HookScript(
+    "OnClick",
+    function(self)
+      if self.obj.open then self.obj.pullout:SetWidth(285) end
+    end)
+  dropDown:SetCallback(
     "OnEnter",
     function(self)
-      local itemLink = UIDropDownMenu_GetText(self:GetParent())
+      local itemLink = self.text:GetText()
       if itemLink then
-        GameTooltip:SetOwner(self:GetParent(), "ANCHOR_RIGHT", 5)
+        local anchor = self.open and self.pullout.frame or self.frame:GetParent()
+        GameTooltip:SetOwner(anchor, "ANCHOR_RIGHT", 5)
         GameTooltip:SetHyperlink(itemLink)
       end
     end)
-  dropDown:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  dropDown:SetCallback("OnLeave", function() GameTooltip:Hide() end)
 
   local label =
     frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   label:SetText(L["Value"])
   label:SetPoint("LEFT", reasonLabel)
-  label:SetPoint("TOP", dropDown, "BOTTOM")
+  label:SetPoint("TOP", dropDown.frame, "BOTTOM", 0, -2)
 
   local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
   button:SetNormalFontObject("GameFontNormalSmall")
@@ -603,7 +627,7 @@ local function AddGPControls(frame)
   button:SetHeight(BUTTON_HEIGHT)
   button:SetText(L["Credit GP"])
   button:SetWidth(button:GetTextWidth() + BUTTON_TEXT_PADDING)
-  button:SetPoint("RIGHT", dropDown, "RIGHT", -15, 0)
+  button:SetPoint("RIGHT", dropDown.frame, "RIGHT", 0, 0)
   button:SetPoint("TOP", label, "BOTTOM")
 
   local editBox = CreateFrame("EditBox", "$parentGPControlEditBox",
@@ -618,8 +642,7 @@ local function AddGPControls(frame)
   button:SetScript(
     "OnUpdate",
     function(self)
-      if EPGP:CanIncGPBy(UIDropDownMenu_GetText(dropDown),
-                         editBox:GetNumber()) then
+      if EPGP:CanIncGPBy(dropDown.text:GetText(), editBox:GetNumber()) then
         self:Enable()
       else
         self:Disable()
@@ -628,7 +651,7 @@ local function AddGPControls(frame)
 
   frame:SetHeight(
     reasonLabel:GetHeight() +
-    dropDown:GetHeight() +
+    dropDown.frame:GetHeight() +
     label:GetHeight() +
     button:GetHeight())
 
@@ -638,55 +661,30 @@ local function AddGPControls(frame)
   frame.button = button
   frame.editBox = editBox
 
-  frame:SetScript(
-    "OnShow",
+  frame.OnShow =
     function(self)
       self.editBox:SetText("")
-      UIDropDownMenu_ClearAll(self.dropDown)
-    end)
+      self.dropDown:SetValue(nil)
+    end
 end
 
-local function EPGPSideFrameEPDropDown_Initialize(dropDown)
-  local parent = dropDown:GetParent()
+local function EPGPSideFrameEPDropDown_SetList(dropDown)
+  local list = {}
   local dungeons = {CalendarEventGetTextures(1)}
   for i=1,#dungeons,4 do
     if dungeons[i+2] == 4 then
-      local info = UIDropDownMenu_CreateInfo()
-      info.text = dungeons[i] .. " - " .. dungeons[i+3]
-      info.func = function(self)
-                    UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                    parent.otherLabel:SetAlpha(0.25)
-                    parent.otherEditBox:SetAlpha(0.25)
-                    parent.otherEditBox:EnableKeyboard(false)
-                    parent.otherEditBox:EnableMouse(false)
-                    parent.otherEditBox:ClearFocus()
-                    local reason = UIDropDownMenu_GetText(dropDown)
-                    local last_award = EPGP.db.profile.last_awards[reason]
-                    if last_award then
-                      parent.editBox:SetText(last_award)
-                    end
-                  end
-      UIDropDownMenu_AddButton(info)
+      tinsert(list, dungeons[i] .. " - " .. dungeons[i+3])
     end
   end
-
-  local info = UIDropDownMenu_CreateInfo()
-  info.text = L["Other"]
-  info.func = function(self)
-                UIDropDownMenu_SetSelectedID(dropDown, self:GetID())
-                parent.otherLabel:SetAlpha(1)
-                parent.otherEditBox:SetAlpha(1)
-                parent.otherEditBox:EnableKeyboard(true)
-                parent.otherEditBox:EnableMouse(true)
-                parent.otherEditBox:SetFocus()
-                local reason = parent.otherEditBox:GetText()
-                local last_award = EPGP.db.profile.last_awards[reason]
-                if last_award then
-                  parent.editBox:SetText(last_award)
-                end
-              end
-  info.checked = false
-  UIDropDownMenu_AddButton(info)
+  tinsert(list, OTHER)
+  dropDown:SetList(list)
+  local text = dropDown.text:GetText()
+  for i=1,#list do
+    if list[i] == text then
+      dropDown:SetValue(i)
+      break
+    end
+  end
 end
 
 local function AddEPControls(frame, withRecurring)
@@ -695,19 +693,49 @@ local function AddEPControls(frame, withRecurring)
   reasonLabel:SetText(L["EP Reason"])
   reasonLabel:SetPoint("TOPLEFT")
 
-  local dropDown = CreateFrame("Frame", "$parentEPControlDropDown",
-                               frame, "UIDropDownMenuTemplate")
-  dropDown:EnableMouse(true)
-  UIDropDownMenu_Initialize(dropDown, EPGPSideFrameEPDropDown_Initialize)
-  UIDropDownMenu_SetWidth(dropDown, 150)
-  UIDropDownMenu_JustifyText(dropDown, "LEFT")
-  dropDown:SetPoint("TOPLEFT", reasonLabel, "BOTTOMLEFT")
+  local dropDown = GUI:Create("Dropdown")
+  dropDown:SetWidth(168)
+  dropDown.frame:SetParent(frame)
+  dropDown:SetPoint("TOP", reasonLabel, "BOTTOM")
+  dropDown:SetPoint("LEFT", frame, "LEFT", 15, 0)
+  dropDown.text:SetJustifyH("LEFT")
+  dropDown:SetCallback(
+    "OnValueChanged",
+    function(self, event, ...)
+      local parent = self.frame:GetParent()
+      local reason = self.text:GetText()
+      local other = reason == OTHER
+      parent.otherLabel:SetAlpha(other and 1 or 0.25)
+      parent.otherEditBox:SetAlpha(other and 1 or 0.25)
+      parent.otherEditBox:EnableKeyboard(other)
+      parent.otherEditBox:EnableMouse(other)
+      if other then
+        parent.otherEditBox:SetFocus()
+        reason = parent.otherEditBox:GetText()
+      else
+        parent.otherEditBox:ClearFocus()
+      end
+      local last_award = EPGP.db.profile.last_awards[reason]
+      if last_award then
+          parent.editBox:SetText(last_award)
+      end
+    end)
+  dropDown.button:HookScript(
+    "OnMouseDown",
+    function(self)
+      if not self.obj.open then EPGPSideFrameEPDropDown_SetList(self.obj) end
+    end)
+  dropDown.button:HookScript(
+    "OnClick",
+    function(self)
+      if self.obj.open then self.obj.pullout:SetWidth(285) end
+    end)
 
   local otherLabel =
     frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-  otherLabel:SetText(L["Other"])
+  otherLabel:SetText(OTHER)
   otherLabel:SetPoint("LEFT", reasonLabel)
-  otherLabel:SetPoint("TOP", dropDown, "BOTTOM")
+  otherLabel:SetPoint("TOP", dropDown.frame, "BOTTOM")
 
   local otherEditBox = CreateFrame("EditBox", "$parentEPControlOtherEditBox",
                                    frame, "InputBoxTemplate")
@@ -752,8 +780,8 @@ local function AddEPControls(frame, withRecurring)
   editBox:SetPoint("TOP", label, "BOTTOM")
 
   local function EnabledStatus(self)
-    local reason = UIDropDownMenu_GetText(dropDown)
-    if reason == L["Other"] then
+    local reason = dropDown.text:GetText()
+    if reason == OTHER then
       reason = otherEditBox:GetText()
     end
     local amount = editBox:GetNumber()
@@ -856,7 +884,7 @@ local function AddEPControls(frame, withRecurring)
 
   frame:SetHeight(
     reasonLabel:GetHeight() +
-    dropDown:GetHeight() +
+    dropDown.frame:GetHeight() +
     otherLabel:GetHeight() +
     otherEditBox:GetHeight() +
     label:GetHeight() +
@@ -874,7 +902,7 @@ local function AddEPControls(frame, withRecurring)
   frame.OnShow =
     function(self)
       self.editBox:SetText("")
-      UIDropDownMenu_ClearAll(self.dropDown)
+      self.dropDown:SetValue(nil)
       self.otherLabel:SetAlpha(0.25)
       self.otherEditBox:SetAlpha(0.25)
       self.otherEditBox:EnableKeyboard(false)
@@ -925,29 +953,10 @@ local function CreateEPGPSideFrame(self)
   local gpFrame = CreateFrame("Frame", nil, f)
   gpFrame:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -30)
   gpFrame:SetPoint("TOPRIGHT", f, "TOPRIGHT", -15, -30)
---  AddGPControls(gpFrame)
---  gpFrame.button:SetScript(
---    "OnClick",
---    function(self)
---      EPGP:IncGPBy(f.name,
---                   UIDropDownMenu_GetText(gpFrame.dropDown),
---                   gpFrame.editBox:GetNumber())
---    end)
 
   local epFrame = CreateFrame("Frame", nil, f)
   epFrame:SetPoint("TOPLEFT", gpFrame, "BOTTOMLEFT", 0, -15)
   epFrame:SetPoint("TOPRIGHT", gpFrame, "BOTTOMRIGHT", 0, -15)
---  AddEPControls(epFrame)
---  epFrame.button:SetScript(
---    "OnClick",
---    function(self)
---      local reason = UIDropDownMenu_GetText(epFrame.dropDown)
---      if reason == L["Other"] then
---        reason = epFrame.otherEditBox:GetText()
---      end
---      local amount = epFrame.editBox:GetNumber()
---      EPGP:IncEPBy(f.name, reason, amount)
---    end)
 
   f:SetScript("OnShow", function(self)
     self.title:SetText(self.name)
@@ -957,7 +966,7 @@ local function CreateEPGPSideFrame(self)
         "OnClick",
         function(self)
           EPGP:IncGPBy(f.name,
-                       UIDropDownMenu_GetText(gpFrame.dropDown),
+                       gpFrame.dropDown.text:GetText(),
                        gpFrame.editBox:GetNumber())
         end)
     end
@@ -966,14 +975,15 @@ local function CreateEPGPSideFrame(self)
       epFrame.button:SetScript(
         "OnClick",
         function(self)
-          local reason = UIDropDownMenu_GetText(epFrame.dropDown)
-          if reason == L["Other"] then
+          local reason = epFrame.dropDown.text:GetText()
+          if reason == OTHER then
             reason = epFrame.otherEditBox:GetText()
           end
           local amount = epFrame.editBox:GetNumber()
           EPGP:IncEPBy(f.name, reason, amount)
         end)
     end
+    if gpFrame.OnShow then gpFrame:OnShow() end
     if epFrame.OnShow then epFrame:OnShow() end
   end)
 end
@@ -1009,8 +1019,8 @@ local function CreateEPGPSideFrame2()
       epFrame.button:SetScript(
         "OnClick",
         function(self)
-          local reason = UIDropDownMenu_GetText(epFrame.dropDown)
-          if reason == L["Other"] then
+          local reason = epFrame.dropDown.text:GetText()
+          if reason == OTHER then
             reason = epFrame.otherEditBox:GetText()
           end
           local amount = epFrame.editBox:GetNumber()
@@ -1020,8 +1030,8 @@ local function CreateEPGPSideFrame2()
         "OnClick",
         function(self)
           if not EPGP:RunningRecurringEP() then
-            local reason = UIDropDownMenu_GetText(epFrame.dropDown)
-            if reason == L["Other"] then
+            local reason = epFrame.dropDown.text:GetText()
+            if reason == OTHER then
               reason = epFrame.otherEditBox:GetText()
             end
             local amount = epFrame.editBox:GetNumber()
@@ -1226,7 +1236,6 @@ local function CreateEPGPFrameStandings()
     self:SetFormattedText("%s (%s)", mode,
                           "|cFFFFFFFF"..EPGP:GetNumMembersInAwardList().."|r")
   end
---  EPGP.RegisterCallback(modeText, "StandingsChanged", "TextUpdate") -- move into UpdateStandings
 
   -- Make the table frame
   local tabl = CreateFrame("Frame", nil, main)
