@@ -665,6 +665,7 @@ local function AddGPControls(frame)
     function(self)
       self.editBox:SetText("")
       self.dropDown:SetValue(nil)
+      self.dropDown.frame:Show()
     end
 end
 
@@ -735,7 +736,7 @@ local function AddEPControls(frame, withRecurring)
     frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
   otherLabel:SetText(OTHER)
   otherLabel:SetPoint("LEFT", reasonLabel)
-  otherLabel:SetPoint("TOP", dropDown.frame, "BOTTOM")
+  otherLabel:SetPoint("TOP", dropDown.frame, "BOTTOM", 0, -2)
 
   local otherEditBox = CreateFrame("EditBox", "$parentEPControlOtherEditBox",
                                    frame, "InputBoxTemplate")
@@ -903,6 +904,7 @@ local function AddEPControls(frame, withRecurring)
     function(self)
       self.editBox:SetText("")
       self.dropDown:SetValue(nil)
+      self.dropDown.frame:Show()
       self.otherLabel:SetAlpha(0.25)
       self.otherEditBox:SetAlpha(0.25)
       self.otherEditBox:EnableKeyboard(false)
