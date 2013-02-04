@@ -11,7 +11,9 @@ local Debug = LibStub("LibDebug-1.0")
 
 local AceTimer = LibStub("AceTimer-3.0")
 local AceHook = LibStub("AceHook-3.0")
+local AceComm = LibStub("AceComm-3.0")
 AceHook:Embed(lib)
+AceComm:Embed(lib)
 
 local deformat = LibStub("LibDeformat-3.0")
 local CallbackHandler = LibStub("CallbackHandler-1.0")
@@ -61,6 +63,28 @@ local function ParseLootMessage(msg)
   quantity = 1
   player, item = deformat(msg, LOOT_ITEM)
   return player, item, tonumber(quantity)
+end
+
+local function BonusMessageReceiver(prefix, message, distribution, sender)
+  if IsInRaid() and not UnitIsGroupLeader("player") then
+    return
+  end
+
+  local command, rewardType, rewardLink, numCoins = strsplit("^", message)
+
+  if rewardType == "item" then
+    SendChatMessage(format("Bonus roll for %s (%s left): got %s", sender, numCoins, rewardLink), "RAID")
+  elseif rewardType == "money" then
+    SendChatMessage(format("Bonus roll for %s (%s left): got gold", sender, numCoins), "RAID")
+  else
+    SendChatMessage(format("Bonus roll for %s (%s left): wtf is %s", sender, numCoins, rewardType), "RAID")
+  end
+end
+
+function HandleBonusLootResult(rewardType, rewardLink, rewardQuantity)
+  local _, numCoints = GetCurrencyInfo(BONUS_ROLL_REQUIRED_CURRENCY)
+  lib:SendCommMessage("EPGPBONUS", format("BONUS_LOOT_RESULT^%s^%s^%s", tostring(rewardType),
+					   tostring(rewardLink), tostring(numCoins)), "GUILD", nil, "ALERT")
 end
 
 local function HandleLootMessage(msg)
@@ -200,12 +224,16 @@ lib:Hook("GiveMasterLoot", GiveMasterLootHandler, true)
 
 frame:RegisterEvent("CHAT_MSG_LOOT")
 frame:RegisterEvent("LOOT_SLOT_CLEARED")
+frame:RegisterEvent("BONUS_ROLL_RESULT")
+lib:RegisterComm("EPGPBONUS", BonusMessageReceiver)
 frame:SetScript("OnEvent",
                 function(self, event, ...)
                   if event == "CHAT_MSG_LOOT" then
                     HandleLootMessage(...)
                   elseif event == "LOOT_SLOT_CLEARED" then
                     LOOT_SLOT_CLEARED(event, ...)
+                  elseif event == "BONUS_ROLL_RESULT" then
+                    HandleBonusLootResult(...)
                   end
                 end)
 frame:Show()
