@@ -6,15 +6,6 @@ local DLG = LibStub("LibDialog-1.0")
 
 local in_combat = false
 
-local function IsRLorML()
-  if UnitInRaid("player") then
-    local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
-    if loot_method == "master" and ml_party_id == 0 then return true end
-    if loot_method ~= "master" and IsInRaid() and UnitIsGroupLeader("player") then return true end
-  end
-  return false
-end
-
 local function ShowPopup(event_name, boss_name)
   while (in_combat or DLG:ActiveDialog("EPGP_BOSS_DEAD") or
          DLG:ActiveDialog("EPGP_BOSS_ATTEMPT")) do
@@ -34,7 +25,7 @@ local function BossAttempt(event_name, boss_name)
   -- Temporary fix since we cannot unregister DBM callbacks
   if not mod:IsEnabled() then return end
 
-  if CanEditOfficerNote() and IsRLorML() then
+  if CanEditOfficerNote() and EPGP:IsRLorML() then
     Coroutine:RunAsync(ShowPopup, event_name, boss_name)
   end
 end

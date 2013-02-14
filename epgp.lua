@@ -368,6 +368,15 @@ local function ParseGuildNote(callback, name, note)
   GS:SetOutsidersEnabled(EPGP.db.profile.outsiders == 1)
 end
 
+function EPGP:IsRLorML()
+  if UnitInRaid("player") then
+    local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
+    if loot_method == "master" and ml_party_id == 0 then return true end
+    if loot_method ~= "master" and IsInRaid() and UnitIsGroupLeader("player") then return true end
+  end
+  return false
+end
+
 function EPGP:ExportRoster()
   local base_gp = self.db.profile.base_gp
   local t = {}

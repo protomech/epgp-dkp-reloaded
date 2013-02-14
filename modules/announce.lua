@@ -110,6 +110,15 @@ function mod:GPRescale(event_name)
   mod:Announce(L["GP is rescaled for the new tier"])
 end
 
+function mod:LootEpics(event_name, loot)
+  for _, itemLink in ipairs(loot) do
+    local _, _, itemRarity = GetItemInfo(itemLink)
+    if itemRarity >= ITEM_QUALITY_EPIC and EPGP:IsRLorML() then
+      mod:Announce(itemLink)
+    end
+  end
+end
+
 mod.dbDefaults = {
   profile = {
     enabled = true,
@@ -168,6 +177,7 @@ mod.optionsArgs = {
       EPGPReset = L["EPGP reset"],
       GPReset = L["GP (not ep) reset"],
       GPRescale = L["GP rescale for new tier"],
+      LootEpics = L["Announce epic loot from corpses"],
     },
     width = "full",
     get = "GetEvent",

@@ -76,15 +76,32 @@ local function BonusMessageReceiver(prefix, message, distribution, sender)
     SendChatMessage(format("Bonus roll for %s (%s left): got %s", sender, numCoins, rewardLink), "RAID")
   elseif rewardType == "money" then
     SendChatMessage(format("Bonus roll for %s (%s left): got gold", sender, numCoins), "RAID")
-  else
-    SendChatMessage(format("Bonus roll for %s (%s left): wtf is %s", sender, numCoins, rewardType), "RAID")
   end
 end
 
-function HandleBonusLootResult(rewardType, rewardLink, rewardQuantity)
-  local _, numCoints = GetCurrencyInfo(BONUS_ROLL_REQUIRED_CURRENCY)
+local function HandleBonusLootResult(rewardType, rewardLink, rewardQuantity)
+  local _, numCoins = GetCurrencyInfo(BONUS_ROLL_REQUIRED_CURRENCY)
   lib:SendCommMessage("EPGPBONUS", format("BONUS_LOOT_RESULT^%s^%s^%s", tostring(rewardType),
 					   tostring(rewardLink), tostring(numCoins)), "GUILD", nil, "ALERT")
+end
+
+-- Just add items here; the itemLink has a unique id, so this will
+-- grow slightly over time but reload will clear it.
+local announcedLoot = {}
+
+local function HandleLootWindow()
+  local loot = {}
+  for i = 1, GetNumLootItems() do
+    local itemLink = GetLootSlotLink(i)
+    if itemLink ~= nil and announcedLoot[itemLink] == nil then
+      table.insert(loot, itemLink)
+      announcedLoot[itemLink] = true
+    end
+  end
+  if #loot > 0 then
+    Debug("loot count: %s", #loot)
+    EPGP.callbacks:Fire("LootEpics", loot)
+  end
 end
 
 local function HandleLootMessage(msg)
@@ -224,12 +241,15 @@ lib:Hook("GiveMasterLoot", GiveMasterLootHandler, true)
 
 frame:RegisterEvent("CHAT_MSG_LOOT")
 frame:RegisterEvent("LOOT_SLOT_CLEARED")
+frame:RegisterEvent("LOOT_OPENED")
 frame:RegisterEvent("BONUS_ROLL_RESULT")
 lib:RegisterComm("EPGPBONUS", BonusMessageReceiver)
 frame:SetScript("OnEvent",
                 function(self, event, ...)
                   if event == "CHAT_MSG_LOOT" then
                     HandleLootMessage(...)
+                  elseif event == "LOOT_OPENED" then
+                    HandleLootWindow(...)
                   elseif event == "LOOT_SLOT_CLEARED" then
                     LOOT_SLOT_CLEARED(event, ...)
                   elseif event == "BONUS_ROLL_RESULT" then

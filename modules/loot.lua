@@ -28,15 +28,6 @@ local ignored_items = {
 
 local in_combat = false
 
-local function IsRLorML()
-  if UnitInRaid("player") then
-    local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
-    if loot_method == "master" and ml_party_id == 0 then return true end
-    if loot_method ~= "master" and IsInRaid() and UnitIsGroupLeader("player") then return true end
-  end
-  return false
-end
-
 local function ShowPopup(player, item, quantity)
   while in_combat or DLG:ActiveDialog("EPGP_CONFIRM_GP_CREDIT") do
     Coroutine:Sleep(0.1)
@@ -49,7 +40,7 @@ local function ShowPopup(player, item, quantity)
 end
 
 local function LootReceived(event_name, player, itemLink, quantity)
-  if IsRLorML() and CanEditOfficerNote() then
+  if EPGP:IsRLorML() and CanEditOfficerNote() then
     local itemID = tonumber(itemLink:match("item:(%d+)") or 0)
     if not itemID then return end
 

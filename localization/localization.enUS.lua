@@ -27,6 +27,7 @@ L["A member is credited GP"] = true
 L["A new tier is here!  You should probably reset or rescale GP (Interface -> Options -> AddOns -> EPGP)!"] = true
 L["Alts"] = true
 L["An item was disenchanted or deposited into the guild bank"] = true
+L["Announce epic loot from corpses"] = true
 L["Announce medium"] = true
 L["Announce when:"] = true
 L["Announce"] = true
