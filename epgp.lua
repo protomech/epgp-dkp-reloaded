@@ -803,6 +803,7 @@ function EPGP:OnInitialize()
       extras_p = 100,
       min_ep = 0,
       base_gp = 1,
+      bonus_loot_log = {},
     }
   }
 
@@ -898,6 +899,32 @@ function EPGP:GUILD_ROSTER_UPDATE()
         end
       end
     end
+  end
+end
+
+function EPGP:LogBonusLootRoll(player, coinsLeft, reward)
+  local weekday, month, day, year = CalendarGetDate()
+  local hour, minute = GetGameTime()
+  local timestamp = string.format("%04d-%02d-%02d %02d:%02d:00", year, month, day, hour, minute)
+  local entry = {
+    timestamp = timestamp,
+    player = player,
+    coinsLeft = coinsLeft,
+    reward = reward
+  }
+
+  table.insert(self.db.profile.bonus_loot_log, entry)
+end
+
+function EPGP:PrintCoinLog(num)
+  local start = #self.db.profile.bonus_loot_log - num
+  if start < 1 then
+    start = 1
+  end
+  DEFAULT_CHAT_FRAME:AddMessage("Recent coin rewards:")
+  for i = start, #self.db.profile.bonus_loot_log do
+    local e = self.db.profile.bonus_loot_log[i]
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("  %s: %s got %s", e.timestamp, e.player, e.reward))
   end
 end
 

@@ -2,6 +2,7 @@ local L = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 local GP = LibStub("LibGearPoints-1.2")
 local Debug = LibStub("LibDebug-1.0")
 local DLG = LibStub("LibDialog-1.0")
+local LLN = LibStub("LibLootNotify-1.0")
 
 function EPGP:SetupOptions()
   local options = {
@@ -143,6 +144,18 @@ function EPGP:ProcessCommand(str)
     if EPGP:CanDecayEPGP() then
       DLG:Spawn("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
     end
+  elseif command == "coins" then
+    local num = self:GetArgs(str, 1, nextpos)
+    if num then
+      num = tonumber(num)
+    else
+      num = 10
+    end
+
+    EPGP:PrintCoinLog(num)
+  elseif command == "fakecoin" then
+    local item = self:GetArgs(str, 1, nextpos)
+    EPGP:FakeCoinEvent(item)
   elseif command == "help" then
     local help = {
       self.version,
@@ -157,6 +170,11 @@ function EPGP:ProcessCommand(str)
   else
     EPGP:ToggleUI()
   end
+end
+
+function EPGP:FakeCoinEvent(item)
+  LLN:BonusMessageReceiver(nil, string.format("BONUS_LOOT_RESULT^%s^%s^%s", "item", item, 32),
+			   nil, UnitName("player"))
 end
 
 function EPGP:ToggleUI()

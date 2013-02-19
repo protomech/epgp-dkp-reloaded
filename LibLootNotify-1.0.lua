@@ -65,7 +65,7 @@ local function ParseLootMessage(msg)
   return player, item, tonumber(quantity)
 end
 
-local function BonusMessageReceiver(prefix, message, distribution, sender)
+function lib:BonusMessageReceiver(prefix, message, distribution, sender)
   if IsInRaid() and not UnitIsGroupLeader("player") then
     return
   end
@@ -74,8 +74,10 @@ local function BonusMessageReceiver(prefix, message, distribution, sender)
 
   if rewardType == "item" then
     SendChatMessage(format("Bonus roll for %s (%s left): got %s", sender, numCoins, rewardLink), "RAID")
+    EPGP:LogBonusLootRoll(sender, numCoins, rewardLink)
   elseif rewardType == "money" then
     SendChatMessage(format("Bonus roll for %s (%s left): got gold", sender, numCoins), "RAID")
+    EPGP:LogBonusLootRoll(sender, numCoins, nil)
   end
 end
 
@@ -243,7 +245,7 @@ frame:RegisterEvent("CHAT_MSG_LOOT")
 frame:RegisterEvent("LOOT_SLOT_CLEARED")
 frame:RegisterEvent("LOOT_OPENED")
 frame:RegisterEvent("BONUS_ROLL_RESULT")
-lib:RegisterComm("EPGPBONUS", BonusMessageReceiver)
+lib:RegisterComm("EPGPBONUS", lib.BonusMessageReceiver)
 frame:SetScript("OnEvent",
                 function(self, event, ...)
                   if event == "CHAT_MSG_LOOT" then
