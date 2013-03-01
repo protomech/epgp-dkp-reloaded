@@ -916,15 +916,20 @@ function EPGP:LogBonusLootRoll(player, coinsLeft, reward)
   table.insert(self.db.profile.bonus_loot_log, entry)
 end
 
-function EPGP:PrintCoinLog(num)
-  local start = #self.db.profile.bonus_loot_log - num
-  if start < 1 then
-    start = 1
-  end
+function EPGP:PrintCoinLog(num, show_gold)
   DEFAULT_CHAT_FRAME:AddMessage("Recent coin rewards:")
-  for i = start, #self.db.profile.bonus_loot_log do
+  local to_show = {}
+  for i = #self.db.profile.bonus_loot_log, 1, -1 do
     local e = self.db.profile.bonus_loot_log[i]
-    DEFAULT_CHAT_FRAME:AddMessage(string.format("  %s: %s got %s", e.timestamp, e.player, e.reward))
+    if show_gold or e.reward then
+      table.insert(to_show, 1, e)
+      if #to_show == num then
+	break
+      end
+    end
+  end
+  for _, e in pairs(to_show) do
+    DEFAULT_CHAT_FRAME:AddMessage(string.format("  %s: %s got %s", e.timestamp, e.player, e.reward or "gold"))
   end
 end
 

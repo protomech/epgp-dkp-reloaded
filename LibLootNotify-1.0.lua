@@ -65,7 +65,7 @@ local function ParseLootMessage(msg)
   return player, item, tonumber(quantity)
 end
 
-function lib:BonusMessageReceiver(prefix, message, distribution, sender)
+function lib.BonusMessageReceiver(prefix, message, distribution, sender)
   if IsInRaid() and not UnitIsGroupLeader("player") then
     return
   end

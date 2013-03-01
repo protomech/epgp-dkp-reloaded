@@ -144,15 +144,15 @@ function EPGP:ProcessCommand(str)
     if EPGP:CanDecayEPGP() then
       DLG:Spawn("EPGP_DECAY_EPGP", EPGP:GetDecayPercent())
     end
-  elseif command == "coins" then
-    local num = self:GetArgs(str, 1, nextpos)
+  elseif command == "coins" or command == "coin" then
+    local num, show_gold = self:GetArgs(str, 2, nextpos)
     if num then
       num = tonumber(num)
     else
       num = 10
     end
 
-    EPGP:PrintCoinLog(num)
+    EPGP:PrintCoinLog(num, show_gold)
   elseif command == "fakecoin" then
     local item = self:GetArgs(str, 1, nextpos)
     EPGP:FakeCoinEvent(item)
@@ -173,7 +173,7 @@ function EPGP:ProcessCommand(str)
 end
 
 function EPGP:FakeCoinEvent(item)
-  LLN:BonusMessageReceiver(nil, string.format("BONUS_LOOT_RESULT^%s^%s^%s", "item", item, 32),
+  LLN.BonusMessageReceiver(nil, string.format("BONUS_LOOT_RESULT^%s^%s^%s", "item", item, 32),
 			   nil, UnitName("player"))
 end
 
