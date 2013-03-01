@@ -32,7 +32,7 @@ local EQUIPSLOT_MULTIPLIER_1 = {
   INVTYPE_WEAPONOFFHAND = 0.5,
   INVTYPE_HOLDABLE = 0.5,
   INVTYPE_RANGED = 2.0,
-  INVTYPE_RANGEDRIGHT = 1.5,
+  INVTYPE_RANGEDRIGHT = 2.0,
   INVTYPE_THROWN = 0.5,
   INVTYPE_RELIC = 0.5,
   -- Hack for Tier 9 25M heroic tokens.
@@ -45,6 +45,7 @@ local EQUIPSLOT_MULTIPLIER_2 = {
   INVTYPE_WEAPON = 0.5,
   INVTYPE_2HWEAPON = 0.5,
   INVTYPE_SHIELD = 0.5,
+  INVTYPE_RANGEDRIGHT = 1.5
 }
 
 --Used to display GP values directly on tier tokens
@@ -459,8 +460,10 @@ function lib:GetValue(item)
     standard_ilvl = 378
   elseif MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()] < 90 then
     standard_ilvl = 397
-  else
+  elseif (select(4, GetBuildInfo()) < 50200) then
     standard_ilvl = 496
+  else
+    standard_ilvl = 522
   end
   local multiplier = 1000 * 2 ^ (-standard_ilvl / 26)
   local gp_base = multiplier * 2 ^ (level/26)
