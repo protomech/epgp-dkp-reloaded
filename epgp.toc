@@ -1,8 +1,8 @@
-## Interface: 50100
+## Interface: 50200
 ## Title: EPGP
 ## Notes: Effort Points/Gear Points Loot System
 ## Author: Alkis Evlogimenos
-## Version: 5.8.14
+## Version: 5.9.0
 ## SavedVariables: EPGP_DB
 ## X-Category: Guild
 ## X-Website: http://code.google.com/p/epgp/
