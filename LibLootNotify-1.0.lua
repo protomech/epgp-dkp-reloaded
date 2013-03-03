@@ -84,15 +84,23 @@ end
 local function HandleBonusLootResult(rewardType, rewardLink, rewardQuantity)
   local _, numCoins = GetCurrencyInfo(BONUS_ROLL_REQUIRED_CURRENCY)
   lib:SendCommMessage("EPGPBONUS", format("BONUS_LOOT_RESULT^%s^%s^%s", tostring(rewardType),
-					   tostring(rewardLink), tostring(numCoins - 1)), "GUILD", nil, "ALERT")
+					  tostring(rewardLink), tostring(numCoins - 1)), "GUILD", nil, "ALERT")
 end
 
 -- Just add items here; the itemLink has a unique id, so this will
 -- grow slightly over time but reload will clear it.
 local announcedLoot = {}
 
+local function CorpseLootReceiver(prefix, message, distribution, sender)
+  announcedLoot[message] = true
+end
+
 local function HandleLootWindow()
   local loot = {}
+  -- Don't send events if we're not in a raid or are in LFR
+  local _, _, diffculty = GetInstanceInfo()
+  if not UnitInRaid("player") or diffculty == 7 then return end
+
   for i = 1, GetNumLootItems() do
     local itemLink = GetLootSlotLink(i)
     if itemLink ~= nil and announcedLoot[itemLink] == nil then
@@ -246,6 +254,7 @@ frame:RegisterEvent("LOOT_SLOT_CLEARED")
 frame:RegisterEvent("LOOT_OPENED")
 frame:RegisterEvent("BONUS_ROLL_RESULT")
 lib:RegisterComm("EPGPBONUS", lib.BonusMessageReceiver)
+lib:RegisterComm("EPGPCORPSELOOT", CorpseLootReceiver)
 frame:SetScript("OnEvent",
                 function(self, event, ...)
                   if event == "CHAT_MSG_LOOT" then

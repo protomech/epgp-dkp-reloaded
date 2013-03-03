@@ -113,8 +113,9 @@ end
 function mod:LootEpics(event_name, loot)
   for _, itemLink in ipairs(loot) do
     local _, _, itemRarity = GetItemInfo(itemLink)
-    if itemRarity >= ITEM_QUALITY_EPIC and EPGP:IsRLorML() then
+    if itemRarity >= ITEM_QUALITY_EPIC then
       mod:Announce(itemLink)
+      lib:SendCommMessage("EPGPCORPSELOOT", tostring(itemLink))
     end
   end
 end
