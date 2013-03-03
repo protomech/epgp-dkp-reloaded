@@ -671,10 +671,12 @@ end
 
 local function EPGPSideFrameEPDropDown_SetList(dropDown)
   local list = {}
+  local seen = {}
   local dungeons = {CalendarEventGetTextures(1)}
   for i=1,#dungeons,4 do
-    if dungeons[i+2] == 4 then
-      tinsert(list, dungeons[i] .. " - " .. dungeons[i+3])
+    if dungeons[i+2] == 4 and not seen[dungeons[i]] and dungeons[i+3] ~= "Looking For Raid" then
+      seen[dungeons[i]] = true
+      tinsert(list, dungeons[i])
     end
   end
   tinsert(list, OTHER)
