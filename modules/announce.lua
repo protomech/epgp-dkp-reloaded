@@ -122,6 +122,16 @@ function mod:LootEpics(event_name, loot)
   end
 end
 
+function mod:CoinLootGood(event_name, sender, rewardLink, numCoins)
+  mod:Announce(format(L["Bonus roll for %s (%s left): got %s"], sender, numCoins, rewardLink))
+  EPGP:LogBonusLootRoll(sender, numCoins, rewardLink)
+end
+
+function mod:CoinLootBad(event_name, sender, numCoins)
+  mod:Announce(format(L["Bonus roll for %s (%s left): got gold"], sender, numCoins))
+  EPGP:LogBonusLootRoll(sender, numCoins, nil)
+end
+
 mod.dbDefaults = {
   profile = {
     enabled = true,
@@ -181,6 +191,8 @@ mod.optionsArgs = {
       GPReset = L["GP (not ep) reset"],
       GPRescale = L["GP rescale for new tier"],
       LootEpics = L["Announce epic loot from corpses"],
+      CoinLootGood = L["Announce when someone in your raid wins something good with bonus roll"],
+      CoinLootBad = L["Announce when someone in your raid derps a bonus roll"],
     },
     width = "full",
     get = "GetEvent",
