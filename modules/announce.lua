@@ -123,11 +123,17 @@ function mod:LootEpics(event_name, loot)
 end
 
 function mod:CoinLootGood(event_name, sender, rewardLink, numCoins)
+  local _, _, diffculty = GetInstanceInfo()
+  if not UnitInRaid("player") or diffculty == 7 then return end
+
   mod:Announce(format(L["Bonus roll for %s (%s left): got %s"], sender, numCoins, rewardLink))
   EPGP:LogBonusLootRoll(sender, numCoins, rewardLink)
 end
 
 function mod:CoinLootBad(event_name, sender, numCoins)
+  local _, _, diffculty = GetInstanceInfo()
+  if not UnitInRaid("player") or diffculty == 7 then return end
+
   mod:Announce(format(L["Bonus roll for %s (%s left): got gold"], sender, numCoins))
   EPGP:LogBonusLootRoll(sender, numCoins, nil)
 end
