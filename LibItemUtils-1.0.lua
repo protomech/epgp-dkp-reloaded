@@ -15,9 +15,6 @@ local Debug = LibStub("LibDebug-1.0")
 -- Inventory types are localized on each client. For this we need
 -- LibBabble-Inventory to unlocalize the strings.
 local LBIR = LibStub("LibBabble-Inventory-3.0"):GetReverseLookupTable()
--- Class restrictions are localized on each client. For this we need
--- LibBabble-Class to unlocalize the strings.
-local LBCR = LibStub("LibBabble-Class-3.0"):GetReverseLookupTable()
 local deformat = LibStub("LibDeformat-3.0")
 
 -- Make a frame for our repeating calls to GetItemInfo.
@@ -284,7 +281,8 @@ function lib:ClassCanUse(class, item)
         if classList then
           tooltip:Hide()
           for _, restrictedClass in pairs({strsplit(',', classList)}) do
-            restrictedClass = strupper(LBCR[strtrim(restrictedClass)])
+            restrictedClass = strtrim(strupper(restrictedClass))
+            restrictedClass = strupper(LOCALIZED_CLASS_NAMES_FEMALE[restrictedClass] or LOCALIZED_CLASS_NAMES_MALE[restrictedClass])
             if class == restrictedClass then
               return true
             end
