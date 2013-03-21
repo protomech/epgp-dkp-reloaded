@@ -117,7 +117,7 @@ function mod:LootEpics(event_name, loot)
     local cost = GP:GetValue(loot)
     if itemRarity >= ITEM_QUALITY_EPIC and cost ~= nil then
       mod:Announce(itemLink)
-      AC:SendCommMessage("EPGPCORPSELOOT", tostring(itemLink), "GUILD", nil, "ALERT")
+      AC:SendCommMessage("EPGPCORPSELOOT", tostring(itemLink), "RAID", nil, "ALERT")
     end
   end
 end
