@@ -72,11 +72,12 @@ function lib.BonusMessageReceiver(prefix, message, distribution, sender)
 
   local command, rewardType, rewardLink, numCoins = strsplit("^", message)
   if rewardType == "item" then
+    EPGP:LogBonusLootRoll(sender, numCoins, rewardLink)
     EPGP.callbacks:Fire("CoinLootGood", sender, rewardLink, numCoins)
   elseif rewardType == "money" then
+    EPGP:LogBonusLootRoll(sender, numCoins, nil)
     EPGP.callbacks:Fire("CoinLootBad", sender, numCoins)
   end
-
 end
 
 local function HandleBonusLootResult(rewardType, rewardLink, rewardQuantity)
