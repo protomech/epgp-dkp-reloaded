@@ -66,7 +66,7 @@ local function ParseLootMessage(msg)
 end
 
 function lib.BonusMessageReceiver(prefix, message, distribution, sender)
-  local announce = (IsInRaid() and not UnitIsGroupLeader("player"))
+  local announce = (IsInRaid() and UnitIsGroupLeader("player"))
 
   local command, rewardType, rewardLink, numCoins = strsplit("^", message)
   if rewardType == "item" then
