@@ -66,17 +66,19 @@ local function ParseLootMessage(msg)
 end
 
 function lib.BonusMessageReceiver(prefix, message, distribution, sender)
-  if IsInRaid() and not UnitIsGroupLeader("player") then
-    return
-  end
+  local announce = (IsInRaid() and not UnitIsGroupLeader("player"))
 
   local command, rewardType, rewardLink, numCoins = strsplit("^", message)
   if rewardType == "item" then
     EPGP:LogBonusLootRoll(sender, numCoins, rewardLink)
-    EPGP.callbacks:Fire("CoinLootGood", sender, rewardLink, numCoins)
+    if announce then
+      EPGP.callbacks:Fire("CoinLootGood", sender, rewardLink, numCoins)
+    end
   elseif rewardType == "money" then
     EPGP:LogBonusLootRoll(sender, numCoins, nil)
-    EPGP.callbacks:Fire("CoinLootBad", sender, numCoins)
+    if announce then
+      EPGP.callbacks:Fire("CoinLootBad", sender, numCoins)
+    end
   end
 end
 
