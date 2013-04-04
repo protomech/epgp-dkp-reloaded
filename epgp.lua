@@ -573,7 +573,7 @@ function EPGP:RescaleGP()
     local ep, gp, main = EPGP:GetEPGP(m)
     actual_gp = gp - EPGP:GetBaseGP()
     if main == nil and actual_gp > 0 then
-      local delta = -(actual_gp - actual_gp / 2 ^ (19/26))
+      local delta = -(actual_gp - actual_gp / 2 ^ (26/26))
       EPGP:IncGPBy(m, "GP Rescale", delta, true, false)
       if delta > 0 then
 	callbacks:Fire("GPAward", name, "GP Decay", delta, true)
