@@ -259,7 +259,6 @@ function mod:Import(jsonStr)
     extras_p = "number",
     min_ep = "number",
     base_gp = "number",
-    outsiders = "number",
   }
   for k,t in pairs(types) do
     if type(d[k]) ~= t then
@@ -289,7 +288,7 @@ function mod:Import(jsonStr)
 
   EPGP:Print(L["Importing data snapshot taken at: %s"]:format(
                date("%Y-%m-%d %H:%M", d.timestamp)))
-  EPGP:SetGlobalConfiguration(d.decay_p, d.extras_p, d.base_gp, d.min_ep, d.outsiders)
+  EPGP:SetGlobalConfiguration(d.decay_p, d.extras_p, d.base_gp, d.min_ep, d.outsiders or 0)
   EPGP:ImportRoster(d.roster, d.base_gp)
 
   -- Trim the log if necessary.
