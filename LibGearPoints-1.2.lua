@@ -474,6 +474,11 @@ function lib:GetValue(item)
 
   level = ItemUtils:GetItemIlevel(item, level)
 
+  -- Check if item is relevant
+  if level < 463 then
+    return nil, nil, level, rarity, equipLoc
+  end
+
   -- Check to see if there is custom data for this item ID
   if CUSTOM_ITEM_DATA[itemID] then
     rarity, level, equipLoc = unpack(CUSTOM_ITEM_DATA[itemID])
