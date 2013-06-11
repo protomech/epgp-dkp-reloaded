@@ -77,15 +77,9 @@ local function dbmCallback(event, mod)
   BossAttempt(event, mod.combatInfo.name)
 end
 
-local function chatMsgAddon(event, prefix, message, type, sender)
-  if prefix ~= "BigWigs" then return end
-
-  local sync, rest = select(3, message:find("(%S+)%s*(.*)$"))
-
-  if sync ~= "Death" then return end
-
-  Debug("chatMsgAddon: %s %s %s", prefix, sync, rest)
-  BossAttempt("kill", rest)
+local function bwCallback(event, module)
+  Debug("bwCallback: %s %s", event, module.displayName)
+  BossAttempt(event == "BigWigs_OnBossWin" and "kill" or "wipe", module.displayName)
 end
 
 local function dxeCallback(event, encounter)
@@ -100,9 +94,10 @@ function mod:OnEnable()
     EPGP:Print(L["Using %s for boss kill tracking"]:format("DBM"))
     DBM:RegisterCallback("kill", dbmCallback)
     DBM:RegisterCallback("wipe", dbmCallback)
-  elseif BigWigs then
+  elseif BigWigsLoader then
     EPGP:Print(L["Using %s for boss kill tracking"]:format("BigWigs"))
-    self:RegisterEvent("CHAT_MSG_ADDON", chatMsgAddon)
+    BigWigsLoader.RegisterMessage(self, "BigWigs_OnBossWin", bwCallback)
+    BigWigsLoader.RegisterMessage(self, "BigWigs_OnBossWipe", bwCallback)
   elseif DXE then
     EPGP:Print(L["Using %s for boss kill tracking"]:format("DXE"))
     DXE.RegisterCallback(mod, "TriggerDefeat", dxeCallback)
@@ -110,7 +105,10 @@ function mod:OnEnable()
 end
 
 function mod:OnDisable()
-  if DXE then
+  if BigWigsLoader then
+    BigWigsLoader.UnregisterMessage(self, "BigWigs_OnBossWin")
+    BigWigsLoader.UnregisterMessage(self, "BigWigs_OnBossWipe")
+  elseif DXE then
     DXE.UnregisterCallback(mod, "TriggerDefeat")
   end
 end
