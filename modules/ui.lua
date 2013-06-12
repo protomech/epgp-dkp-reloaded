@@ -331,7 +331,7 @@ local function CreateEPGPLogFrame()
   f:SetMaxResize(1200, 435)
 
   f:Hide()
-  f:SetWidth(435)
+  f:SetWidth(600)
   f:SetHeight(435)
   f:SetPoint("TOPLEFT", EPGPFrame, "TOPRIGHT", -37, -6)
 
