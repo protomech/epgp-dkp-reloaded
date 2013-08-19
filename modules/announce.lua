@@ -114,10 +114,10 @@ end
 
 function mod:LootEpics(event_name, loot)
   for _, itemLink in ipairs(loot) do
-    local _, _, itemRarity = GetItemInfo(itemLink)
+    local _, _, itemRarity, ilvl = GetItemInfo(itemLink)
     local cost = GP:GetValue(itemLink)
     if itemRarity >= ITEM_QUALITY_EPIC and cost ~= nil then
-      mod:AnnounceTo("RAID", itemLink)
+      mod:AnnounceTo("RAID", "%s (ilvl %d)", itemLink, ilvl or 1)
       AC:SendCommMessage("EPGPCORPSELOOT", tostring(itemLink), "RAID", nil, "ALERT")
     end
   end
@@ -127,7 +127,8 @@ function mod:CoinLootGood(event_name, sender, rewardLink, numCoins)
   local _, _, diffculty = GetInstanceInfo()
   if not UnitInRaid("player") or diffculty == 7 then return end
 
-  mod:Announce(format(L["Bonus roll for %s (%s left): got %s"], sender, numCoins, rewardLink))
+  local _, _, _, ilvl, _, _, _, _, _ = GetItemInfo(rewardLink)
+  mod:Announce(format(L["Bonus roll for %s (%s left): got %s (ilvl %d)"], sender, numCoins, rewardLink, ilvl or 1))
 end
 
 function mod:CoinLootBad(event_name, sender, numCoins)

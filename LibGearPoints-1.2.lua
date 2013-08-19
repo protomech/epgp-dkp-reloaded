@@ -509,8 +509,10 @@ function lib:GetValue(item)
     standard_ilvl = 397
   elseif (select(4, GetBuildInfo()) < 50200) then
     standard_ilvl = 496
-  else
+  elseif (select(4, GetBuildInfo()) < 50400) then
     standard_ilvl = 522
+  else
+    standard_ilvl = 553
   end
   local multiplier = 1000 * 2 ^ (-standard_ilvl / 26)
   local gp_base = multiplier * 2 ^ (level/26)
