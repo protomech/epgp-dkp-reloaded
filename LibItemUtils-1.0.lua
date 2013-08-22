@@ -303,6 +303,8 @@ function lib:ClassCanUse(class, item)
   return true
 end
 
+-- Not currently used; pending changes to upgrade system, this may not
+-- be necessary in the future.  We'll see in 6.0.
 function lib:GetItemIlevel(item, fallback)
   tooltip:SetOwner(UIParent, "ANCHOR_NONE")
   tooltip:SetHyperlink(item)

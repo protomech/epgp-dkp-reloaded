@@ -472,7 +472,8 @@ function lib:GetValue(item)
   if not itemID then return end
   itemID = tonumber(itemID)
 
-  level = ItemUtils:GetItemIlevel(item, level)
+  -- For now, just use the actual ilvl, not the upgraded cost
+  -- level = ItemUtils:GetItemIlevel(item, level)
 
   -- Check if item is relevant
   if level < 463 then

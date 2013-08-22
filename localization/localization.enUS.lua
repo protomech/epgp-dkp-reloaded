@@ -1,7 +1,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("EPGP", "enUS", true)
 if not L then return end
 
-L["Bonus roll for %s (%s left): got %s"] = true
+L["Bonus roll for %s (%s left): got %s (ilvl %d)"] = true
 L["Bonus roll for %s (%s left): got gold"] = true
 L["Announce when someone in your raid wins something good with bonus roll"] = true
 L["Announce when someone in your raid derps a bonus roll"] = true
