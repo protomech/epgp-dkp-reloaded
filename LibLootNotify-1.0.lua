@@ -83,7 +83,7 @@ function lib.BonusMessageReceiver(prefix, message, distribution, sender)
 end
 
 local function HandleBonusLootResult(rewardType, rewardLink, rewardQuantity)
-  local _, numCoins = GetCurrencyInfo(752) -- mogu rune of fate, see http://www.wowhead.com/currencies
+  local _, numCoins = GetCurrencyInfo(776) -- warforged seal, see http://www.wowhead.com/currencies
   lib:SendCommMessage("EPGPBONUS", format("BONUS_LOOT_RESULT^%s^%s^%s", tostring(rewardType),
 					  tostring(rewardLink), tostring(numCoins - 1)), "RAID", nil, "ALERT")
 end
