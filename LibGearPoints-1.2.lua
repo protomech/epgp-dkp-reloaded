@@ -409,6 +409,58 @@ local CUSTOM_ITEM_DATA = {
   [96568] = { 4, 535, "INVTYPE_CHEST" },
   [96566] = { 4, 535, "INVTYPE_CHEST" },
 
+  -- T16 Normal
+  [99685] = { 4, 553, "INVTYPE_SHOULDER" },
+  [99695] = { 4, 553, "INVTYPE_SHOULDER" },
+  [99690] = { 4, 553, "INVTYPE_SHOULDER" },
+
+  [99684] = { 4, 553, "INVTYPE_LEGS" },
+  [99693] = { 4, 553, "INVTYPE_LEGS" },
+  [99688] = { 4, 553, "INVTYPE_LEGS" },
+
+  [99683] = { 4, 553, "INVTYPE_HEAD" },
+  [99694] = { 4, 553, "INVTYPE_HEAD" },
+  [99689] = { 4, 553, "INVTYPE_HEAD" },
+
+  [99682] = { 4, 553, "INVTYPE_HAND" },
+  [99692] = { 4, 553, "INVTYPE_HAND" },
+  [99687] = { 4, 553, "INVTYPE_HAND" },
+
+  [99696] = { 4, 553, "INVTYPE_CHEST" },
+  [99691] = { 4, 553, "INVTYPE_CHEST" },
+  [99686] = { 4, 553, "INVTYPE_CHEST" },
+
+  -- T16 Normal Essences
+  [105857] = { 4, 553, "INVTYPE_HEAD" },
+  [105859] = { 4, 553, "INVTYPE_HEAD" },
+  [105858] = { 4, 553, "INVTYPE_HEAD" },
+
+  -- T16 Heroic
+  [99717] = { 4, 566, "INVTYPE_SHOULDER" },
+  [99719] = { 4, 566, "INVTYPE_SHOULDER" },
+  [99718] = { 4, 566, "INVTYPE_SHOULDER" },
+
+  [99726] = { 4, 566, "INVTYPE_LEGS" },
+  [99713] = { 4, 566, "INVTYPE_LEGS" },
+  [99712] = { 4, 566, "INVTYPE_LEGS" },
+
+  [99723] = { 4, 566, "INVTYPE_HEAD" },
+  [99725] = { 4, 566, "INVTYPE_HEAD" },
+  [99724] = { 4, 566, "INVTYPE_HEAD" },
+
+  [99720] = { 4, 566, "INVTYPE_HAND" },
+  [99722] = { 4, 566, "INVTYPE_HAND" },
+  [99721] = { 4, 566, "INVTYPE_HAND" },
+
+  [99714] = { 4, 566, "INVTYPE_CHEST" },
+  [99716] = { 4, 566, "INVTYPE_CHEST" },
+  [99715] = { 4, 566, "INVTYPE_CHEST" },
+
+  -- T16 Heroic Essences
+  [105868] = { 4, 566, "INVTYPE_HEAD" },
+  [105867] = { 4, 566, "INVTYPE_HEAD" },
+  [105866] = { 4, 566, "INVTYPE_HEAD" },
+
 }
 
 -- The default quality threshold:
