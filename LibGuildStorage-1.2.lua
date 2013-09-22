@@ -271,7 +271,7 @@ local function ForceShowOffline()
 end
 
 local function Frame_OnUpdate(self, elapsed)
-  debugprofilestart()
+  local startTime = debugprofilestop()
   if ForceShowOffline() then
     return
   end
@@ -421,7 +421,7 @@ local function Frame_OnUpdate(self, elapsed)
       end
     end
   end
-  Debug(tostring(debugprofilestop()).."ms for LibGuildStorage:OnUpdate")
+  Debug(tostring(debugprofilestop() - startTime).."ms for LibGuildStorage:OnUpdate")
 end
 
 -- Disable updates when the guild roster is open.
