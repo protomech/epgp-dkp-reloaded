@@ -183,6 +183,16 @@ local standings = {}
 local selected = {}
 selected._count = 0  -- This is safe since _ is not allowed in names
 
+-- This is a bit of a mess; cross-realm groups will probably break
+-- this.  In 5.4.2, guild roster functions began returning
+-- PlayerName-Server in all cases, but raid functions don't stick the
+-- -Server portion on unless the player is from another realm.  This
+-- probably will fix things well enough for now.
+function EPGP:UnitInRaid(name)
+  local short_name = strsplit("-", name)
+  return UnitInRaid(short_name) or UnitInRaid(name)
+end
+
 function EPGP:DecodeNote(note)
   if note then
     if note == "" then
@@ -224,8 +234,8 @@ end
 -- A wrapper function to handle sort logic for selected
 local function ComparatorWrapper(f)
   return function(a, b)
-           local a_in_raid = not not UnitInRaid(a)
-           local b_in_raid = not not UnitInRaid(b)
+           local a_in_raid = not not EPGP:UnitInRaid(a)
+           local b_in_raid = not not EPGP:UnitInRaid(b)
            if a_in_raid ~= b_in_raid then
              return not b_in_raid
            end
@@ -287,19 +297,19 @@ end
 
 local function RefreshStandings(order, showEveryone)
   -- Debug("Resorting standings")
-  if UnitInRaid("player") then
+  if EPGP:UnitInRaid("player") then
     -- If we are in raid:
     ---  showEveryone = true: show all in raid (including alts) and
     ---  all leftover mains
     ---  showEveryone = false: show all in raid (including alts) and
     ---  all selected members
     for n in pairs(ep_data) do
-      if showEveryone or UnitInRaid(n) or selected[n] then
+      if showEveryone or EPGP:UnitInRaid(n) or selected[n] then
         table.insert(standings, n)
       end
     end
     for n in pairs(main_data) do
-      if UnitInRaid(n) or selected[n] then
+      if EPGP:UnitInRaid(n) or selected[n] then
         table.insert(standings, n)
       end
     end
@@ -369,7 +379,7 @@ local function ParseGuildNote(callback, name, note)
 end
 
 function EPGP:IsRLorML()
-  if UnitInRaid("player") then
+  if EPGP:UnitInRaid("player") then
     local loot_method, ml_party_id, ml_raid_id = GetLootMethod()
     if loot_method == "master" and ml_party_id == 0 then return true end
     if loot_method ~= "master" and IsInRaid() and UnitIsGroupLeader("player") then return true end
@@ -462,9 +472,9 @@ function EPGP:GetAlt(name, i)
 end
 
 function EPGP:SelectMember(name)
-  if UnitInRaid("player") then
+  if EPGP:UnitInRaid("player") then
     -- Only allow selecting members that are not in raid when in raid.
-    if UnitInRaid(name) then
+    if EPGP:UnitInRaid(name) then
       return false
     end
   end
@@ -475,9 +485,9 @@ function EPGP:SelectMember(name)
 end
 
 function EPGP:DeSelectMember(name)
-  if UnitInRaid("player") then
+  if EPGP:UnitInRaid("player") then
     -- Only allow deselecting members that are not in raid when in raid.
-    if UnitInRaid(name) then
+    if EPGP:UnitInRaid(name) then
       return false
     end
   end
@@ -491,7 +501,7 @@ function EPGP:DeSelectMember(name)
 end
 
 function EPGP:GetNumMembersInAwardList()
-  if UnitInRaid("player") then
+  if EPGP:UnitInRaid("player") then
     return GetNumGroupMembers() + selected._count
   else
     if selected._count == 0 then
@@ -503,10 +513,10 @@ function EPGP:GetNumMembersInAwardList()
 end
 
 function EPGP:IsMemberInAwardList(name)
-  if UnitInRaid("player") then
+  if EPGP:UnitInRaid("player") then
     -- If we are in raid the member is in the award list if it is in
     -- the raid or the selected list.
-    return UnitInRaid(name) or selected[name]
+    return EPGP:UnitInRaid(name) or selected[name]
   else
     -- If we are not in raid and there is noone selected everyone will
     -- get an award.
@@ -518,7 +528,7 @@ function EPGP:IsMemberInAwardList(name)
 end
 
 function EPGP:IsMemberInExtrasList(name)
-  return UnitInRaid("player") and selected[name]
+  return EPGP:UnitInRaid("player") and selected[name]
 end
 
 function EPGP:IsAnyMemberInExtrasList()
@@ -843,11 +853,11 @@ function EPGP:PLAYER_ENTERING_WORLD()
 end
 
 function EPGP:GROUP_ROSTER_UPDATE()
-  if UnitInRaid("player") then
+  if EPGP:UnitInRaid("player") then
     -- If we are in a raid, make sure no member of the raid is
     -- selected
     for name,_ in pairs(selected) do
-      if UnitInRaid(name) then
+      if EPGP:UnitInRaid(name) then
         selected[name] = nil
         selected._count = selected._count - 1
       end
