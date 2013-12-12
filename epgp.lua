@@ -696,6 +696,10 @@ end
 function EPGP:IncGPBy(name, reason, amount, mass, undo)
   -- When we do mass GP or decay we know what we are doing even though
   -- CanIncGPBy returns false
+  if not strfind(name, "-") then
+    name = name .. "-" .. GetRealmName()
+  end
+
   assert(EPGP:CanIncGPBy(reason, amount) or mass or undo)
   assert(type(name) == "string")
 
