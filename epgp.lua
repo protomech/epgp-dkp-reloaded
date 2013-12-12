@@ -622,6 +622,9 @@ function EPGP:DecayEPGP()
 end
 
 function EPGP:GetEPGP(name)
+  if not strfind(name, "-") then
+    name = name .. "-" .. GetRealmName()
+  end
   local main = main_data[name]
   if main then
     name = main
