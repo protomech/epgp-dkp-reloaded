@@ -183,6 +183,11 @@ local standings = {}
 local selected = {}
 selected._count = 0  -- This is safe since _ is not allowed in names
 
+-- for compatibility with release of EPGP Lootmaster; remove after new LM is pushed
+function EPGP:UnitInRaid(name)
+  return UnitInRaid(name)
+end
+
 function EPGP:DecodeNote(note)
   if note then
     if note == "" then
