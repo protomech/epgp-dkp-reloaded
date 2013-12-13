@@ -312,6 +312,9 @@ local function Frame_OnUpdate(self, elapsed)
   for i = index, last_index do
 
     local name, rank, _, _, _, _, pubNote, note, _, _, class = GetGuildRosterInfo(i)
+    -- strip off the -server portion of roster info
+    local name = strmatch(name, "(.*)-")
+
     -- Start of outsiders patch
     if OUTSIDERSENABLED then
       local extName = strmatch(pubNote, 'ext:%s-(%S+)%s-')
