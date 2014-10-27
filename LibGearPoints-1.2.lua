@@ -408,8 +408,34 @@ local CUSTOM_ITEM_DATA = {
   [96567] = { 4, 535, "INVTYPE_CHEST" },
   [96568] = { 4, 535, "INVTYPE_CHEST" },
   [96566] = { 4, 535, "INVTYPE_CHEST" },
+  
+  -- T16 Normal (post-6.0)
+  [99754] = { 4, 540, "INVTYPE_SHOULDER" },
+  [99755] = { 4, 540, "INVTYPE_SHOULDER" },
+  [99756] = { 4, 540, "INVTYPE_SHOULDER" },
 
-  -- T16 Normal
+  [99751] = { 4, 540, "INVTYPE_LEGS" },
+  [99752] = { 4, 540, "INVTYPE_LEGS" },
+  [99753] = { 4, 540, "INVTYPE_LEGS" },
+
+  [99748] = { 4, 540, "INVTYPE_HEAD" },
+  [99749] = { 4, 540, "INVTYPE_HEAD" },
+  [99750] = { 4, 540, "INVTYPE_HEAD" },
+
+  [99745] = { 4, 540, "INVTYPE_HAND" },
+  [99746] = { 4, 540, "INVTYPE_HAND" },
+  [99747] = { 4, 540, "INVTYPE_HAND" },
+
+  [99742] = { 4, 540, "INVTYPE_CHEST" },
+  [99743] = { 4, 540, "INVTYPE_CHEST" },
+  [99744] = { 4, 540, "INVTYPE_CHEST" },
+
+  -- T16 Normal Essences (post-6.0)
+  [105863] = { 4, 540, "INVTYPE_HEAD" },
+  [105865] = { 4, 540, "INVTYPE_HEAD" },
+  [105864] = { 4, 540, "INVTYPE_HEAD" },
+
+  -- T16 Heroic (Normal pre-6.0)
   [99685] = { 4, 553, "INVTYPE_SHOULDER" },
   [99695] = { 4, 553, "INVTYPE_SHOULDER" },
   [99690] = { 4, 553, "INVTYPE_SHOULDER" },
@@ -430,12 +456,12 @@ local CUSTOM_ITEM_DATA = {
   [99691] = { 4, 553, "INVTYPE_CHEST" },
   [99686] = { 4, 553, "INVTYPE_CHEST" },
 
-  -- T16 Normal Essences
+  -- T16 Heroic Essences (Normal pre-6.0)
   [105857] = { 4, 553, "INVTYPE_HEAD" },
   [105859] = { 4, 553, "INVTYPE_HEAD" },
   [105858] = { 4, 553, "INVTYPE_HEAD" },
 
-  -- T16 Heroic
+  -- T16 Mythic (Heroic pre-6.0)
   [99717] = { 4, 566, "INVTYPE_SHOULDER" },
   [99719] = { 4, 566, "INVTYPE_SHOULDER" },
   [99718] = { 4, 566, "INVTYPE_SHOULDER" },
@@ -456,7 +482,7 @@ local CUSTOM_ITEM_DATA = {
   [99716] = { 4, 566, "INVTYPE_CHEST" },
   [99715] = { 4, 566, "INVTYPE_CHEST" },
 
-  -- T16 Heroic Essences
+  -- T16 Mythic Essences (Heroic pre-6.0)
   [105868] = { 4, 566, "INVTYPE_HEAD" },
   [105867] = { 4, 566, "INVTYPE_HEAD" },
   [105866] = { 4, 566, "INVTYPE_HEAD" },
