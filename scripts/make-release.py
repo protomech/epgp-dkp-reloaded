@@ -162,7 +162,9 @@ def main(argv=None):
     zip_file.write(file, arc_name, compress_type=zipfile.ZIP_DEFLATED)
   zip_file.close()
 
-  subprocess.Popen(['git', 'tag', "v%s" % version],
+  subprocess.Popen(['git', 'tag', '-a', "v%s" % version, '-m', 'release v%s' % version],
+                   stdout=sys.stdout, stderr=sys.stderr).communicate()
+  subprocess.Popen(['git', 'commit', 'epgp.toc', '-m', 'release v%s' % version],
                    stdout=sys.stdout, stderr=sys.stderr).communicate()
 
 if __name__ == "__main__":
