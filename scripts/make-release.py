@@ -165,18 +165,5 @@ def main(argv=None):
   subprocess.Popen(['git', 'tag', "v%s" % version],
                    stdout=sys.stdout, stderr=sys.stderr).communicate()
 
-  r = raw_input('Do you want to upload the zip [y/N]? ')
-  if r in ('y', 'Y'):
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'googlecode'))
-    from googlecode_upload import upload_find_auth
-    status, reason, url = upload_find_auth(
-      zip_name, 'epgp', 'epgp-%s' % version, ['Featured'])
-    if url:
-      print('The zip was uploaded successfully.')
-      print('URL: %s' % url)
-    else:
-      print('An error occurred. The zip was not uploaded.')
-      print('Google Code upload server said: %s (%s)' % (reason, status))
-
 if __name__ == "__main__":
   sys.exit(main())
