@@ -580,21 +580,25 @@ function lib:GetValue(item)
   -- 1000gp.  In 4.2 and higher, we renormalize to make ilvl 378
   -- chests cost 1000.  Repeat ad infinitum!
   local standard_ilvl
-  if (select(4, GetBuildInfo()) < 40200) then
+  local ilvl_denominator = 26
+  local version = select(4, GetBuildInfo())
+  local level_cap = MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
+  if version < 40200 then
     standard_ilvl = 359
-  elseif (select(4, GetBuildInfo()) < 40300) then
+  elseif version < 40300 then
     standard_ilvl = 378
-  elseif MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()] < 90 then
-    standard_ilvl = 397
-  elseif (select(4, GetBuildInfo()) < 50200) then
+  elseif version < 50200 then
     standard_ilvl = 496
-  elseif (select(4, GetBuildInfo()) < 50400) then
+  elseif version < 50400 then
     standard_ilvl = 522
-  else
+  elseif version < 60000 or level_cap == 90 then
     standard_ilvl = 553
+  else
+    standard_ilvl = 670
+    ilvl_denominator = 30
   end
-  local multiplier = 1000 * 2 ^ (-standard_ilvl / 26)
-  local gp_base = multiplier * 2 ^ (level/26)
+  local multiplier = 1000 * 2 ^ (-standard_ilvl / ilvl_denominator)
+  local gp_base = multiplier * 2 ^ (level/ilvl_denominator)
   local high = math.floor(0.5 + gp_base * slot_multiplier1)
   local low = slot_multiplier2 and math.floor(0.5 + gp_base * slot_multiplier2) or nil
   return high, low, level, rarity, equipLoc
