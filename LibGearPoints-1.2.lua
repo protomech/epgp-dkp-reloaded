@@ -408,7 +408,7 @@ local CUSTOM_ITEM_DATA = {
   [96567] = { 4, 535, "INVTYPE_CHEST" },
   [96568] = { 4, 535, "INVTYPE_CHEST" },
   [96566] = { 4, 535, "INVTYPE_CHEST" },
-  
+
   -- T16 Normal (post-6.0)
   [99754] = { 4, 540, "INVTYPE_SHOULDER" },
   [99755] = { 4, 540, "INVTYPE_SHOULDER" },
@@ -487,6 +487,52 @@ local CUSTOM_ITEM_DATA = {
   [105867] = { 4, 566, "INVTYPE_HEAD" },
   [105866] = { 4, 566, "INVTYPE_HEAD" },
 
+  -- T17
+  -- Item IDs are identical across difficulties, so specify nil for item level
+  -- and specify the tier number instead: the raid difficulty and tier number
+  -- will be used to get the item level.
+  [119309] = { 4, nil, "INVTYPE_SHOULDER", 17 },
+  [119322] = { 4, nil, "INVTYPE_SHOULDER", 17 },
+  [119314] = { 4, nil, "INVTYPE_SHOULDER", 17 },
+
+  [119307] = { 4, nil, "INVTYPE_LEGS", 17 },
+  [119320] = { 4, nil, "INVTYPE_LEGS", 17 },
+  [119313] = { 4, nil, "INVTYPE_LEGS", 17 },
+
+  [119308] = { 4, nil, "INVTYPE_HEAD", 17 },
+  [119321] = { 4, nil, "INVTYPE_HEAD", 17 },
+  [119312] = { 4, nil, "INVTYPE_HEAD", 17 },
+
+  [119306] = { 4, nil, "INVTYPE_HAND", 17 },
+  [119319] = { 4, nil, "INVTYPE_HAND", 17 },
+  [119311] = { 4, nil, "INVTYPE_HAND", 17 },
+
+  [119305] = { 4, nil, "INVTYPE_CHEST", 17 },
+  [119318] = { 4, nil, "INVTYPE_CHEST", 17 },
+  [119315] = { 4, nil, "INVTYPE_CHEST", 17 },
+
+  -- T17 essences
+  [119310] = { 4, nil, "INVTYPE_HEAD", 17 },
+  [120277] = { 4, nil, "INVTYPE_HEAD", 17 },
+  [119323] = { 4, nil, "INVTYPE_HEAD", 17 },
+  [120279] = { 4, nil, "INVTYPE_HEAD", 17 },
+  [119316] = { 4, nil, "INVTYPE_HEAD", 17 },
+  [120278] = { 4, nil, "INVTYPE_HEAD", 17 },
+}
+
+local TIER_ITEM_LEVELS = {
+  -- [tierNumber] = {normal, heroic, mythic}
+  [17] = { 665, 680, 695},
+}
+
+-- Used to add extra GP if the item contains bonus stats
+-- generally considered chargeable.
+local ITEM_BONUS_GP = {
+  [40]  = 25,  -- avoidance
+  [41]  = 25,  -- leech
+  [42]  = 25,  -- speed
+  [43]  = 25,  -- indestructible
+  [565] = 200, -- extra socket
 }
 
 -- The default quality threshold:
@@ -501,6 +547,17 @@ local quality_threshold = 4
 
 local recent_items_queue = {}
 local recent_items_map = {}
+
+local function GetTierItemLevel(tierNo, itemBonuses)
+  if TIER_ITEM_LEVELS[tierNo] then
+    normalLevel, heroicLevel, mythicLevel = unpack(TIER_ITEM_LEVELS[tierNo])
+    for _, value in pairs(itemBonuses) do
+      if value == 566 or value == 570 then return heroicLevel end
+      if value == 567 or value == 569 then return mythicLevel end
+    end
+    return normalLevel
+  end
+end
 
 local function UpdateRecentLoot(itemLink)
   if recent_items_map[itemLink] then return end
@@ -553,19 +610,39 @@ function lib:GetValue(item)
   -- For now, just use the actual ilvl, not the upgraded cost
   -- level = ItemUtils:GetItemIlevel(item, level)
 
-  -- Check if item is relevant
-  if level < 463 then
+  -- Check if item is relevant.  Item is automatically relevant if it
+  -- is in CUSTOM_ITEM_DATA (as of 6.0, can no longer rely on ilvl alone
+  -- for these).
+  if level < 463 and not CUSTOM_ITEM_DATA[itemID] then
     return nil, nil, level, rarity, equipLoc
   end
 
+  -- Get the bonuses for the item to check against known bonuses
+  local itemBonuses = ItemUtils:BonusIDs(itemLink)
+
   -- Check to see if there is custom data for this item ID
   if CUSTOM_ITEM_DATA[itemID] then
-    rarity, level, equipLoc = unpack(CUSTOM_ITEM_DATA[itemID])
+    rarity, level, equipLoc, tierNo = unpack(CUSTOM_ITEM_DATA[itemID])
+    if tierNo then
+      level = GetTierItemLevel(tierNo, itemBonuses)
+    end
+
+    if not level then
+      return error("GetValue(item): could not determine item level from CUSTOM_ITEM_DATA.", 3)
+    end
   end
 
   -- Is the item above our minimum threshold?
   if not rarity or rarity < quality_threshold then
     return nil, nil, level, rarity, equipLoc
+  end
+
+  -- Does the item have bonus sockets or tertiary stats?  If so,
+  -- set extra GP to apply later.  We don't care about warforged
+  -- here as that uses the increased item level instead.
+  local extra_gp = 0
+  for _, value in pairs(itemBonuses) do
+    extra_gp = extra_gp + (ITEM_BONUS_GP[value] or 0)
   end
 
   UpdateRecentLoot(itemLink)
@@ -599,7 +676,7 @@ function lib:GetValue(item)
   end
   local multiplier = 1000 * 2 ^ (-standard_ilvl / ilvl_denominator)
   local gp_base = multiplier * 2 ^ (level/ilvl_denominator)
-  local high = math.floor(0.5 + gp_base * slot_multiplier1)
-  local low = slot_multiplier2 and math.floor(0.5 + gp_base * slot_multiplier2) or nil
+  local high = math.floor(0.5 + gp_base * slot_multiplier1) + extra_gp
+  local low = slot_multiplier2 and math.floor(0.5 + gp_base * slot_multiplier2) + extra_gp or nil
   return high, low, level, rarity, equipLoc
 end
