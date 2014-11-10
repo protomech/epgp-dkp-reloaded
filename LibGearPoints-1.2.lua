@@ -48,7 +48,10 @@ local EQUIPSLOT_MULTIPLIER_2 = {
   INVTYPE_RANGEDRIGHT = 1.5
 }
 
---Used to display GP values directly on tier tokens
+--Used to display GP values directly on tier tokens; keys are itemIDs,
+--values are rarity, ilvl, inventory slot, and an optional boolean
+--value indicating heroic/mythic ilvl should be derived from the bonus
+--list rather than the raw ilvl (mainly for T17+ tier gear)
 local CUSTOM_ITEM_DATA = {
   -- Tier 4
   [29753] = { 4, 120, "INVTYPE_CHEST" },
@@ -491,38 +494,33 @@ local CUSTOM_ITEM_DATA = {
   -- Item IDs are identical across difficulties, so specify nil for item level
   -- and specify the tier number instead: the raid difficulty and tier number
   -- will be used to get the item level.
-  [119309] = { 4, nil, "INVTYPE_SHOULDER", 17 },
-  [119322] = { 4, nil, "INVTYPE_SHOULDER", 17 },
-  [119314] = { 4, nil, "INVTYPE_SHOULDER", 17 },
+  [119309] = { 4, 665, "INVTYPE_SHOULDER", true },
+  [119322] = { 4, 665, "INVTYPE_SHOULDER", true },
+  [119314] = { 4, 665, "INVTYPE_SHOULDER", true },
 
-  [119307] = { 4, nil, "INVTYPE_LEGS", 17 },
-  [119320] = { 4, nil, "INVTYPE_LEGS", 17 },
-  [119313] = { 4, nil, "INVTYPE_LEGS", 17 },
+  [119307] = { 4, 665, "INVTYPE_LEGS", true },
+  [119320] = { 4, 665, "INVTYPE_LEGS", true },
+  [119313] = { 4, 665, "INVTYPE_LEGS", true },
 
-  [119308] = { 4, nil, "INVTYPE_HEAD", 17 },
-  [119321] = { 4, nil, "INVTYPE_HEAD", 17 },
-  [119312] = { 4, nil, "INVTYPE_HEAD", 17 },
+  [119308] = { 4, 665, "INVTYPE_HEAD", true },
+  [119321] = { 4, 665, "INVTYPE_HEAD", true },
+  [119312] = { 4, 665, "INVTYPE_HEAD", true },
 
-  [119306] = { 4, nil, "INVTYPE_HAND", 17 },
-  [119319] = { 4, nil, "INVTYPE_HAND", 17 },
-  [119311] = { 4, nil, "INVTYPE_HAND", 17 },
+  [119306] = { 4, 665, "INVTYPE_HAND", true },
+  [119319] = { 4, 665, "INVTYPE_HAND", true },
+  [119311] = { 4, 665, "INVTYPE_HAND", true },
 
-  [119305] = { 4, nil, "INVTYPE_CHEST", 17 },
-  [119318] = { 4, nil, "INVTYPE_CHEST", 17 },
-  [119315] = { 4, nil, "INVTYPE_CHEST", 17 },
+  [119305] = { 4, 665, "INVTYPE_CHEST", true },
+  [119318] = { 4, 665, "INVTYPE_CHEST", true },
+  [119315] = { 4, 665, "INVTYPE_CHEST", true },
 
   -- T17 essences
-  [119310] = { 4, nil, "INVTYPE_HEAD", 17 },
-  [120277] = { 4, nil, "INVTYPE_HEAD", 17 },
-  [119323] = { 4, nil, "INVTYPE_HEAD", 17 },
-  [120279] = { 4, nil, "INVTYPE_HEAD", 17 },
-  [119316] = { 4, nil, "INVTYPE_HEAD", 17 },
-  [120278] = { 4, nil, "INVTYPE_HEAD", 17 },
-}
-
-local TIER_ITEM_LEVELS = {
-  -- [tierNumber] = {normal, heroic, mythic}
-  [17] = { 665, 680, 695},
+  [119310] = { 4, 665, "INVTYPE_HEAD", true },
+  [120277] = { 4, 665, "INVTYPE_HEAD", true },
+  [119323] = { 4, 665, "INVTYPE_HEAD", true },
+  [120279] = { 4, 665, "INVTYPE_HEAD", true },
+  [119316] = { 4, 665, "INVTYPE_HEAD", true },
+  [120278] = { 4, 665, "INVTYPE_HEAD", true },
 }
 
 -- Used to add extra GP if the item contains bonus stats
@@ -548,15 +546,15 @@ local quality_threshold = 4
 local recent_items_queue = {}
 local recent_items_map = {}
 
-local function GetTierItemLevel(tierNo, itemBonuses)
-  if TIER_ITEM_LEVELS[tierNo] then
-    normalLevel, heroicLevel, mythicLevel = unpack(TIER_ITEM_LEVELS[tierNo])
-    for _, value in pairs(itemBonuses) do
-      if value == 566 or value == 570 then return heroicLevel end
-      if value == 567 or value == 569 then return mythicLevel end
-    end
-    return normalLevel
+-- Given a list of item bonuses, return the ilvl delta it represents
+-- (15 for Heroic, 30 for Mythic)
+local function GetItemBonusLevelDelta(itemBonuses)
+  for _, value in pairs(itemBonuses) do
+    -- Item modifiers for heroic are 566 and 570; mythic are 567 and 569
+    if value == 566 or value == 570 then return 15 end
+    if value == 567 or value == 569 then return 30 end
   end
+  return 0
 end
 
 local function UpdateRecentLoot(itemLink)
@@ -622,9 +620,9 @@ function lib:GetValue(item)
 
   -- Check to see if there is custom data for this item ID
   if CUSTOM_ITEM_DATA[itemID] then
-    rarity, level, equipLoc, tierNo = unpack(CUSTOM_ITEM_DATA[itemID])
-    if tierNo then
-      level = GetTierItemLevel(tierNo, itemBonuses)
+    rarity, level, equipLoc, useItemBonuses = unpack(CUSTOM_ITEM_DATA[itemID])
+    if useItemBonuses then
+      level = level + GetItemBonusLevelDelta(itemBonuses)
     end
 
     if not level then
