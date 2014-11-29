@@ -530,7 +530,11 @@ local ITEM_BONUS_GP = {
   [41]  = 25,  -- leech
   [42]  = 25,  -- speed
   [43]  = 25,  -- indestructible
+  [523] = 200, -- extra socket
+  [563] = 200, -- extra socket
+  [564] = 200, -- extra socket
   [565] = 200, -- extra socket
+  [572] = 200, -- extra socket
 }
 
 -- The default quality threshold:
