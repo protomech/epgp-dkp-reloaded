@@ -344,7 +344,7 @@ local function HandleDeletedGuildNote(callback, name)
   DestroyStandings()
 end
 
-local function ParseGuildNote(callback, name, note)
+function EPGP:ParseGuildNote(name, note)
   -- Debug("Parsing Guild Note for %s [%s]", name, note)
   -- Delete current state about this toon.
   DeleteState(name)
@@ -809,6 +809,7 @@ function EPGP:OnInitialize()
       min_ep = 0,
       base_gp = 1,
       bonus_loot_log = {},
+      cache_copy = {},
     }
   }
 
@@ -946,7 +947,6 @@ end
 
 local UpdateFrame = nil
 function EPGP:OnEnable()
-  GS.RegisterCallback(self, "GuildNoteChanged", ParseGuildNote)
   GS.RegisterCallback(self, "GuildNoteDeleted", HandleDeletedGuildNote)
 
   EPGP.RegisterCallback(self, "BaseGPChanged", DestroyStandings)

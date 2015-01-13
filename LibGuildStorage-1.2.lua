@@ -252,6 +252,7 @@ function SetState(new_state)
     state = new_state
     if new_state == FLUSHING then
       SendAddonMessage("CHANGES_PENDING", "GUILD")
+      SendAddonMessage("CHANGES_PENDING", "RAID")
     end
     callbacks:Fire("StateChanged")
   end
@@ -304,6 +305,9 @@ local function Frame_OnUpdate(self, elapsed)
     end
   end
 
+  -- onote-alternative
+  cache = EPGP.db.profile.cache_copy
+
   -- Read up to 100 members at a time.
   local last_index = math.min(index + 100, num_guild_members)
   if not initialized then last_index = num_guild_members end
@@ -311,9 +315,16 @@ local function Frame_OnUpdate(self, elapsed)
 
   for i = index, last_index do
 
-    local name, rank, _, _, _, _, pubNote, note, _, _, class = GetGuildRosterInfo(i)
+    local name, rank, _, _, _, _, pubNote, guildNote, _, _, class = GetGuildRosterInfo(i)
     -- strip off the -server portion of roster info
     local name = Ambiguate(name, "none")
+    local note = ""
+    if cache[name] then
+      note = cache[name]["note"]
+	  if note ~= "" then
+	    Debug("onote-alternative reading %s -> %s", name, note or "<empty>")
+       end
+    end
 
     -- Start of outsiders patch
     if OUTSIDERSENABLED then
@@ -353,8 +364,10 @@ local function Frame_OnUpdate(self, elapsed)
           end
         end
 
+        -- onote-alternative
+        -- set note from new cache
         if entry.pending_note then
-          GuildRosterSetOfficerNote(i, entry.pending_note)
+          cache[extName]["note"] = entry.pending_note
           entry.pending_note = nil
         end
       end
@@ -387,8 +400,12 @@ local function Frame_OnUpdate(self, elapsed)
         end
       end
 
+      -- onote-alternative
+      -- save pending to alternative cache
       if pending then
-        GuildRosterSetOfficerNote(i, pending)
+        cache[name]["note"] = pending
+        EPGP:ParseGuildNote(name, pending)
+        Debug("onote-alternative writing %s -> %s", name, pending)
         pending_note[name] = nil
       end
     end
@@ -421,6 +438,7 @@ local function Frame_OnUpdate(self, elapsed)
       if not next(pending_note) then
         SetState("STALE_WAITING_FOR_ROSTER_UPDATE")
         SendAddonMessage("CHANGES_FLUSHED", "GUILD")
+        SendAddonMessage("CHANGES_FLUSHED", "RAID")
       end
     end
   end
